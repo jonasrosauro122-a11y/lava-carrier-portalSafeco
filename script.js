@@ -1,98 +1,120 @@
-// ========== LAVA Safeo - Quote Script ==========
+// =========================
+// GLOBAL UTILITIES
+// =========================
 
-// Run when DOM is fully loaded
-document.addEventListener("DOMContentLoaded", () => {
+// Save quotes to localStorage
+function saveQuote(quoteData) {
+  const quotes = JSON.parse(localStorage.getItem("quotes")) || [];
+  quotes.push(quoteData);
+  localStorage.setItem("quotes", JSON.stringify(quotes));
+}
+
+// Load quotes into dashboard table
+function loadQuotes() {
+  const tableBody = document.querySelector("#recentQuotesTable tbody");
+  if (!tableBody) return; // Only run on dashboard
+
+  const quotes = JSON.parse(localStorage.getItem("quotes")) || [];
+  tableBody.innerHTML = "";
+
+  quotes.forEach((quote) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${quote.name}</td>
+      <td>${quote.policyType}</td>
+      <td>${quote.quoteDescription || "—"}</td>
+      <td>${quote.state}</td>
+      <td>${quote.date}</td>
+    `;
+    tableBody.appendChild(row);
+  });
+}
+
+// =========================
+// QUOTE FORM HANDLER
+// =========================
+document.addEventListener("DOMContentLoaded", function () {
+  loadQuotes(); // Load on dashboard if table exists
 
   const quoteForm = document.getElementById("quoteForm");
-  const quoteResult = document.getElementById("quoteResult");
-  const quoteAmount = document.getElementById("quoteAmount");
+  if (!quoteForm) return; // Only continue if on quote.html
 
-  // Validate and calculate quote
-  if (quoteForm) {
-    quoteForm.addEventListener("submit", (e) => {
-      e.preventDefault();
+  quoteForm.addEventListener("submit", (e) => {
+    e.preventDefault();
 
-      // Collect values
-      const fullName = document.getElementById("fullName").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const state = document.getElementById("state").value;
-      const insuranceType = document.getElementById("insuranceType").value;
-      const coverageAmount = parseFloat(document.getElementById("coverageAmount").value);
+    // Collect input values
+    const ratingState = document.getElementById("ratingState").value;
+    const policyForm = document.getElementById("policyForm").value;
+    const agentNumber = document.getElementById("agentNumber").value;
+    const quoteDate =
+      document.getElementById("quoteDate").value ||
+      new Date().toISOString().split("T")[0];
+    const effectiveDate = document.getElementById("effectiveDate").value;
+    const quoteDescription =
+      document.getElementById("quoteDescription").value || "";
 
-      // ====== Validation ======
-      if (!fullName || !email || !phone || !state || !insuranceType || isNaN(coverageAmount)) {
-        alert("⚠️ Please fill in all required fields before getting a quote.");
-        return;
-      }
+    const firstName = document.getElementById("firstName").value;
+    const middleName = document.getElementById("middleName").value;
+    const lastName = document.getElementById("lastName").value;
+    const birthDate = document.getElementById("birthDate").value;
+    const maritalStatus = document.getElementById("maritalStatus").value;
+    const emailAddress = document.getElementById("emailAddress").value;
 
-      // ====== Quote Calculation ======
-      let multiplier = 0.02;
-      switch (insuranceType) {
-        case "Auto Insurance": multiplier = 0.015; break;
-        case "Home Insurance": multiplier = 0.012; break;
-        case "Life Insurance": multiplier = 0.025; break;
-        case "Health Insurance": multiplier = 0.02; break;
-        case "Travel Insurance": multiplier = 0.01; break;
-      }
-
-      const quote = (coverageAmount * multiplier).toFixed(2);
-      quoteAmount.textContent = quote;
-      quoteResult.classList.remove("d-none");
-
-      // ====== Save to Local Storage ======
-      const newQuote = {
-        name: fullName,
-        email: email,
-        phone: phone,
-        state: state,
-        type: insuranceType,
-        coverage: coverageAmount,
-        quote: quote,
-        date: new Date().toLocaleString()
-      };
-
-      let savedQuotes = JSON.parse(localStorage.getItem("quotes")) || [];
-      savedQuotes.push(newQuote);
-      localStorage.setItem("quotes", JSON.stringify(savedQuotes));
-
-      // ====== Success Message ======
-      alert(`✅ Quote generated successfully!\n\nEstimated Quote: $${quote}\nType: ${insuranceType}`);
-
-      // ====== Reset Form ======
-      quoteForm.reset();
-
-      // Scroll to result smoothly
-      window.scrollTo({
-        top: quoteResult.offsetTop,
-        behavior: "smooth"
-      });
-    });
-  }
-
-  // ====== Optional: Show Recent Quotes (if on dashboard.html) ======
-  const quotesTable = document.getElementById("recentQuotesTable");
-  if (quotesTable) {
-    const savedQuotes = JSON.parse(localStorage.getItem("quotes")) || [];
-    const tbody = quotesTable.querySelector("tbody");
-
-    if (savedQuotes.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No quotes generated yet.</td></tr>`;
-    } else {
-      tbody.innerHTML = savedQuotes
-        .slice(-5)
-        .reverse()
-        .map(q => `
-          <tr>
-            <td>${q.name}</td>
-            <td>${q.type}</td>
-            <td>$${q.quote}</td>
-            <td>${q.state}</td>
-            <td>${q.date}</td>
-          </tr>
-        `)
-        .join("");
+    // Basic validation
+    if (!firstName || !lastName || !ratingState || !policyForm) {
+      showToast("Please complete all required fields.", "danger");
+      return;
     }
+
+    // Build quote data object
+    const quoteData = {
+      name: `${firstName} ${lastName}`,
+      policyType: policyForm,
+      quoteDescription: quoteDescription,
+      state: ratingState,
+      date: quoteDate,
+      agentNumber,
+      effectiveDate,
+      birthDate,
+      maritalStatus,
+      emailAddress,
+    };
+
+    // Save to localStorage
+    saveQuote(quoteData);
+
+    // Show success notification
+    showToast("Quote saved successfully!", "success");
+
+    // Redirect to dashboard after short delay
+    setTimeout(() => {
+      window.location.href = "dashboard.html";
+    }, 1500);
+  });
+});
+
+// =========================
+// TOAST NOTIFICATION SYSTEM
+// =========================
+function showToast(message, type = "success") {
+  let toastContainer = document.querySelector(".toast-container");
+  if (!toastContainer) {
+    toastContainer = document.createElement("div");
+    toastContainer.className =
+      "toast-container position-fixed top-0 end-0 p-3";
+    document.body.appendChild(toastContainer);
   }
 
-});
+  const toast = document.createElement("div");
+  toast.className = `toast align-items-center text-bg-${type} border-0 show`;
+  toast.role = "alert";
+  toast.innerHTML = `
+    <div class="d-flex">
+      <div class="toast-body fw-semibold">${message}</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  `;
+
+  toastContainer.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
