@@ -1,15 +1,15 @@
 // =========================
 // GLOBAL UTILITIES
 // =========================
-
-// Save quotes to localStorage
 function saveQuote(quoteData) {
   const quotes = JSON.parse(localStorage.getItem("quotes")) || [];
-  quotes.unshift(quoteData); // newest first
+  quotes.unshift(quoteData);
   localStorage.setItem("quotes", JSON.stringify(quotes));
 }
 
-// Load quotes into dashboard table
+// =========================
+// LOAD QUOTES ON DASHBOARD
+// =========================
 function loadQuotes() {
   const tableBody = document.querySelector("#recentQuotesTable tbody");
   if (!tableBody) return;
@@ -36,10 +36,8 @@ function loadQuotes() {
 // DASHBOARD BUTTON LOGIC
 // =========================
 document.addEventListener("DOMContentLoaded", () => {
-  // Load quotes if dashboard table exists
   loadQuotes();
 
-  // Detect all "Start Quote" buttons
   const startQuoteButtons = document.querySelectorAll(
     "#startQuoteBtn, #startQuoteCardBtn, .startQuoteBtn"
   );
@@ -47,7 +45,6 @@ document.addEventListener("DOMContentLoaded", () => {
   startQuoteButtons.forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.preventDefault();
-      // Redirect to quote.html
       window.location.href = "quote.html";
     });
   });
@@ -89,7 +86,6 @@ document.addEventListener("DOMContentLoaded", () => {
     saveQuote(quoteData);
     showToast("Quote saved successfully!", "success");
 
-    // Redirect back to dashboard after short delay
     setTimeout(() => {
       window.location.href = "dashboard.html";
     }, 1200);
