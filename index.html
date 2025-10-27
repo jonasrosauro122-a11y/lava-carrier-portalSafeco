@@ -1,128 +1,762 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LAVA Safeco Portal - Login</title>
-  
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-  
-  <!-- Bootstrap for modern styling -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  
-  <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #e9ecef, #f8f9fa);
-      font-family: 'Poppins', sans-serif;
-      margin: 0;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAVA Safeco Portal - Training Access</title>
+    <!-- Load Tailwind CSS (for aesthetics) and Bootstrap 5.3 (for utility classes and structure) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
 
-    .login-container {
-      background-color: #ffffff;
-      padding: 2.5rem 2rem;
-      border-radius: 12px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-      text-align: center;
-      width: 100%;
-      max-width: 420px;
-    }
+    <style>
+        /* General Styles */
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #28a745;
+            --bg-light: #f4f7f6;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-light);
+            margin: 0;
+            padding-top: 56px; /* Space for fixed navbar */
+        }
+        .text-primary-lava { color: var(--primary-color); }
+        .bg-primary-lava { background-color: var(--primary-color); }
+        .btn-primary-lava { background-color: var(--primary-color); border-color: var(--primary-color); color: white; transition: background-color 0.2s; }
+        .btn-primary-lava:hover { background-color: #0b5ed7; border-color: #0b5ed7; }
+        .tab-button {
+            padding: 10px 15px; border: none; background: #e9ecef; color: #495057; margin-right: 5px; border-radius: 6px; cursor: pointer; font-weight: 500;
+            transition: background 0.2s, color 0.2s;
+        }
+        .tab-button.active { background: var(--primary-color); color: white; }
 
-    .login-container .logo {
-      max-width: 180px;
-      margin-bottom: 1rem;
-    }
+        /* Login View Specific */
+        #login-view {
+            display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #e9ecef, #f8f9fa);
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+        }
+        .login-container {
+            background-color: #ffffff; padding: 2.5rem 2rem; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); text-align: center; width: 100%; max-width: 420px;
+        }
 
-    .login-container h1 {
-      font-size: 1.8rem;
-      margin-bottom: 0.25rem;
-      font-weight: 600;
-    }
+        /* Quote View Specific */
+        .quote-tabs { display: flex; overflow-x: auto; border-bottom: 2px solid #ccc; margin-bottom: 20px; flex-wrap: nowrap; }
+        .quote-tab-content { display: none; padding: 20px 0; }
+        .quote-tab-content.active { display: block; }
 
-    .login-container .tagline {
-      font-size: 0.95rem;
-      color: #6c757d;
-      margin-bottom: 2rem;
-    }
+        /* Custom Alert/Modal (Instead of alert()) */
+        .custom-alert { position: fixed; top: 20px; right: 20px; z-index: 2000; padding: 15px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; }
+        .alert-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
 
-    .login-container form input {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      margin-bottom: 1rem;
-      border-radius: 8px;
-      border: 1px solid #ced4da;
-      font-size: 1rem;
-      transition: border-color 0.2s;
-    }
-
-    .login-container form input:focus {
-      border-color: #0d6efd;
-      outline: none;
-      box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.25);
-    }
-
-    .login-container form button {
-      width: 100%;
-      padding: 0.75rem;
-      border: none;
-      border-radius: 8px;
-      background-color: #0d6efd;
-      color: #fff;
-      font-size: 1rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    .login-container form button:hover {
-      background-color: #0b5ed7;
-    }
-
-    .login-container .note {
-      margin-top: 1.5rem;
-      font-size: 0.85rem;
-      color: #6c757d;
-    }
-  </style>
+    </style>
 </head>
-
 <body>
-  <div class="login-container">
-    <!-- Logo Section -->
-    <img src="images/lava-safeco-logo.png" alt="LavaSafeco Logo" class="logo">
 
-    <h1>LAVA Safeco Portal</h1>
-    <p class="tagline">Training Access for Students</p>
+<!-- Firebase Imports (MUST BE FIRST) -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, addDoc, setDoc, onSnapshot, collection, query, limit, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    setLogLevel('Debug');
+
+    window.db = null;
+    window.auth = null;
+    window.appState = {
+        currentView: 'login', // 'login', 'dashboard', 'quote'
+        userId: null,
+        userName: '',
+        recentQuotes: []
+    };
     
-    <!-- Login Form -->
-    <form id="loginForm" onsubmit="return loginUser(event)">
-      <input type="text" id="firstName" placeholder="First Name" required />
-      <input type="text" id="lastName" placeholder="Last Name" required />
-      <input type="password" id="password" placeholder="Password" required />
-      <button type="submit">Login</button>
-    </form>
-    
-    <p class="note">* For training use only *</p>
-  </div>
+    // Global variables provided by the environment
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-  <script>
-    function loginUser(event) {
-      event.preventDefault();
-      const firstName = document.getElementById('firstName').value.trim();
-      const lastName = document.getElementById('lastName').value.trim();
-      const password = document.getElementById('password').value;
+    // Firebase Initialization
+    function initializeFirebase() {
+        if (Object.keys(firebaseConfig).length === 0) {
+            console.error("Firebase configuration not found. Using anonymous sign-in fallback.");
+            const dummyApp = { name: "dummy-app" };
+            window.db = { type: "dummy" }; // Use a dummy DB object
+            window.auth = { type: "dummy" }; // Use a dummy Auth object
+            return;
+        }
 
-      if (password === "Lavaautomation2025!") {
-        localStorage.setItem("studentName", firstName + " " + lastName);
-        window.location.href = "dashboard.html";
-      } else {
-        alert("Incorrect password. Please try again.");
-      }
+        try {
+            const app = initializeApp(firebaseConfig);
+            window.db = getFirestore(app);
+            window.auth = getAuth(app);
+            
+            // Set up Auth Listener
+            onAuthStateChanged(window.auth, (user) => {
+                if (user) {
+                    window.appState.userId = user.uid;
+                    console.log("Firebase Auth Ready. User ID:", user.uid);
+                    // Automatically proceed to dashboard if already authenticated
+                    if (window.appState.currentView !== 'quote') {
+                        renderAppView(window.appState.currentView === 'login' ? 'dashboard' : window.appState.currentView);
+                    }
+                    setupQuoteListener();
+                } else {
+                    console.log("No user signed in. Attempting sign-in...");
+                    handleAuthInitialization();
+                }
+            });
+
+        } catch (error) {
+            console.error("Error initializing Firebase:", error);
+        }
     }
-  </script>
+
+    async function handleAuthInitialization() {
+        try {
+            if (initialAuthToken) {
+                await signInWithCustomToken(window.auth, initialAuthToken);
+            } else {
+                await signInAnonymously(window.auth);
+            }
+        } catch (error) {
+            console.error("Firebase Sign-in Failed:", error);
+        }
+    }
+
+    // Firestore Listener for Quotes
+    function setupQuoteListener() {
+        if (!window.db || !window.appState.userId) return;
+
+        // Path for private data: /artifacts/{appId}/users/{userId}/quotes
+        const quotesPath = `artifacts/${appId}/users/${window.appState.userId}/quotes`;
+        const q = query(collection(window.db, quotesPath), limit(5));
+
+        onSnapshot(q, (snapshot) => {
+            const quotes = [];
+            snapshot.forEach((doc) => {
+                quotes.push({ id: doc.id, ...doc.data() });
+            });
+            window.appState.recentQuotes = quotes.sort((a, b) => b.date - a.date); // Sort by newest first
+            if (window.appState.currentView === 'dashboard') {
+                updateDashboardQuotes();
+            }
+        }, (error) => {
+            console.error("Error fetching quotes:", error);
+        });
+    }
+
+    // Expose functions globally for HTML script
+    window.initializeFirebase = initializeFirebase;
+    window.addQuoteToFirestore = async function(quoteData) {
+        if (!window.db || !window.appState.userId) {
+            showAlert('error', 'Database not ready. Cannot save quote.');
+            return;
+        }
+        const collectionRef = collection(window.db, `artifacts/${appId}/users/${window.appState.userId}/quotes`);
+        try {
+            await addDoc(collectionRef, quoteData);
+            showAlert('success', 'Quote successfully bound and saved to Firestore!');
+            return true;
+        } catch (e) {
+            console.error("Error adding document: ", e);
+            showAlert('error', 'Error saving quote to database.');
+            return false;
+        }
+    };
+</script>
+
+<!-- The Application Container -->
+<div id="app">
+
+    <!-- Navbar (Always visible after login) -->
+    <nav class="navbar navbar-expand-lg bg-white shadow-sm fixed-top" id="app-navbar" style="display: none;">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="#" onclick="renderAppView('dashboard')">
+                <img src="https://placehold.co/40x40/0d6efd/ffffff?text=LAVA" alt="LAVA Safeco Logo" height="40" class="me-2 rounded-lg">
+                <span class="fw-bold text-primary-lava">LAVA Safeco</span>
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link fw-semibold" href="#">Products</a></li>
+                    <li class="nav-item"><a class="nav-link fw-semibold" href="#">Programs</a></li>
+                    <li class="nav-item"><a class="nav-link fw-semibold" href="#">Claims</a></li>
+                    <li class="nav-item"><a class="nav-link fw-semibold" href="#">My Agency</a></li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-primary-lava me-3" id="startQuoteBtnNav" onclick="renderAppView('quote')">Start Quote</button>
+                    <span id="agent-display" class="me-3 text-muted small">N/A</span>
+                    <a href="#" class="text-danger text-decoration-none fw-semibold" onclick="logoutUser()">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 1. LOGIN VIEW -->
+    <div id="login-view">
+        <div class="login-container">
+            <!-- Logo Section -->
+            <img src="https://placehold.co/180x40/0d6efd/ffffff?text=LAVA+PORTAL" alt="LavaSafeco Logo" class="logo rounded-lg">
+
+            <h1>LAVA Safeco Portal</h1>
+            <p class="tagline">Training Access for Students</p>
+            
+            <!-- Login Form -->
+            <form id="loginForm">
+                <input type="text" id="firstName" placeholder="First Name" required />
+                <input type="text" id="lastName" placeholder="Last Name" required />
+                <input type="password" id="password" placeholder="Password" required />
+                <button type="submit" class="btn-primary-lava">Login</button>
+            </form>
+            
+            <p class="note">* For training use only *</p>
+        </div>
+    </div>
+
+    <!-- 2. DASHBOARD VIEW -->
+    <div id="dashboard-view" class="container-fluid mt-4" style="display: none;">
+        <div class="row">
+            <!-- Sidebar -->
+            <aside class="col-md-3 col-lg-2 mb-4">
+                <div class="card mb-3 shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title fw-semibold">Customer Lookup</h5>
+                        <p class="text-muted small mb-2">Search by name, policy, email, or phone</p>
+                        <input type="text" class="form-control mb-2" placeholder="Search customer..." />
+                        <button class="btn btn-primary-lava w-100">Search</button>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title fw-semibold">Quote</h5>
+                        <select class="form-select mb-2" id="quoteStateSelect">
+                            <option>North Carolina</option><option>California</option><option>Texas</option>
+                        </select>
+                        <select class="form-select mb-3" id="quoteProductSelect">
+                            <option>Auto</option><option>Home</option><option>Life</option>
+                        </select>
+                        <button class="btn btn-outline-primary w-100" id="startQuoteCardBtn" onclick="renderAppView('quote')">Start Quote</button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="col-md-9 col-lg-10">
+                <div class="mb-4 d-flex align-items-center">
+                    <img src="https://placehold.co/60x60/0d6efd/ffffff?text=LAVA" alt="LAVA Safeco Logo" height="60" class="me-3 rounded-lg">
+                    <h4 class="fw-bold mb-0" id="welcome-agent-msg">Hi Agent!</h4>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white fw-semibold">My Agency’s Customers</div>
+                            <div class="card-body">
+                                <h6 class="text-muted">No renewals right now</h6>
+                                <p class="small text-muted">When clients have upcoming renewals, you’ll see them here.</p>
+                                <a href="#" class="btn btn-sm btn-primary-lava">Prepare for renewals</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card shadow-sm h-100 border-0">
+                            <div class="card-header bg-white fw-semibold">My Insights</div>
+                            <div class="card-body">
+                                <div class="alert alert-warning text-dark border-0 rounded-lg">
+                                    <h5 class="fw-bold mb-1">85%</h5>
+                                    <p class="mb-0 small">of customers say it’s important for agents to review policy coverages with them.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white fw-semibold">My Favorites</div>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item"><a href="#" class="text-decoration-none">Client list</a></li>
+                                <li class="list-group-item"><a href="#" class="text-decoration-none">View policy summary</a></li>
+                                <li class="list-group-item"><a href="#" class="text-decoration-none">Change or endorse</a></li>
+                                <li class="list-group-item"><a href="#" class="text-decoration-none">Billing and payments</a></li>
+                                <li class="list-group-item"><a href="#" class="text-decoration-none">Booklet / Record change</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-8">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white fw-semibold">My Production</div>
+                            <div class="card-body">
+                                <table class="table table-sm align-middle">
+                                    <thead><tr><th>Type</th><th>Pending</th><th>Issued YTD</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>eSign</td><td>0</td><td>0</td></tr>
+                                        <tr><td>Auto</td><td>0</td><td>0</td></tr>
+                                        <tr><td>Home</td><td>0</td><td>0</td></tr>
+                                        <tr><td>Specialty</td><td>0</td><td>0</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-12">
+                        <div class="card shadow-sm mt-4 border-0">
+                            <div class="card-header bg-white fw-semibold">Recent Quotes</div>
+                            <div class="card-body">
+                                <table id="recentQuotesTable" class="table table-striped align-middle">
+                                    <thead><tr><th>Quote #</th><th>Client Name</th><th>Type</th><th>Premium</th><th>Date</th></tr></thead>
+                                    <tbody><tr><td colspan="5" class="text-center text-muted small">Loading recent quotes...</td></tr></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 3. QUOTE VIEW -->
+    <div id="quote-view" class="container" style="display: none;">
+        <h1 class="text-primary-lava">🏠 New Home Insurance Quote</h1>
+        
+        <div class="quote-tabs" id="quote-tab-navigation">
+            <!-- Tab buttons inserted by JS -->
+        </div>
+
+        <form id="quote-form-data">
+            <!-- Quote steps content (1-9) -->
+
+            <!-- 1. Applicant Information -->
+            <div id="q-tab-applicant" class="quote-tab-content active">
+                <h2 class="text-primary-lava">1. Applicant Information</h2>
+                <div class="row g-3">
+                    <div class="col-md-6"><label class="form-label">First Name</label><input type="text" class="form-control" id="q-first-name" required></div>
+                    <div class="col-md-6"><label class="form-label">Last Name</label><input type="text" class="form-control" id="q-last-name" required></div>
+                    <div class="col-md-6"><label class="form-label">Email</label><input type="email" class="form-control" id="q-email" required></div>
+                    <div class="col-md-6"><label class="form-label">Phone</label><input type="tel" class="form-control" id="q-phone" required></div>
+                    <div class="col-12"><label class="form-label">Mailing Address</label><input type="text" class="form-control" id="q-mailing-address" required></div>
+                    <div class="col-md-4"><label class="form-label">Prior Insurance</label><select class="form-select" id="q-prior-insurance"><option>Yes</option><option selected>No</option></select></div>
+                    <div class="col-md-4"><label class="form-label">Prior Losses (5 yrs)</label><select class="form-select" id="q-prior-losses"><option selected>No</option><option>Yes</option></select></div>
+                </div>
+            </div>
+
+            <!-- 2. Dwelling Information -->
+            <div id="q-tab-dwelling" class="quote-tab-content">
+                <h2 class="text-primary-lava">2. Dwelling Information</h2>
+                <div class="row g-3">
+                    <div class="col-12"><label class="form-label">Property Address</label><input type="text" class="form-control" id="q-property-address" required></div>
+                    <div class="col-md-4"><label class="form-label">Year Built</label><input type="number" class="form-control" id="q-year-built" min="1900" max="2025" required></div>
+                    <div class="col-md-4"><label class="form-label">Living Area (Sq Ft)</label><input type="number" class="form-control" id="q-living-area" required></div>
+                    <div class="col-md-4"><label class="form-label">Construction Type</label><select class="form-select" id="q-construction-type"><option>Frame</option><option>Masonry</option></select></div>
+                    <div class="col-md-4"><label class="form-label">Roof Type</label><select class="form-select" id="q-roof-type"><option>Asphalt</option><option>Tile</option></select></div>
+                    <div class="col-md-4"><label class="form-label">Number of Stories</label><select class="form-select" id="q-stories"><option>1</option><option>2</option></select></div>
+                    <div class="col-md-4"><label class="form-label">Pool?</label><select class="form-select" id="q-pool"><option selected>No</option><option>Yes</option></select></div>
+                </div>
+            </div>
+
+            <!-- 3. Cost Guide Features (Simplified for demo) -->
+            <div id="q-tab-cost-guide" class="quote-tab-content">
+                <h2 class="text-primary-lava">3. Cost Guide & Replacement Cost</h2>
+                <div class="row g-3">
+                    <div class="col-md-6"><label class="form-label">Quality Grade</label><select class="form-select" id="q-quality-grade"><option>Standard</option><option>Custom</option><option>Luxury</option></select></div>
+                    <div class="col-md-6"><label class="form-label">Garage Size (Cars)</label><select class="form-select" id="q-garage-size"><option>1</option><option selected>2</option><option>3</option></select></div>
+                    <div class="col-12"><div class="alert alert-info mt-3">Estimated Replacement Cost (Cov A): <strong id="q-rc-display">$0</strong> (Calculated)</div></div>
+                </div>
+            </div>
+
+            <!-- 4. Underwriting -->
+            <div id="q-tab-underwriting" class="quote-tab-content">
+                <h2 class="text-primary-lava">4. Underwriting Questions</h2>
+                <div class="row g-3">
+                    <div class="col-md-6"><label class="form-label">Business on Premises?</label><select class="form-select" id="q-business-premises"><option selected>No</option><option>Yes</option></select></div>
+                    <div class="col-md-6"><label class="form-label">Restricted Dog Breeds?</label><select class="form-select" id="q-restricted-breeds"><option selected>No</option><option>Yes</option></select></div>
+                    <div class="col-md-6"><label class="form-label">Home Owner-Occupied?</label><select class="form-select" id="q-owner-occupied"><option selected>Yes</option><option>No</option></select></div>
+                </div>
+            </div>
+
+            <!-- 5. Coverage Selection -->
+            <div id="q-tab-coverage" class="quote-tab-content">
+                <h2 class="text-primary-lava">5. Coverage Selection</h2>
+                <div class="row g-3">
+                    <div class="col-md-6"><label class="form-label">Personal Liability</label><select class="form-select" id="q-liability"><option value="100000">$100k</option><option value="300000" selected>$300k</option><option value="500000">$500k</option></select></div>
+                    <div class="col-md-6"><label class="form-label">Deductible</label><select class="form-select" id="q-deductible"><option value="500">$500</option><option value="1000" selected>$1,000</option><option value="2500">$2,500</option></select></div>
+                    <div class="col-md-6"><label class="form-label">Water Backup Endorsement</label><select class="form-select" id="q-water-backup"><option selected>No</option><option>Yes</option></select></div>
+                    <div class="col-md-6"><label class="form-label">Identity Recovery</label><select class="form-select" id="q-identity-recovery"><option selected>No</option><option>Yes</option></select></div>
+                </div>
+            </div>
+
+            <!-- 6. Summary -->
+            <div id="q-tab-summary" class="quote-tab-content">
+                <h2 class="text-primary-lava">6. Summary & Premium</h2>
+                <div class="card p-4 shadow-sm mb-4 border-0">
+                    <h4 class="fw-bold">Quote Summary</h4>
+                    <p>Client: <strong id="s-client-name">N/A</strong></p>
+                    <p>Property: <strong id="s-property-address">N/A</strong></p>
+                    <p>Coverage A (Dwelling): <strong id="s-cov-a">$0</strong></p>
+                    <p>Deductible: <strong id="s-deductible">$1,000</strong></p>
+                </div>
+                <div class="bg-success text-white p-4 rounded-lg text-center">
+                    <h3 class="mb-0">Estimated Annual Premium: $<span id="s-final-premium">0.00</span></h3>
+                </div>
+            </div>
+
+            <!-- 7. Order Reports (Conceptual) -->
+            <div id="q-tab-reports" class="quote-tab-content">
+                <h2 class="text-primary-lava">7. Order Reports (Conceptual)</h2>
+                <div class="alert alert-warning">In a real system, external reports (CLUE, credit) are ordered here. This is simulated for training.</div>
+                <button type="button" class="btn btn-secondary me-3">Run CLUE Report Simulation</button>
+                <button type="button" class="btn btn-secondary">Order Credit Score Simulation</button>
+            </div>
+
+            <!-- 8. Billing -->
+            <div id="q-tab-billing" class="quote-tab-content">
+                <h2 class="text-primary-lava">8. Billing</h2>
+                <div class="row g-3">
+                    <div class="col-md-6"><label class="form-label">Pay Plan</label><select class="form-select" id="q-pay-plan"><option>Full Pay</option><option>Monthly EFT</option></select></div>
+                    <div class="col-md-6"><label class="form-label">Payment Method</label><select class="form-select" id="q-payment-method"><option>Credit/Debit</option><option>EFT</option></select></div>
+                </div>
+            </div>
+
+            <!-- 9. Issue -->
+            <div id="q-tab-issue" class="quote-tab-content">
+                <h2 class="text-primary-lava">9. Issue (Bind Policy)</h2>
+                <div class="card p-4 shadow-sm mb-4 border-0">
+                    <p>Verify all steps are complete before binding.</p>
+                    <button type="button" id="bind-policy-btn" class="btn btn-secondary w-100">Bind Request</button>
+                    <p class="mt-3">Policy Number: <strong id="q-policy-number">N/A</strong></p>
+                </div>
+            </div>
+
+
+            <!-- Navigation Buttons -->
+            <div class="d-flex justify-content-between mt-4">
+                <button type="button" id="q-prev-btn" class="btn btn-outline-secondary" disabled>← Previous</button>
+                <button type="button" id="q-next-btn" class="btn btn-primary-lava">Next →</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Custom Alert/Toast Container (replaces alert()) -->
+    <div class="custom-alert" id="custom-alert"></div>
+
+</div>
+
+<script type="text/javascript">
+    // Access global state and functions from the module script
+    const appState = window.appState;
+    const initializeFirebase = window.initializeFirebase;
+    const addQuoteToFirestore = window.addQuoteToFirestore;
+
+    const APP_PASSWORD = "Lavaautomation2025!";
+
+    // --- State Management and View Rendering ---
+    function renderAppView(viewName) {
+        if (appState.userId === null && viewName !== 'login') {
+            viewName = 'login'; // Force login if not authenticated
+        }
+
+        appState.currentView = viewName;
+        
+        // Hide all major views
+        document.getElementById('login-view').style.display = 'none';
+        document.getElementById('dashboard-view').style.display = 'none';
+        document.getElementById('quote-view').style.display = 'none';
+        document.getElementById('app-navbar').style.display = 'none';
+
+        // Show the requested view
+        if (viewName === 'login') {
+            document.getElementById('login-view').style.display = 'flex';
+        } else if (viewName === 'dashboard') {
+            document.getElementById('dashboard-view').style.display = 'block';
+            document.getElementById('app-navbar').style.display = 'flex';
+            updateDashboardUI();
+        } else if (viewName === 'quote') {
+            document.getElementById('quote-view').style.display = 'block';
+            document.getElementById('app-navbar').style.display = 'flex';
+            // Reset quote form and go to first step
+            document.getElementById('quote-form-data').reset();
+            quoteState.currentTabIndex = 0;
+            switchQuoteTab(0);
+        }
+    }
+
+    // --- Login Logic ---
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const firstName = document.getElementById('firstName').value.trim();
+        const lastName = document.getElementById('lastName').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (password === APP_PASSWORD) {
+            appState.userName = firstName + " " + lastName;
+            renderAppView('dashboard');
+            showAlert('success', 'Login successful! Welcome to the portal.');
+        } else {
+            showAlert('error', 'Incorrect password. Please try again.');
+        }
+    });
+
+    function logoutUser() {
+        appState.userName = '';
+        renderAppView('login');
+        showAlert('success', 'You have been logged out.');
+    }
+
+    // --- Dashboard Logic ---
+    function updateDashboardUI() {
+        const welcomeMsg = document.getElementById('welcome-agent-msg');
+        const agentDisplay = document.getElementById('agent-display');
+        
+        welcomeMsg.textContent = `Hi Agent ${appState.userName || appState.userId}!`;
+        agentDisplay.textContent = `User: ${appState.userName || appState.userId.substring(0, 8) + '...'}`;
+        
+        updateDashboardQuotes();
+    }
+
+    function updateDashboardQuotes() {
+        const tableBody = document.querySelector('#recentQuotesTable tbody');
+        tableBody.innerHTML = '';
+
+        if (appState.recentQuotes.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted small">No recent quotes found. Start a new one!</td></tr>';
+            return;
+        }
+
+        appState.recentQuotes.forEach(quote => {
+            const row = tableBody.insertRow();
+            row.innerHTML = `
+                <td>#${quote.quoteNumber}</td>
+                <td>${quote.clientName}</td>
+                <td>${quote.productType}</td>
+                <td><span class="fw-bold text-success">$${quote.finalPremium}</span></td>
+                <td>${new Date(quote.date).toLocaleDateString()}</td>
+            `;
+        });
+    }
+
+    // --- Quote System Logic ---
+    const quoteTabs = [
+        { id: 'q-tab-applicant', name: '1. Applicant' },
+        { id: 'q-tab-dwelling', name: '2. Dwelling' },
+        { id: 'q-tab-cost-guide', name: '3. Cost Guide' },
+        { id: 'q-tab-underwriting', name: '4. Underwriting' },
+        { id: 'q-tab-coverage', name: '5. Coverage' },
+        { id: 'q-tab-summary', name: '6. Summary' },
+        { id: 'q-tab-reports', name: '7. Reports' },
+        { id: 'q-tab-billing', name: '8. Billing' },
+        { id: 'q-tab-issue', name: '9. Issue' }
+    ];
+
+    const quoteState = {
+        currentTabIndex: 0
+    };
+
+    const quoteNav = document.getElementById('quote-tab-navigation');
+    const qNextBtn = document.getElementById('q-next-btn');
+    const qPrevBtn = document.getElementById('q-prev-btn');
+    const bindBtn = document.getElementById('bind-policy-btn');
+    const quoteForm = document.getElementById('quote-form-data');
+
+
+    function initQuoteTabs() {
+        quoteTabs.forEach((tab, index) => {
+            const button = document.createElement('button');
+            button.className = 'tab-button';
+            button.textContent = tab.name;
+            button.setAttribute('data-index', index);
+            button.addEventListener('click', () => switchQuoteTab(index));
+            quoteNav.appendChild(button);
+        });
+    }
+
+    function switchQuoteTab(index) {
+        if (index < 0 || index >= quoteTabs.length) return;
+
+        // Validation for moving forward
+        if (index > quoteState.currentTabIndex) {
+            if (!validateQuoteTab(quoteTabs[quoteState.currentTabIndex].id)) {
+                showAlert('error', 'Please complete all required fields on the current step.');
+                return;
+            }
+        }
+        
+        quoteState.currentTabIndex = index;
+
+        // Update buttons
+        document.querySelectorAll('#quote-tab-navigation .tab-button').forEach((btn, i) => {
+            btn.classList.toggle('active', i === index);
+        });
+
+        // Update content
+        document.querySelectorAll('.quote-tab-content').forEach((content, i) => {
+            content.style.display = (i === index) ? 'block' : 'none';
+        });
+
+        // Update navigation buttons text/state
+        qPrevBtn.disabled = index === 0;
+        qNextBtn.textContent = index === quoteTabs.length - 1 ? 'Finish' : 'Next →';
+        qNextBtn.disabled = index === quoteTabs.length - 1;
+
+        // Specific actions for key tabs
+        if (quoteTabs[quoteState.currentTabIndex].id === 'q-tab-cost-guide') {
+            calculateReplacementCost();
+        }
+        if (quoteTabs[quoteState.currentTabIndex].id === 'q-tab-summary' || quoteTabs[quoteState.currentTabIndex].id === 'q-tab-issue') {
+            calculateReplacementCost(); // ensure RC is fresh
+            calculatePremium();
+            updateQuoteSummary();
+        }
+    }
+
+    function validateQuoteTab(tabId) {
+        const tabContent = document.getElementById(tabId);
+        let isValid = true;
+        tabContent.querySelectorAll('[required]').forEach(input => {
+            if (!input.value) {
+                input.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                input.classList.remove('is-invalid');
+            }
+        });
+        return isValid;
+    }
+
+    function calculateReplacementCost() {
+        const livingArea = parseFloat(document.getElementById('q-living-area').value) || 0;
+        const qualityGrade = document.getElementById('q-quality-grade').value;
+        const garageSize = parseInt(document.getElementById('q-garage-size').value) || 0;
+        
+        let costPerSqFt = 150; 
+        if (qualityGrade === 'Custom') costPerSqFt = 200;
+        if (qualityGrade === 'Luxury') costPerSqFt = 280;
+        
+        let rc = livingArea * costPerSqFt;
+        rc += (garageSize * 10000); // Simple garage addon
+        rc = Math.round(rc);
+
+        document.getElementById('q-rc-display').textContent = `$${rc.toLocaleString()}`;
+        return rc;
+    }
+
+    function calculatePremium() {
+        const rc = calculateReplacementCost(); 
+        if (rc === 0) {
+             document.getElementById('s-final-premium').textContent = '0.00';
+             return 0;
+        }
+
+        let basePremium = rc * 0.0035; // Base rate
+        
+        const losses = document.getElementById('q-prior-losses').value;
+        const dogs = document.getElementById('q-restricted-breeds').value;
+        const deductible = parseInt(document.getElementById('q-deductible').value);
+        
+        // Surcharges
+        if (losses === 'Yes') basePremium *= 1.15;
+        if (dogs === 'Yes') basePremium *= 1.20;
+
+        // Deductible discount (higher deductible = lower premium)
+        if (deductible === 2500) basePremium *= 0.90;
+        else if (deductible === 1000) basePremium *= 0.95;
+
+        // Endorsement costs (Flat fee)
+        if (document.getElementById('q-water-backup').value === 'Yes') basePremium += 50;
+        if (document.getElementById('q-identity-recovery').value === 'Yes') basePremium += 25;
+
+        const finalPremium = Math.max(750, basePremium);
+        document.getElementById('s-final-premium').textContent = finalPremium.toFixed(2).toLocaleString();
+        return finalPremium.toFixed(2);
+    }
+
+    function updateQuoteSummary() {
+        const rc = calculateReplacementCost();
+        const finalPremium = document.getElementById('s-final-premium').textContent;
+        const deductibleText = document.getElementById('q-deductible').options[document.getElementById('q-deductible').selectedIndex].text;
+        
+        document.getElementById('s-client-name').textContent = `${document.getElementById('q-first-name').value} ${document.getElementById('q-last-name').value}`;
+        document.getElementById('s-property-address').textContent = document.getElementById('q-property-address').value;
+        document.getElementById('s-cov-a').textContent = `$${rc.toLocaleString()}`;
+        document.getElementById('s-deductible').textContent = deductibleText;
+        document.getElementById('s-final-premium').textContent = finalPremium;
+    }
+
+    qNextBtn.addEventListener('click', () => {
+        if (quoteState.currentTabIndex < quoteTabs.length - 1) {
+            switchQuoteTab(quoteState.currentTabIndex + 1);
+        }
+    });
+
+    qPrevBtn.addEventListener('click', () => {
+        switchQuoteTab(quoteState.currentTabIndex - 1);
+    });
+
+    bindBtn.addEventListener('click', async () => {
+        const rc = calculateReplacementCost();
+        const premium = calculatePremium();
+        const clientName = `${document.getElementById('q-first-name').value} ${document.getElementById('q-last-name').value}`;
+
+        if (!validateQuoteTab('q-tab-applicant')) {
+            showAlert('error', 'Cannot bind: Applicant information is incomplete.');
+            return;
+        }
+
+        const quoteNumber = Math.floor(Math.random() * 90000000 + 10000000);
+        document.getElementById('q-policy-number').textContent = `#${quoteNumber}`;
+
+        const quoteData = {
+            quoteNumber: quoteNumber.toString(),
+            clientName: clientName,
+            productType: document.getElementById('quoteProductSelect').value,
+            state: document.getElementById('quoteStateSelect').value,
+            coverageA: rc,
+            finalPremium: parseFloat(premium),
+            date: Date.now(),
+            agentId: appState.userId
+        };
+
+        const success = await addQuoteToFirestore(quoteData);
+
+        if (success) {
+            bindBtn.disabled = true;
+            setTimeout(() => { bindBtn.disabled = false; }, 5000);
+        }
+    });
+
+    // --- Utility/Custom Alert Function ---
+    function showAlert(type, message) {
+        const alertBox = document.getElementById('custom-alert');
+        alertBox.textContent = message;
+        alertBox.className = 'custom-alert'; // Reset classes
+        alertBox.style.display = 'block';
+
+        if (type === 'error') {
+            alertBox.classList.add('alert-error');
+        } else if (type === 'success') {
+            alertBox.classList.add('alert-success');
+        }
+
+        // Auto-hide after 4 seconds
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 4000);
+    }
+
+
+    // --- Initialization on Load ---
+    window.onload = function() {
+        initializeFirebase();
+        initQuoteTabs();
+        // Start on the login view initially
+        renderAppView('login'); 
+    };
+</script>
+
 </body>
 </html>
