@@ -1,6 +1,5 @@
 // =============================================================
 // UNIVERSAL SCRIPT for dashboard.html and quote.html
-// Supports multi-tab quote creation + dashboard quote listing
 // =============================================================
 
 const DRAFT_KEY = "quoteDraft";
@@ -49,12 +48,8 @@ function saveFinalQuote(quote) {
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
   const path = window.location.pathname;
-
-  if (path.includes("dashboard.html")) {
-    initDashboardPage();
-  } else if (path.includes("quote.html")) {
-    initQuotePage();
-  }
+  if (path.includes("dashboard.html")) initDashboardPage();
+  else if (path.includes("quote.html")) initQuotePage();
 });
 
 /* ============================================================
@@ -98,55 +93,95 @@ function initDashboardPage() {
    QUOTE PAGE
    ============================================================ */
 function initQuotePage() {
-  // ========== TAB + FORM LOGIC (your current system preserved) ==========
-  function showTabById(tabButtonId) {
-    const btn = document.getElementById(tabButtonId);
-    if (!btn) return;
-    const tab = new bootstrap.Tab(btn);
-    tab.show();
-  }
+  const quoteForm = document.getElementById("quoteForm");
+  if (!quoteForm) return;
 
-  function prevTab(currentBtnElement) {
-    const prev = currentBtnElement.closest(".tab-pane").previousElementSibling;
-    if (!prev) return;
-    const id = prev.getAttribute("id");
-    const btn = document.querySelector(`#quoteTabs button[data-bs-target="#${id}"]`);
-    if (btn) new bootstrap.Tab(btn).show();
-  }
+  const fields = [
+    "firstName", "middleName", "lastName", "birthDate", "maritalStatus", "emailAddress",
+    "ratingState", "policyForm", "quoteDate", "effectiveDate", "agentNumber", "quoteDescription"
+  ];
 
-  function nextTab(currentBtnElement) {
-    const next = currentBtnElement.closest(".tab-pane").nextElementSibling;
-    if (!next) return;
-    const id = next.getAttribute("id");
-    const btn = document.querySelector(`#quoteTabs button[data-bs-target="#${id}"]`);
-    if (btn) new bootstrap.Tab(btn).show();
-  }
+  // Restore any draft data
+  const draft = loadDraft();
+  fields.forEach(f => {
+    const el = document.getElementById(f);
+    if (el && draft[f]) el.value = draft[f];
+  });
 
-  function readField(id) {
+  // Auto-save on input change
+  fields.forEach(f => {
+    const el = document.getElementById(f);
+    if (el) el.addEventListener("input", () => {
+      const newDraft = {};
+      fields.forEach(f2 => {
+        const el2 = document.getElementById(f2);
+        if (el2) newDraft[f2] = el2.value;
+      });
+      saveDraft(newDraft);
+    });
+  });
+
+  // Handle Save Quote
+  quoteForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const policy = {
+      ratingState: getVal("ratingState"),
+      policyForm: getVal("policyForm"),
+      quoteDate: getVal("quoteDate") || new Date().toISOString().split("T")[0],
+      effectiveDate: getVal("effectiveDate"),
+      agentNumber: getVal("agentNumber"),
+      quoteDescription: getVal("quoteDescription"),
+    };
+
+    const applicant = {
+      firstName: getVal("firstName"),
+      middleName: getVal("middleName"),
+      lastName: getVal("lastName"),
+      birthDate: getVal("birthDate"),
+      maritalStatus: getVal("maritalStatus"),
+      emailAddress: getVal("emailAddress"),
+    };
+
+    if (!applicant.firstName || !applicant.lastName || !policy.policyForm || !policy.ratingState) {
+      showToast("Please complete all required fields.", "danger");
+      return;
+    }
+
+    const quote = { policy, applicant, createdAt: new Date().toISOString() };
+    saveFinalQuote(quote);
+    clearDraft();
+    showToast("✅ Quote saved successfully!", "success");
+
+    setTimeout(() => (window.location.href = "dashboard.html"), 1000);
+  });
+
+  // Helper to get field value
+  function getVal(id) {
     const el = document.getElementById(id);
     return el ? el.value.trim() : "";
   }
-  function fillField(id, val) {
-    const el = document.getElementById(id);
-    if (el) el.value = val ?? "";
-  }
 
-  // ----- load + populate draft -----
-  const draft = loadDraft();
-  const fields = [
-    "firstName","middleName","lastName","ratingState","policyForm","quoteDate",
-    "effectiveDate","agentNumber","quoteDescription","birthDate","maritalStatus","emailAddress"
-  ];
-  fields.forEach(f => fillField(f, draft.policy?.[f] ?? draft.applicant?.[f] ?? draft[f]));
+  /* ---------- TAB NAVIGATION ---------- */
+  document.querySelectorAll(".next-tab").forEach(btn =>
+    btn.addEventListener("click", (e) => {
+      const current = e.target.closest(".tab-pane");
+      const next = current?.nextElementSibling;
+      if (next) {
+        const tabTrigger = document.querySelector(`[data-bs-target="#${next.id}"]`);
+        if (tabTrigger) new bootstrap.Tab(tabTrigger).show();
+      }
+    })
+  );
 
-  // ====== Attach your existing event logic ======
-  // We re-use all your tab handlers and quote saving
-  // (You don’t have to rewrite them — your full code below is preserved)
-
-  // --- Paste your working quote logic here (everything under "Multi-tab Quote Script") ---
-  // Keep everything from your current working version except the top duplicate helpers.
-
-  // (You can just paste everything from “// =========================
-  // Multi-tab Quote Script” downwards — since the above section replaces
-  // your old helper definitions.)
+  document.querySelectorAll(".prev-tab").forEach(btn =>
+    btn.addEventListener("click", (e) => {
+      const current = e.target.closest(".tab-pane");
+      const prev = current?.previousElementSibling;
+      if (prev) {
+        const tabTrigger = document.querySelector(`[data-bs-target="#${prev.id}"]`);
+        if (tabTrigger) new bootstrap.Tab(tabTrigger).show();
+      }
+    })
+  );
 }
