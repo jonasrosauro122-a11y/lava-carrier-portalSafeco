@@ -17,6 +17,11 @@
         .tab-auto-only, .tab-home-only {
             display: none;
         }
+        /* Adjustments for better form readability */
+        .card-header {
+            font-weight: bold;
+            background-color: #f8f9fa; /* Light grey background */
+        }
     </style>
 </head>
 <body>
@@ -231,36 +236,159 @@
 
         <div class="tab-pane fade tab-auto-only" id="driver" role="tabpanel">
             <div class="card shadow-sm">
-                <div class="card-header">Driver</div>
+                <div class="card-header">Driver Information</div>
                 <div class="card-body">
-                    <p class="text-muted">Auto driver information goes here...</p>
-                    <div class="d-flex justify-content-between mt-3">
-                        <button type="button" class="btn btn-outline-secondary" id="driverBack">Previous</button>
-                        <div>
-                            <button type="button" class="btn btn-secondary me-2" id="driverSave">Save</button>
-                            <button type="button" class="btn btn-primary" id="driverContinue">Next</button>
+                    <h5 class="mb-3">Add/Edit Driver Details</h5>
+                    <form id="form-driver">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">First Name<span class="required-star">*</span></label>
+                                <input id="driverFirstName" class="form-control" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Last Name<span class="required-star">*</span></label>
+                                <input id="driverLastName" class="form-control" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Date of Birth<span class="required-star">*</span></label>
+                                <input id="driverBirthDate" type="date" class="form-control" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Driver's License Number<span class="required-star">*</span></label>
+                                <input id="driverLicenseNum" class="form-control" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">License State<span class="required-star">*</span></label>
+                                <select id="driverLicenseState" class="form-select" required>
+                                    <option value="">Select</option>
+                                    <option>NC</option>
+                                    <option>CA</option>
+                                    <option>TX</option>
+                                    <option>...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Marital Status</label>
+                                <select id="driverMaritalStatus" class="form-select">
+                                    <option>Single</option>
+                                    <option>Married</option>
+                                    <option>Divorced</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Relationship to Applicant<span class="required-star">*</span></label>
+                                <select id="driverRelationship" class="form-select" required>
+                                    <option value="">Select</option>
+                                    <option>Self</option>
+                                    <option>Spouse</option>
+                                    <option>Child</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Primary Vehicle Driven</label>
+                                <select id="primaryVehicle" class="form-select">
+                                    <option value="">Select Vehicle</option>
+                                    <option disabled>-- Add Vehicle First --</option>
+                                </select>
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Accidents/Violations (Past 5 Years)</label>
+                                <textarea id="driverHistory" class="form-control" rows="2" placeholder="List any accidents, tickets, or major violations..."></textarea>
+                            </div>
                         </div>
-                    </div>
+
+                        <div class="d-flex justify-content-between mt-3">
+                            <button type="button" class="btn btn-outline-secondary" id="driverBack">Previous</button>
+                            <div>
+                                <button type="button" class="btn btn-secondary me-2" id="driverSave">Save Driver</button>
+                                <button type="button" class="btn btn-success me-2" id="addAnotherDriver">Add Another Driver</button>
+                                <button type="button" class="btn btn-primary" id="driverContinue">Next</button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
 
         <div class="tab-pane fade tab-auto-only" id="vehicle" role="tabpanel">
             <div class="card shadow-sm">
-                <div class="card-header">Vehicle</div>
+                <div class="card-header">Vehicle Information</div>
                 <div class="card-body">
-                    <p class="text-muted">Auto vehicle information goes here...</p>
-                    <div class="d-flex justify-content-between mt-3">
-                        <button type="button" class="btn btn-outline-secondary" id="vehicleBack">Previous</button>
-                        <div>
-                            <button type="button" class="btn btn-secondary me-2" id="vehicleSave">Save</button>
-                            <button type="button" class="btn btn-primary" id="vehicleContinue">Next</button>
+                    <h5 class="mb-3">Add/Edit Vehicle Details</h5>
+                    <form id="form-vehicle">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">VIN (Vehicle Identification Number)<span class="required-star">*</span></label>
+                                <input id="vehicleVIN" class="form-control" maxlength="17" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Year<span class="required-star">*</span></label>
+                                <input id="vehicleYear" type="number" class="form-control" min="1980" max="2026" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Make<span class="required-star">*</span></label>
+                                <input id="vehicleMake" class="form-control" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Model<span class="required-star">*</span></label>
+                                <input id="vehicleModel" class="form-control" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Body Type</label>
+                                <input id="vehicleBodyType" class="form-control" placeholder="e.g., Sedan, SUV, Truck">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Odometer Reading (Approx. Miles)</label>
+                                <input id="vehicleOdometer" type="number" class="form-control" min="0">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Primary Use<span class="required-star">*</span></label>
+                                <select id="vehiclePrimaryUse" class="form-select" required>
+                                    <option value="">Select</option>
+                                    <option>Commuting</option>
+                                    <option>Pleasure</option>
+                                    <option>Business</option>
+                                    <option>Farm</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Annual Mileage</label>
+                                <input id="annualMileage" type="number" class="form-control" min="0">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Ownership Status<span class="required-star">*</span></label>
+                                <select id="vehicleOwnership" class="form-select" required>
+                                    <option value="">Select</option>
+                                    <option>Owned/Paid Off</option>
+                                    <option>Financed/Leased</option>
+                                </select>
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Safety/Anti-Theft Devices</label>
+                                <select id="safetyFeatures" class="form-select">
+                                    <option value="">Select</option>
+                                    <option>Standard Airbags & ABS</option>
+                                    <option>Anti-Lock Brakes (ABS)</option>
+                                    <option>Alarm System (Standard)</option>
+                                    <option>LoJack / GPS Tracker</option>
+                                </select>
+                            </div>
                         </div>
-                    </div>
+
+                        <div class="d-flex justify-content-between mt-3">
+                            <button type="button" class="btn btn-outline-secondary" id="vehicleBack">Previous</button>
+                            <div>
+                                <button type="button" class="btn btn-secondary me-2" id="vehicleSave">Save Vehicle</button>
+                                <button type="button" class="btn btn-success me-2" id="addAnotherVehicle">Add Another Vehicle</button>
+                                <button type="button" class="btn btn-primary" id="vehicleContinue">Next</button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
-
+        
         <div class="tab-pane fade tab-home-only" id="applicant" role="tabpanel">
             <div class="card shadow-sm">
                 <div class="card-header">Applicant Information</div>
@@ -515,7 +643,7 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Current or most recent property insurance carrier</label>
-                                <select id="priorCarrier" class="form-select">
+                                <select class="form-select" id="priorCarrier">
                                     <option value="">Select</option>
                                     <option>State Farm</option>
                                     <option>Allstate</option>
@@ -523,22 +651,37 @@
                                 </select>
                             </div>
                         </div>
+
                         <div id="underwriting-auto-questions" style="display:none;">
+                            <h6>Auto Specific Questions<span class="required-star">*</span></h6>
                             <div class="mb-3">
-                                <label class="form-label">Prior Losses (describe)</label>
-                                <textarea id="priorLosses" class="form-control" rows="3"></textarea>
+                                <label class="form-label d-block">Any vehicle used for ride-sharing (Uber/Lyft) or delivery?</label>
+                                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="rideShare" value="Yes"><label class="form-check-label">Yes</label></div>
+                                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="rideShare" value="No" checked><label class="form-check-label">No</label></div>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Credit Score</label>
-                                <input id="creditScore" type="number" class="form-control" min="300" max="850">
+                                <label class="form-label d-block">Any drivers required to file an SR-22/FR-44?</label>
+                                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="sr22" value="Yes"><label class="form-check-label">Yes</label></div>
+                                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="sr22" value="No" checked><label class="form-check-label">No</label></div>
                             </div>
                         </div>
                         
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Prior Losses (describe)</label>
+                                <textarea id="priorLosses" class="form-control" rows="2" placeholder="Describe any claims/losses in the last 5 years."></textarea>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Credit Score</label>
+                                <input id="creditScore" class="form-control" placeholder="Optional: Used for rating/discount.">
+                            </div>
+                        </div>
+
                         <div class="d-flex justify-content-between mt-3">
-                            <button type="button" class="btn btn-outline-secondary" id="underPrev">Previous</button>
+                            <button type="button" class="btn btn-outline-secondary" id="underwritingBack">Previous</button>
                             <div>
-                                <button type="button" class="btn btn-secondary me-2" id="underSave">Save</button>
-                                <button type="button" class="btn btn-primary" id="underNext">Continue</button>
+                                <button type="button" class="btn btn-secondary me-2" id="underwritingSave">Save</button>
+                                <button type="button" class="btn btn-primary" id="underwritingContinue">Continue</button>
                             </div>
                         </div>
                     </form>
@@ -550,41 +693,72 @@
             <div class="card shadow-sm">
                 <div class="card-header">Coverage Selection</div>
                 <div class="card-body">
-                    <div id="coverages-content">
-                        <p class="text-muted">Coverage options will appear here based on **Auto** or **Home** product.</p>
-                        
-                        <div class="row tab-home-only">
+                    <p class="text-muted" id="coverageTypeNote">Select coverage options for the policy type.</p>
+
+                    <div id="auto-coverages-fields">
+                        <h6>Auto Liability & Deductibles</h6>
+                        <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Dwelling Limit (Coverage A)</label>
-                                <input type="number" class="form-control" id="dwellingLimit" placeholder="e.g. 350000">
+                                <label class="form-label">Liability Limits (e.g., 100/300/100)<span class="required-star">*</span></label>
+                                <select id="liabilityLimits" class="form-select" required>
+                                    <option value="">Select</option>
+                                    <option>25/50/25</option>
+                                    <option>50/100/50</option>
+                                    <option selected>100/300/100</option>
+                                    <option>250/500/100</option>
+                                </select>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Personal Liability Limit</label>
-                                <select class="form-select" id="liabilityLimits">
+                                <label class="form-label">Uninsured/Underinsured Motorist (UM/UIM)</label>
+                                <select id="umUim" class="form-select">
+                                    <option value="">Select</option>
+                                    <option>Reject</option>
+                                    <option>Same as Liability</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Collision Deductible</label>
+                                <select id="collisionDeductible" class="form-select">
+                                    <option>$500</option>
+                                    <option selected>$1,000</option>
+                                    <option>$2,500</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Comprehensive Deductible</label>
+                                <select id="compDeductible" class="form-select">
+                                    <option selected>$500</option>
+                                    <option>$1,000</option>
+                                    <option>No Deductible</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="home-coverages-fields" style="display:none;">
+                        <h6>Home Property & Liability</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Dwelling Limit (Coverage A)<span class="required-star">*</span></label>
+                                <input id="dwellingLimit" type="number" class="form-control" placeholder="$250,000" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Personal Liability Limit<span class="required-star">*</span></label>
+                                <select id="personalLiabilityLimit" class="form-select" required>
+                                    <option value="">Select</option>
                                     <option>$100,000</option>
-                                    <option selected>$300,000</option>
+                                    <option>$300,000</option>
                                     <option>$500,000</option>
                                 </select>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="row tab-auto-only">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Liability Limits (e.g., 100/300/100)</label>
-                                <input type="text" class="form-control" id="autoLiabilityLimits" placeholder="100/300/100">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Collision Deductible</label>
-                                <input type="number" class="form-control" id="collisionDeductible" placeholder="e.g. 500">
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between mt-3">
-                            <button type="button" class="btn btn-outline-secondary" id="coverPrev">Previous</button>
-                            <div>
-                                <button type="button" class="btn btn-secondary me-2" id="coverSave">Save</button>
-                                <button type="button" class="btn btn-primary" id="coverNext">Next</button>
-                            </div>
+                    <div class="d-flex justify-content-between mt-3">
+                        <button type="button" class="btn btn-outline-secondary" id="coveragesBack">Previous</button>
+                        <div>
+                            <button type="button" class="btn btn-secondary me-2" id="coveragesSave">Save</button>
+                            <button type="button" class="btn btn-primary" id="coveragesContinue">Next</button>
                         </div>
                     </div>
                 </div>
@@ -595,43 +769,44 @@
             <div class="card shadow-sm">
                 <div class="card-header">Summary</div>
                 <div class="card-body">
-                    <div id="summaryPreview" class="mb-4">
-                        <p class="text-muted">The final quote summary details will appear here.</p>
-                    </div>
+                    <p class="text-muted">The final quote summary details will appear here.</p>
 
-                    <div class="d-flex justify-content-between">
-                        <button type="button" class="btn btn-outline-secondary" id="summaryPrev">Previous</button>
+                    <div class="d-flex justify-content-between mt-3">
+                        <button type="button" class="btn btn-outline-secondary" id="summaryBack">Previous</button>
                         <div>
-                            <button type="button" class="btn btn-secondary me-2" id="saveAsDraft">Save Draft</button>
-                            <button type="button" class="btn btn-danger" id="saveFullQuote">Save Quote</button>
+                            <button type="button" class="btn btn-secondary me-2" id="summarySaveDraft">Save Draft</button>
+                            <button type="button" class="btn btn-primary" id="summarySaveQuote">Save Quote</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
+        
         <div class="tab-pane fade" id="orderReports" role="tabpanel">
             <div class="card shadow-sm">
                 <div class="card-header">Order Report</div>
                 <div class="card-body">
-                    <form id="form-orderReports">
-                        <div class="mb-3">
-                            <label class="form-label">Reports to Order</label>
-                            <select id="reportsToOrder" class="form-select" multiple>
-                                <option>Motor Vehicle Report</option>
-                                <option>Property Inspection</option>
-                                <option>Credit Report</option>
-                            </select>
-                        </div>
+                    <h5 class="mb-3">Reports to Order</h5>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="mvrReport" checked>
+                        <label class="form-check-label" for="mvrReport">Motor Vehicle Report (MVR)</label>
+                    </div>
+                    <div class="form-check tab-home-only">
+                        <input class="form-check-input" type="checkbox" id="propertyInspection">
+                        <label class="form-check-label" for="propertyInspection">Property Inspection</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="creditReport" checked>
+                        <label class="form-check-label" for="creditReport">Credit Report</label>
+                    </div>
 
-                        <div class="d-flex justify-content-between mt-3">
-                            <button type="button" class="btn btn-outline-secondary" id="orderPrev">Previous</button>
-                            <div>
-                                <button type="button" class="btn btn-secondary me-2" id="orderSave">Save</button>
-                                <button type="button" class="btn btn-primary" id="orderNext">Next</button>
-                            </div>
+                    <div class="d-flex justify-content-between mt-3">
+                        <button type="button" class="btn btn-outline-secondary" id="orderReportsBack">Previous</button>
+                        <div>
+                            <button type="button" class="btn btn-secondary me-2" id="orderReportsSave">Save</button>
+                            <button type="button" class="btn btn-primary" id="orderReportsContinue">Next</button>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -640,30 +815,28 @@
             <div class="card shadow-sm">
                 <div class="card-header">Billing</div>
                 <div class="card-body">
-                    <form id="form-billing">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Payment Plan</label>
-                                <select id="paymentPlan" class="form-select">
-                                    <option>Annual</option>
-                                    <option>Semi-Annual</option>
-                                    <option>Monthly</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Billing Account #</label>
-                                <input id="billingAccount" class="form-control">
-                            </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Payment Plan</label>
+                            <select id="paymentPlan" class="form-select">
+                                <option>Annual</option>
+                                <option>Semi-Annual</option>
+                                <option>Monthly</option>
+                            </select>
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Billing Account #</label>
+                            <input id="billingAccount" class="form-control">
+                        </div>
+                    </div>
 
-                        <div class="d-flex justify-content-between mt-3">
-                            <button type="button" class="btn btn-outline-secondary" id="billingPrev">Previous</button>
-                            <div>
-                                <button type="button" class="btn btn-secondary me-2" id="billingSave">Save</button>
-                                <button type="button" class="btn btn-primary" id="billingNext">Next</button>
-                            </div>
+                    <div class="d-flex justify-content-between mt-3">
+                        <button type="button" class="btn btn-outline-secondary" id="billingBack">Previous</button>
+                        <div>
+                            <button type="button" class="btn btn-secondary me-2" id="billingSave">Save</button>
+                            <button type="button" class="btn btn-primary" id="billingContinue">Next</button>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -674,23 +847,116 @@
                 <div class="card-body">
                     <div class="mb-3">
                         <label class="form-label">Final Notes</label>
-                        <textarea id="finalNotes" class="form-control" rows="3"></textarea>
+                        <textarea class="form-control" rows="3"></textarea>
                     </div>
 
-                    <div class="d-flex justify-content-between">
-                        <button type="button" class="btn btn-outline-secondary" id="issuePrev">Previous</button>
+                    <div class="d-flex justify-content-between mt-3">
+                        <button type="button" class="btn btn-outline-secondary" id="issueBack">Previous</button>
                         <div>
                             <button type="button" class="btn btn-secondary me-2" id="issueSave">Save</button>
-                            <button type="button" class="btn btn-success" id="issuePolicy">Issue Policy</button>
+                            <button type="button" class="btn btn-danger" id="issuePolicy">Issue Policy</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-    </div> </div> <div class="toast-container position-fixed top-0 end-0 p-3"></div>
+    </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="script.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const product = urlParams.get('product');
+
+        // References to the auto-specific elements
+        const autoTabs = document.querySelectorAll('.tab-auto-only');
+        const homeTabs = document.querySelectorAll('.tab-home-only');
+        const coverageTypeNote = document.getElementById('coverageTypeNote');
+        const autoCoverages = document.getElementById('auto-coverages-fields');
+        const homeCoverages = document.getElementById('home-coverages-fields');
+        const underwritingHomeQ = document.getElementById('underwriting-home-questions');
+        const underwritingAutoQ = document.getElementById('underwriting-auto-questions');
+        const quoteTypeDisplay = document.getElementById('quoteTypeDisplay');
+
+
+        if (product && product.toLowerCase() === 'auto') {
+            // 1. Show/Hide Tabs
+            homeTabs.forEach(tab => tab.style.display = 'none');
+            autoTabs.forEach(tab => tab.style.display = 'block');
+            
+            // 2. Set Quote Type Title
+            quoteTypeDisplay.textContent = 'Auto Quote';
+
+            // 3. Set Coverages Fields
+            if (autoCoverages && homeCoverages) {
+                autoCoverages.style.display = 'block';
+                homeCoverages.style.display = 'none';
+            }
+            if (coverageTypeNote) {
+                coverageTypeNote.textContent = 'Select coverage options for the Auto policy.';
+            }
+
+            // 4. Set Underwriting Questions
+            if (underwritingHomeQ && underwritingAutoQ) {
+                underwritingHomeQ.style.display = 'none';
+                underwritingAutoQ.style.display = 'block';
+            }
+
+            // 5. Auto-switch to the first auto-specific tab (Driver) or Address if Driver isn't next
+            // This is a simple logic; a full app would track progress
+            const addressTabBtn = document.getElementById('tab-address');
+            const driverTabBtn = document.getElementById('tab-driver');
+
+            // Find the current active tab and move to the next logical one.
+            // Since we load on Policy Info, the first step is usually to move to Address.
+            // A simple force to the Address tab on load is often desired.
+            if (addressTabBtn) {
+                 // Deactivate the Policy Info tab pane
+                 const activeTabPane = document.querySelector('#policyInfo');
+                 if (activeTabPane) {
+                    activeTabPane.classList.remove('show', 'active');
+                 }
+
+                 // Activate the Address tab button
+                 const activeTabButton = document.querySelector('#tab-policyInfo');
+                 if (activeTabButton) {
+                    activeTabButton.classList.remove('active');
+                 }
+                 addressTabBtn.classList.add('active');
+
+                 // Activate the Address tab pane
+                 const addressTabPane = document.querySelector('#address');
+                 if (addressTabPane) {
+                    addressTabPane.classList.add('show', 'active');
+                 }
+            }
+
+
+        } else if (product && product.toLowerCase() === 'home') {
+            // Logic for a Home quote
+            homeTabs.forEach(tab => tab.style.display = 'block');
+            autoTabs.forEach(tab => tab.style.display = 'none');
+            quoteTypeDisplay.textContent = 'Home Quote';
+            
+            if (autoCoverages && homeCoverages) {
+                autoCoverages.style.display = 'none';
+                homeCoverages.style.display = 'block';
+            }
+            if (coverageTypeNote) {
+                coverageTypeNote.textContent = 'Select coverage options for the Home policy.';
+            }
+            if (underwritingHomeQ && underwritingAutoQ) {
+                underwritingHomeQ.style.display = 'block';
+                underwritingAutoQ.style.display = 'none';
+            }
+        }
+    });
+
+    // NOTE: In a real application, you would also add event listeners to the 
+    // "Continue" and "Back" buttons to properly save data, validate forms, and switch tabs.
+    // For this fix, I'm focusing purely on the form content structure.
+</script>
 </body>
 </html>
