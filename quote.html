@@ -1,379 +1,754 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Create Quote | Training Portal</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Create Quote | Training Portal</title>
 
-  <!-- Bootstrap + Custom Styles -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+    /* Simple custom style to visually separate sections */
+    .required-star {
+      color: red;
+      font-weight: bold;
+      margin-left: 2px;
+    }
+    /* Utility for Home/Auto specific tabs */
+    .tab-auto-only, .tab-home-only {
+      display: none;
+    }
+  </style>
 </head>
 <body>
-  <!-- NAVBAR -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
-    <a class="navbar-brand fw-bold text-white" href="dashboard.html">LAVA Safeo</a>
-    <div class="ms-auto">
-      <a href="dashboard.html" class="btn btn-outline-light btn-sm">← Back to Dashboard</a>
-    </div>
-  </nav>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
+    <a class="navbar-brand fw-bold text-white" href="dashboard.html">LAVA Safeo</a>
+    <div class="ms-auto">
+      <a href="dashboard.html" class="btn btn-outline-light btn-sm">← Back to Dashboard</a>
+    </div>
+  </nav>
 
-  <!-- MAIN -->
-  <div class="container mt-4 mb-5">
-    <!-- Logo + Heading -->
-    <div class="d-flex align-items-center mb-4">
-      <img src="images/lava-safeco-logo.png" alt="LAVA Safeco Logo" height="50" class="me-3">
-      <h3 id="quoteHeading" class="text-danger fw-semibold mb-0">📝 Start a New Quote</h3>
-    </div>
+<div class="container mt-4 mb-5">
 
-    <!-- TABS -->
-    <ul class="nav nav-tabs" id="quoteTabs" role="tablist">
-      <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="tab-policyInfo" data-bs-toggle="tab" data-bs-target="#policyInfo" type="button" role="tab">Policy Information</button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="tab-address" data-bs-toggle="tab" data-bs-target="#address" type="button" role="tab">Address</button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="tab-applicant" data-bs-toggle="tab" data-bs-target="#applicant" type="button" role="tab">Applicant</button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="tab-underwriting" data-bs-toggle="tab" data-bs-target="#underwriting" type="button" role="tab">Underwriting</button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="tab-dwelling" data-bs-toggle="tab" data-bs-target="#dwelling" type="button" role="tab">Dwelling Info</button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="tab-coverages" data-bs-toggle="tab" data-bs-target="#coverages" type="button" role="tab">Coverages</button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="tab-summary" data-bs-toggle="tab" data-bs-target="#summary" type="button" role="tab">Summary</button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="tab-orderReports" data-bs-toggle="tab" data-bs-target="#orderReports" type="button" role="tab">Order Reports</button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="tab-billing" data-bs-toggle="tab" data-bs-target="#billing" type="button" role="tab">Billing</button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="tab-issue" data-bs-toggle="tab" data-bs-target="#issue" type="button" role="tab">Issue</button>
-      </li>
-    </ul>
+    <div class="d-flex align-items-center mb-4">
+    <img src="images/lava-safeco-logo.png" alt="LAVA Safeco Logo" height="50" class="me-3">
+    <h3 class="text-danger fw-semibold mb-0">📝 Start a New <span id="quoteTypeDisplay">Quote</span></h3>
+  </div>
 
-    <div class="tab-content mt-4">
-      <!-- POLICY INFO -->
-      <div class="tab-pane fade show active" id="policyInfo" role="tabpanel">
-        <div class="card shadow-sm">
-          <div class="card-header">Policy Information</div>
-          <div class="card-body">
-            <form id="form-policyInfo" autocomplete="off">
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Rating State *</label>
-                  <select id="ratingState" class="form-select" required></select>
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Policy Form *</label>
-                  <select id="policyForm" class="form-select" required></select>
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Agent Number *</label>
-                  <input type="text" id="agentNumber" class="form-control" required>
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Producer/Other ID</label>
-                  <input type="text" id="producerID" class="form-control">
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Quote Date *</label>
-                  <input type="date" id="quoteDate" class="form-control" required>
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Effective Date *</label>
-                  <input type="date" id="effectiveDate" class="form-control" required>
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Original Quote Date</label>
-                  <input type="date" id="originalQuoteDate" class="form-control">
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Agency ID for Customer</label>
-                  <input type="text" id="agencyID" class="form-control">
-                </div>
-                <div class="col-md-12 mb-3">
-                  <label class="form-label">Quote Description</label>
-                  <input id="quoteDescription" class="form-control">
-                </div>
-                <div class="col-md-12 mb-3">
-                  <label class="form-label">Additional Policy Information</label>
-                  <textarea id="additionalInfo" class="form-control" rows="2"></textarea>
-                </div>
-                <div class="col-md-12 mb-3">
-                  <label class="form-label">Reason for Policy</label>
-                  <textarea id="policyReason" class="form-control" rows="2"></textarea>
-                </div>
-              </div>
+    <ul class="nav nav-tabs" id="quoteTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="tab-policyInfo" data-bs-toggle="tab" data-bs-target="#policyInfo" type="button" role="tab">Policy Information</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-address" data-bs-toggle="tab" data-bs-target="#address" type="button" role="tab">Address</button>
+    </li>
+    
+        <li class="nav-item tab-auto-only" role="presentation">
+      <button class="nav-link" id="tab-driver" data-bs-toggle="tab" data-bs-target="#driver" type="button" role="tab">Driver</button>
+    </li>
+    <li class="nav-item tab-auto-only" role="presentation">
+      <button class="nav-link" id="tab-vehicle" data-bs-toggle="tab" data-bs-target="#vehicle" type="button" role="tab">Vehicle</button>
+    </li>
+    
+        <li class="nav-item tab-home-only" role="presentation">
+      <button class="nav-link" id="tab-applicant" data-bs-toggle="tab" data-bs-target="#applicant" type="button" role="tab">Applicant</button>
+    </li>
+    <li class="nav-item tab-home-only" role="presentation">
+      <button class="nav-link" id="tab-dwellingInfo" data-bs-toggle="tab" data-bs-target="#dwellingInfo" type="button" role="tab">Dwelling Information</button>
+    </li>
+    <li class="nav-item tab-home-only" role="presentation">
+      <button class="nav-link" id="tab-costGuide" data-bs-toggle="tab" data-bs-target="#costGuide" type="button" role="tab">Cost Guide Features</button>
+    </li>
 
-              <div class="d-flex justify-content-between mt-3">
-                <button type="button" class="btn btn-secondary" id="policySave">Save</button>
-                <button type="button" class="btn btn-outline-primary" id="policyNext">Continue</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
+        <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-underwriting" data-bs-toggle="tab" data-bs-target="#underwriting" type="button" role="tab">Underwriting</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-coverages" data-bs-toggle="tab" data-bs-target="#coverages" type="button" role="tab">Coverage Selection</button>
+    </li>
 
-      <!-- ADDRESS -->
-      <div class="tab-pane fade" id="address" role="tabpanel">
-        <div class="card shadow-sm">
-          <div class="card-header">Address Information</div>
-          <div class="card-body">
-            <form id="form-address">
-              <div class="mb-3">
-                <label class="form-label">Mailing Address *</label>
-                <input type="text" id="mailingAddress" class="form-control" required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">City *</label>
-                <input type="text" id="city" class="form-control" required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">State *</label>
-                <select id="state" class="form-select" required></select>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Address Line 2</label>
-                <input type="text" id="address2" class="form-control">
-              </div>
-              <div class="mb-3">
-                <label class="form-label">ZIP Code *</label>
-                <input type="text" id="zip" class="form-control" required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Is location address same as mailing address? *</label><br>
-                <div class="form-check form-check-inline">
-                  <input type="radio" id="sameAddressYes" name="sameAddress" class="form-check-input" value="Yes" required>
-                  <label class="form-check-label" for="sameAddressYes">Yes</label>
-                </div>
-                <div class="form-check form-check-inline">
-                  <input type="radio" id="sameAddressNo" name="sameAddress" class="form-check-input" value="No" required>
-                  <label class="form-check-label" for="sameAddressNo">No</label>
-                </div>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Time at Present Address</label>
-                <input type="number" id="yearsAtAddress" class="form-control" placeholder="Years"> yrs
-                <input type="number" id="monthsAtAddress" class="form-control" placeholder="Months"> mos
-              </div>
+        <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-summary" data-bs-toggle="tab" data-bs-target="#summary" type="button" role="tab">Summary</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-orderReports" data-bs-toggle="tab" data-bs-target="#orderReports" type="button" role="tab">Order Report</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-billing" data-bs-toggle="tab" data-bs-target="#billing" type="button" role="tab">Billing</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-issue" data-bs-toggle="tab" data-bs-target="#issue" type="button" role="tab">Issue</button>
+    </li>
+  </ul>
 
-              <div class="d-flex justify-content-between mt-3">
-                <button type="button" class="btn btn-outline-secondary" id="addressPrev">Previous</button>
-                <div>
-                  <button type="button" class="btn btn-secondary me-2" id="addressSave">Save</button>
-                  <button type="button" class="btn btn-outline-primary" id="addressNext">Continue</button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
+  <div class="tab-content mt-4">
 
-      <!-- UNDERWRITING -->
-      <div class="tab-pane fade" id="underwriting" role="tabpanel">
-        <div class="card shadow-sm">
-          <div class="card-header">Underwriting / Risk Factors</div>
-          <div class="card-body">
-            <form id="form-underwriting">
-              <div class="mb-3">
-                <label class="form-label">Is the home under construction? *</label><br>
-                <input type="radio" name="homeConstruction" value="Yes"> Yes
-                <input type="radio" name="homeConstruction" value="No"> No
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Is there a business on premises? *</label><br>
-                <input type="radio" name="businessOnPremises" value="Yes"> Yes
-                <input type="radio" name="businessOnPremises" value="No"> No
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Is there a swimming pool? *</label><br>
-                <input type="radio" name="swimmingPool" value="Yes"> Yes
-                <input type="radio" name="swimmingPool" value="No"> No
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Are horses/livestock kept? *</label><br>
-                <input type="radio" name="livestock" value="Yes"> Yes
-                <input type="radio" name="livestock" value="No"> No
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Current/Most recent property insurance carrier</label>
-                <select id="currentCarrier" class="form-select">
-                  <option value="">Select</option>
-                </select>
-              </div>
+        <div class="tab-pane fade show active" id="policyInfo" role="tabpanel">
+      <div class="card shadow-sm">
+        <div class="card-header">Policy Information</div>
+        <div class="card-body">
+          <form id="form-policyInfo" autocomplete="off">
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Rating State<span class="required-star">*</span></label>
+                <select id="ratingState" class="form-select" required>
+                  <option value="">Select</option>
+                  <option>California</option>
+                  <option>Florida</option>
+                  <option>North Carolina</option>
+                  <option>Texas</option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Policy Form</label>
+                <select id="policyForm" class="form-select">
+                  <option value="">Select</option>
+                  <option>HO3 - Special Form</option>
+                  <option>HO6 - Condo Form</option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Agent Number</label>
+                <input id="agentNumber" class="form-control">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Producer/Other ID</label>
+                <input id="producerOtherId" class="form-control">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Quote Date</label>
+                <input type="date" id="quoteDate" class="form-control">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Effective Date</label>
+                <input type="date" id="effectiveDate" class="form-control">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Original Quote Date</label>
+                <input type="date" id="originalQuoteDate" class="form-control">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Agency ID for Customer</label>
+                <input id="agencyId" class="form-control">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Reason for Policy</label>
+                <input id="reasonForPolicy" class="form-control">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Quote Description</label>
+                <input id="quoteDescription" class="form-control" placeholder="Optional">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Additional Policy Information</label>
+                <textarea id="additionalPolicyInfo" class="form-control" rows="1"></textarea>
+              </div>
+            </div>
 
-              <div class="d-flex justify-content-between mt-3">
-                <button type="button" class="btn btn-outline-secondary" id="underPrev">Previous</button>
-                <div>
-                  <button type="button" class="btn btn-secondary me-2" id="underSave">Save</button>
-                  <button type="button" class="btn btn-outline-primary" id="underNext">Continue</button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
+            <div class="d-flex justify-content-end mt-3">
+              <button type="button" class="btn btn-secondary me-2">Save</button>
+              <button type="button" class="btn btn-primary" data-bs-target="#address" data-bs-toggle="tab">Continue</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
 
-      <!-- APPLICANT -->
-      <div class="tab-pane fade" id="applicant" role="tabpanel">
-        <div class="card shadow-sm">
-          <div class="card-header">Applicant Information</div>
-          <div class="card-body">
-            <form id="form-applicant">
-              <div class="row">
-                <div class="col-md-4 mb-3">
-                  <label class="form-label">First Name *</label>
-                  <input id="firstName" class="form-control" required>
-                </div>
-                <div class="col-md-4 mb-3">
-                  <label class="form-label">Last Name *</label>
-                  <input id="lastName" class="form-control" required>
-                </div>
-                <div class="col-md-4 mb-3">
-                  <label class="form-label">Birth Date *</label>
-                  <input id="birthDate" type="date" class="form-control" required>
-                </div>
-                <div class="col-md-4 mb-3">
-                  <label class="form-label">Marital Status *</label>
-                  <select id="maritalStatus" class="form-select" required>
-                    <option value="">Select</option>
-                    <option>Single</option>
-                    <option>Married</option>
-                    <option>Divorced</option>
-                  </select>
-                </div>
-                <div class="col-md-4 mb-3">
-                  <label class="form-label">SSN</label>
-                  <input id="ssn" class="form-control">
-                </div>
-              </div>
+        <div class="tab-pane fade" id="address" role="tabpanel">
+      <div class="card shadow-sm">
+        <div class="card-header">Address Information</div>
+        <div class="card-body">
+          <h5 class="mb-3">Mailing Address</h5>
+          <form id="form-address">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Mailing Address<span class="required-star">*</span></label>
+                <input id="addrStreet" class="form-control" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Address Line 2</label>
+                <input id="addrLine2" class="form-control">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">City<span class="required-star">*</span></label>
+                <input id="addrCity" class="form-control" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">State<span class="required-star">*</span></label>
+                <select id="addrState" class="form-select" required>
+                  <option value="">Select</option>
+                  <option>NC</option>
+                  <option>CA</option>
+                  <option>TX</option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">ZIP Code<span class="required-star">*</span></label>
+                <input id="addrZip" class="form-control" required>
+              </div>
+            </div>
 
-              <div class="d-flex justify-content-between mt-3">
-                <button type="button" class="btn btn-outline-secondary" id="applicantPrev">Previous</button>
-                <div>
-                  <button type="button" class="btn btn-secondary me-2" id="applicantSave">Save</button>
-                  <button type="button" class="btn btn-outline-primary" id="applicantNext">Continue</button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
+            <hr>
 
-      <!-- DWELLING INFO -->
-      <div class="tab-pane fade" id="dwelling" role="tabpanel">
-        <div class="card shadow-sm">
-          <div class="card-header">Dwelling Information</div>
-          <div class="card-body">
-            <form id="form-dwelling">
-              <div class="row">
-                <div class="col-md-4 mb-3">
-                  <label class="form-label">Secondary Dwelling?</label>
-                  <input type="radio" name="secondaryDwelling" value="Yes"> Yes
-                  <input type="radio" name="secondaryDwelling" value="No"> No
-                </div>
-                <div class="col-md-4 mb-3">
-                  <label class="form-label">Number of Stories *</label>
-                  <input type="number" id="numStories" class="form-control" required>
-                </div>
-                <div class="col-md-4 mb-3">
-                  <label class="form-label">Protection Class *</label>
-                  <input type="number" id="protectionClass" class="form-control" required>
-                </div>
-              </div>
+            <div class="mb-3">
+              <label class="form-label d-block">Is the location address<span class="required-star">*</span> the same as the mailing address?</label>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="sameAddress" id="sameAddressYes" value="Yes" checked>
+                <label class="form-check-label" for="sameAddressYes">Yes</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="sameAddress" id="sameAddressNo" value="No">
+                <label class="form-check-label" for="sameAddressNo">No</label>
+              </div>
+            </div>
 
-              <div class="d-flex justify-content-between mt-3">
-                <button type="button" class="btn btn-outline-secondary" id="dwellingPrev">Previous</button>
-                <div>
-                  <button type="button" class="btn btn-secondary me-2" id="dwellingSave">Save</button>
-                  <button type="button" class="btn btn-outline-primary" id="dwellingNext">Continue</button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Time at Present Address</label>
+                <div class="input-group">
+                  <input type="number" class="form-control" placeholder="Yrs" min="0" id="timeYrs">
+                  <span class="input-group-text">Yrs</span>
+                  <input type="number" class="form-control" placeholder="Mos" min="0" max="11" id="timeMos">
+                  <span class="input-group-text">Mos</span>
+                </div>
+              </div>
+            </div>
 
-      <!-- COVERAGES -->
-      <div class="tab-pane fade" id="coverages" role="tabpanel">
-        <div class="card shadow-sm">
-          <div class="card-header">Coverages</div>
-          <div class="card-body">
-            <form id="form-coverages">
-              <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Dwelling Limit</label>
-                  <input id="dwellingLimit" type="number" class="form-control">
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Deductible</label>
-                  <input id="deductible" type="number" class="form-control">
-                </div>
-              </div>
+            <div class="d-flex justify-content-between mt-3">
+              <button type="button" class="btn btn-outline-secondary" data-bs-target="#policyInfo" data-bs-toggle="tab">Back</button>
+              <div>
+                <button type="button" class="btn btn-secondary me-2">Save</button>
+                <button type="button" class="btn btn-primary" id="addressContinue">Continue</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
 
-              <div class="d-flex justify-content-between mt-3">
-                <button type="button" class="btn btn-outline-secondary" id="coverPrev">Previous</button>
-                <div>
-                  <button type="button" class="btn btn-secondary me-2" id="coverSave">Save</button>
-                  <button type="button" class="btn btn-outline-primary" id="coverNext">Continue</button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
+        <div class="tab-pane fade tab-auto-only" id="driver" role="tabpanel">
+      <div class="card shadow-sm">
+        <div class="card-header">Driver</div>
+        <div class="card-body">
+          <p class="text-muted">Auto driver information goes here...</p>
+          <div class="d-flex justify-content-between mt-3">
+            <button type="button" class="btn btn-outline-secondary" data-bs-target="#address" data-bs-toggle="tab">Previous</button>
+            <div>
+              <button type="button" class="btn btn-secondary me-2">Save</button>
+              <button type="button" class="btn btn-primary" data-bs-target="#vehicle" data-bs-toggle="tab">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-      <!-- SUMMARY, ORDER REPORTS, BILLING, ISSUE remain the same as your original -->
-    </div>
-  </div>
+        <div class="tab-pane fade tab-auto-only" id="vehicle" role="tabpanel">
+      <div class="card shadow-sm">
+        <div class="card-header">Vehicle</div>
+        <div class="card-body">
+          <p class="text-muted">Auto vehicle information goes here...</p>
+          <div class="d-flex justify-content-between mt-3">
+            <button type="button" class="btn btn-outline-secondary" data-bs-target="#driver" data-bs-toggle="tab">Previous</button>
+            <div>
+              <button type="button" class="btn btn-secondary me-2">Save</button>
+              <button type="button" class="btn btn-primary" data-bs-target="#underwriting" data-bs-toggle="tab">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <div class="toast-container position-fixed top-0 end-0 p-3"></div>
+        <div class="tab-pane fade tab-home-only" id="applicant" role="tabpanel">
+      <div class="card shadow-sm">
+        <div class="card-header">Applicant Information</div>
+        <div class="card-body">
+          <form id="form-applicant">
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">First Name<span class="required-star">*</span></label>
+                <input id="applicantFirstName" class="form-control" value="Jonas" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Last Name<span class="required-star">*</span></label>
+                <input id="applicantLastName" class="form-control" value="Rossauro" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Birth Date<span class="required-star">*</span></label>
+                <input id="applicantBirthDate" type="date" class="form-control" value="1987-01-01" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Marital Status</label>
+                <select id="applicantMaritalStatus" class="form-select">
+                  <option>Single</option>
+                  <option>Married</option>
+                  <option>Divorced</option>
+                </select>
+              </div>
+              <div class="col-md-8 mb-3">
+                <label class="form-label">Social Security Number</label>
+                <input id="applicantSSN" class="form-control" placeholder="Optional: Enter SSN to improve chance of getting a hit.">
+              </div>
+            </div>
 
-  <!-- scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    // Get quote type from URL
-    const params = new URLSearchParams(window.location.search);
-    const type = params.get('type'); // auto or home
+            <div class="d-flex justify-content-between mt-3">
+              <button type="button" class="btn btn-outline-secondary" data-bs-target="#address" data-bs-toggle="tab">Back</button>
+              <div>
+                <button type="button" class="btn btn-secondary me-2">Save</button>
+                <button type="button" class="btn btn-primary" data-bs-target="#dwellingInfo" data-bs-toggle="tab">Continue</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
 
-    const quoteHeading = document.getElementById('quoteHeading');
-    const policyForm = document.getElementById('policyForm');
-    const ratingState = document.getElementById('ratingState');
-    const stateSelect = document.getElementById('state');
+        <div class="tab-pane fade tab-home-only" id="dwellingInfo" role="tabpanel">
+      <div class="card shadow-sm">
+        <div class="card-header">Dwelling Information Details</div>
+        <div class="card-body">
+          <form id="form-dwellingInfo">
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Number of Stories<span class="required-star">*</span></label>
+                <select id="numStories" class="form-select" required>
+                  <option value="">Select</option>
+                  <option selected>2</option>
+                  <option>1</option>
+                  <option>3</option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Protection Class<span class="required-star">*</span></label>
+                <select id="protectionClass" class="form-select" required>
+                  <option selected>1</option>
+                  <option>2</option>
+                  <option>...</option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Total Living Area<span class="required-star">*</span></label>
+                <input id="totalLivingArea" type="number" class="form-control" value="1588" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Year Originally Built<span class="required-star">*</span></label>
+                <input id="yearBuilt" type="number" class="form-control" value="1987" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Maintenance Condition<span class="required-star">*</span></label>
+                <select id="maintenanceCondition" class="form-select" required>
+                  <option value="">Select</option>
+                  <option>Excellent</option>
+                  <option>Average</option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Construction Style<span class="required-star">*</span></label>
+                <select id="constructionStyle" class="form-select" required>
+                  <option>Row/Townhouse</option>
+                  <option>Single Family</option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Dwelling Type<span class="required-star">*</span></label>
+                <select id="dwellingType" class="form-select" required>
+                  <option>Single family dwelling</option>
+                  <option>Duplex</option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Roof Material</label>
+                <select id="roofMaterial" class="form-select">
+                  <option>Shingles, Asphalt</option>
+                  <option>Tile</option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Heating</label>
+                <select id="heating" class="form-select">
+                  <option>Gas, Average</option>
+                  <option>Electric</option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Exterior Walls</label>
+                <select id="exteriorWalls" class="form-select">
+                  <option>Siding, Wood</option>
+                  <option>Brick</option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Foundation Type</label>
+                <select id="foundationType" class="form-select">
+                  <option>Crawl Space</option>
+                  <option>Slab</option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Total # Of Full Baths</label>
+                <input id="fullBaths" type="number" class="form-control" value="2" min="0">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Total # Of 3/4 Baths</label>
+                <input id="partialBaths" type="number" class="form-control" value="1" min="0">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Inspection Date</label>
+                <input id="inspectionDate" type="date" class="form-control">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Fire Protection District</label>
+                <input id="fireProtectionDistrict" class="form-control">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Dwelling Located In<span class="required-star">*</span></label>
+                <select id="dwellingLocatedIn" class="form-select" required>
+                  <option value="">Select</option>
+                  <option>Urban</option>
+                  <option>Suburban</option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Roof Renovation</label>
+                <select id="roofRenovation" class="form-select">
+                  <option value="">Select</option>
+                  <option>2020</option>
+                  <option>...</option>
+                </select>
+              </div>
 
-    // Populate states
-    const states = ["California","Florida","North Carolina","Texas","New York"];
-    states.forEach(s => {
-      const opt = document.createElement('option');
-      opt.value = s; opt.textContent = s;
-      ratingState.appendChild(opt.cloneNode(true));
-      stateSelect.appendChild(opt.cloneNode(true));
-    });
+                            <div class="col-md-6 mb-3">
+                <label class="form-label d-block">Is this a secondary dwelling?<span class="required-star">*</span></label>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="secondaryDwelling" id="secondaryDwellingNo" value="No" checked>
+                  <label class="form-check-label" for="secondaryDwellingNo">No</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="secondaryDwelling" id="secondaryDwellingYes" value="Yes">
+                  <label class="form-check-label" for="secondaryDwellingYes">Yes</label>
+                </div>
+              </div>
 
-    // Populate policy forms based on type
-    policyForm.innerHTML = '';
-    if(type === 'auto'){
-      quoteHeading.textContent = '🚗 Auto - Start a New Quote';
-      ["Auto"].forEach(p => {
-        const opt = document.createElement('option'); opt.value = p; opt.textContent = p;
-        policyForm.appendChild(opt);
-      });
-    } else {
-      quoteHeading.textContent = '🏠 Home - Start a New Quote';
-      ["Homeowners","Renters","Condo"].forEach(p => {
-        const opt = document.createElement('option'); opt.value = p; opt.textContent = p;
-        policyForm.appendChild(opt);
-      });
-    }
-  </script>
+                            <div class="col-md-6 mb-3">
+                <label class="form-label d-block">Bypass Cost Guide for Quote?</label>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="bypassCostGuide" id="bypassCostGuideNo" value="No" checked>
+                  <label class="form-check-label" for="bypassCostGuideNo">No</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="bypassCostGuide" id="bypassCostGuideYes" value="Yes">
+                  <label class="form-check-label" for="bypassCostGuideYes">Yes</label>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex justify-content-between mt-3">
+              <button type="button" class="btn btn-outline-secondary" data-bs-target="#applicant" data-bs-toggle="tab">Back</button>
+              <div>
+                <button type="button" class="btn btn-secondary me-2">Save</button>
+                <button type="button" class="btn btn-primary" data-bs-target="#costGuide" data-bs-toggle="tab">Continue</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+        <div class="tab-pane fade tab-home-only" id="costGuide" role="tabpanel">
+      <div class="card shadow-sm">
+        <div class="card-header">Cost Guide Features / Discounts & Surcharges</div>
+        <div class="card-body">
+          <p class="text-muted">Fields for Discount & Surcharges Renewal Credit Date, Alarm type Dropdown, and other cost factors.</p>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Renewal Credit Date</label>
+              <input type="date" class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Alarm Type</label>
+              <select class="form-select">
+                <option>Select</option>
+                <option>Central Station Alarm</option>
+                <option>Local Alarm</option>
+              </select>
+            </div>
+          </div>
+          <div class="d-flex justify-content-between mt-3">
+            <button type="button" class="btn btn-outline-secondary" data-bs-target="#dwellingInfo" data-bs-toggle="tab">Back</button>
+            <div>
+              <button type="button" class="btn btn-secondary me-2">Save</button>
+              <button type="button" class="btn btn-primary" data-bs-target="#coverages" data-bs-toggle="tab">Continue</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+        <div class="tab-pane fade" id="underwriting" role="tabpanel">
+      <div class="card shadow-sm">
+        <div class="card-header">Underwriting Questions (Risk Factors)</div>
+        <div class="card-body">
+          <form id="form-underwriting">
+            <div id="underwriting-home-questions">
+              <h6>Home Specific Questions<span class="required-star">*</span></h6>
+              <div class="mb-3">
+                <label class="form-label d-block">Is the home under construction?</label>
+                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="underConstruction" value="Yes"><label class="form-check-label">Yes</label></div>
+                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="underConstruction" value="No" checked><label class="form-check-label">No</label></div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label d-block">Is there a business on the premises?</label>
+                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="businessOnPremises" value="Yes"><label class="form-check-label">Yes</label></div>
+                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="businessOnPremises" value="No" checked><label class="form-check-label">No</label></div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label d-block">Is there a swimming pool on the premises?</label>
+                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="swimmingPool" value="Yes"><label class="form-check-label">Yes</label></div>
+                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="swimmingPool" value="No" checked><label class="form-check-label">No</label></div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label d-block">Are horses and/or livestock kept on the premises?</label>
+                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="livestock" value="Yes"><label class="form-check-label">Yes</label></div>
+                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="livestock" value="No" checked><label class="form-check-label">No</label></div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Current or most recent property insurance carrier</label>
+                <select id="priorCarrier" class="form-select">
+                  <option value="">Select</option>
+                  <option>State Farm</option>
+                  <option>Allstate</option>
+                  <option>Add a New item</option>
+                </select>
+              </div>
+            </div>
+            <div id="underwriting-auto-questions" style="display:none;">
+                            <div class="mb-3">
+                <label class="form-label">Prior Losses (describe)</label>
+                <textarea id="priorLosses" class="form-control" rows="3"></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Credit Score</label>
+                <input id="creditScore" type="number" class="form-control" min="300" max="850">
+              </div>
+            </div>
+            
+            <div class="d-flex justify-content-between mt-3">
+              <button type="button" class="btn btn-outline-secondary" id="underPrev">Previous</button>
+              <div>
+                <button type="button" class="btn btn-secondary me-2">Save</button>
+                <button type="button" class="btn btn-primary" id="underNext">Continue</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+        <div class="tab-pane fade" id="coverages" role="tabpanel">
+      <div class="card shadow-sm">
+        <div class="card-header">Coverage Selection</div>
+        <div class="card-body">
+          <div id="coverages-content">
+            <p class="text-muted">Coverage options will appear here based on **Auto** or **Home** product.</p>
+            
+                        <div class="row tab-home-only">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Dwelling Limit (Coverage A)</label>
+                <input type="number" class="form-control" placeholder="e.g. 350000">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Personal Liability Limit</label>
+                <select class="form-select">
+                  <option>$100,000</option>
+                  <option selected>$300,000</option>
+                  <option>$500,000</option>
+                </select>
+              </div>
+            </div>
+
+                        <div class="row tab-auto-only">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Liability Limits (e.g., 100/300/100)</label>
+                <input type="text" class="form-control" placeholder="100/300/100">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Collision Deductible</label>
+                <input type="number" class="form-control" placeholder="e.g. 500">
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-3">
+              <button type="button" class="btn btn-outline-secondary" id="coverPrev">Previous</button>
+              <div>
+                <button type="button" class="btn btn-secondary me-2">Save</button>
+                <button type="button" class="btn btn-primary" data-bs-target="#summary" data-bs-toggle="tab">Next</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+        <div class="tab-pane fade" id="summary" role="tabpanel">
+      <div class="card shadow-sm">
+        <div class="card-header">Summary</div>
+        <div class="card-body">
+          <div id="summaryPreview" class="mb-4">
+            <p class="text-muted">The final quote summary details will appear here.</p>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-outline-secondary" data-bs-target="#coverages" data-bs-toggle="tab">Previous</button>
+            <div>
+              <button type="button" class="btn btn-secondary me-2">Save Draft</button>
+              <button type="button" class="btn btn-danger" data-bs-target="#orderReports" data-bs-toggle="tab">Save Quote</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+        <div class="tab-pane fade" id="orderReports" role="tabpanel">
+      <div class="card shadow-sm">
+        <div class="card-header">Order Report</div>
+        <div class="card-body">
+          <form id="form-orderReports">
+            <div class="mb-3">
+              <label class="form-label">Reports to Order</label>
+              <select id="reportsToOrder" class="form-select" multiple>
+                <option>Motor Vehicle Report</option>
+                <option>Property Inspection</option>
+                <option>Credit Report</option>
+              </select>
+            </div>
+
+            <div class="d-flex justify-content-between mt-3">
+              <button type="button" class="btn btn-outline-secondary" data-bs-target="#summary" data-bs-toggle="tab">Previous</button>
+              <div>
+                <button type="button" class="btn btn-secondary me-2">Save</button>
+                <button type="button" class="btn btn-primary" data-bs-target="#billing" data-bs-toggle="tab">Next</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+        <div class="tab-pane fade" id="billing" role="tabpanel">
+      <div class="card shadow-sm">
+        <div class="card-header">Billing</div>
+        <div class="card-body">
+          <p class="text-muted">Billing and payment plan options here.</p>
+          <div class="d-flex justify-content-between mt-3">
+            <button type="button" class="btn btn-outline-secondary" data-bs-target="#orderReports" data-bs-toggle="tab">Previous</button>
+            <div>
+              <button type="button" class="btn btn-secondary me-2">Save</button>
+              <button type="button" class="btn btn-primary" data-bs-target="#issue" data-bs-toggle="tab">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+        <div class="tab-pane fade" id="issue" role="tabpanel">
+      <div class="card shadow-sm">
+        <div class="card-header">Issue</div>
+        <div class="card-body">
+          <p class="text-muted">Final review before policy issuance.</p>
+          <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-outline-secondary" data-bs-target="#billing" data-bs-toggle="tab">Previous</button>
+            <div>
+              <button type="button" class="btn btn-secondary me-2">Save</button>
+              <button type="button" class="btn btn-success">Issue Policy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div> </div> <div class="toast-container position-fixed top-0 end-0 p-3"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const productType = urlParams.get('product') || 'Auto'; // Default to Auto if parameter is missing
+    
+    document.getElementById('quoteTypeDisplay').textContent = `${productType} Quote`;
+
+    const autoTabs = document.querySelectorAll('.tab-auto-only');
+    const homeTabs = document.querySelectorAll('.tab-home-only');
+    const underwritingHome = document.getElementById('underwriting-home-questions');
+    const underwritingAuto = document.getElementById('underwriting-auto-questions');
+    const addressContinueBtn = document.getElementById('addressContinue');
+    const underPrevBtn = document.getElementById('underPrev');
+    const underNextBtn = document.getElementById('underNext');
+    const coverPrevBtn = document.getElementById('coverPrev');
+
+
+    if (productType === 'Home') {
+      // Show Home tabs and hide Auto tabs
+      autoTabs.forEach(tab => tab.style.display = 'none');
+      homeTabs.forEach(tab => tab.style.display = 'block');
+          
+      // Update Underwriting tab content
+      if (underwritingHome) underwritingHome.style.display = 'block';
+      if (underwritingAuto) underwritingAuto.style.display = 'none';
+
+      // Update navigation flow for Home
+      addressContinueBtn.setAttribute('data-bs-target', '#applicant');
+      underPrevBtn.setAttribute('data-bs-target', '#costGuide');
+      underNextBtn.setAttribute('data-bs-target', '#coverages');
+      coverPrevBtn.setAttribute('data-bs-target', '#costGuide');
+
+    } else { // productType === 'Auto' (or any other)
+      // Show Auto tabs and hide Home tabs
+      autoTabs.forEach(tab => tab.style.display = 'block');
+      homeTabs.forEach(tab => tab.style.display = 'none');
+
+      // Update Underwriting tab content
+      if (underwritingHome) underwritingHome.style.display = 'none';
+      if (underwritingAuto) underwritingAuto.style.display = 'block';
+
+      // Update navigation flow for Auto (back to original)
+      addressContinueBtn.setAttribute('data-bs-target', '#driver');
+      underPrevBtn.setAttribute('data-bs-target', '#vehicle');
+      underNextBtn.setAttribute('data-bs-target', '#coverages');
+      coverPrevBtn.setAttribute('data-bs-target', '#underwriting');
+    }
+    
+    // Function to manually activate a tab (needed for button navigation)
+    function navigateToTab(targetId) {
+      const targetTabElement = document.getElementById(`tab-${targetId.replace('#', '')}`);
+      if (targetTabElement) {
+        const tab = new bootstrap.Tab(targetTabElement);
+        tab.show();
+      }
+    }
+
+    // Attach listeners to 'Continue' / 'Next' / 'Back' buttons with IDs for proper flow control
+    const flowButtons = document.querySelectorAll('button[data-bs-toggle="tab"]');
+    flowButtons.forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('data-bs-target');
+        if (targetId) {
+          navigateToTab(targetId);
+        }
+      });
+    });
+
+    // Ensure the correct first tab is active and shown
+    if (productType === 'Home') {
+      // Home starts with Policy Information, then moves to Address, then Applicant
+      document.getElementById('tab-applicant').style.display = 'block';
+    } else {
+      // Auto starts with Policy Information, then moves to Address, then Driver
+      document.getElementById('tab-driver').style.display = 'block';
+    }
+
+    // Ensure initial tab is visible
+    new bootstrap.Tab(document.getElementById('tab-policyInfo')).show();
+
+  });
+</script>
 </body>
 </html>
