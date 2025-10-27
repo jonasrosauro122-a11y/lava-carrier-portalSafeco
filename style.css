@@ -1,216 +1,178 @@
-// =============================================================
-// UNIVERSAL SCRIPT for dashboard.html and quote.html
-// =============================================================
+/* * ========================================================
+ * Universal Styles
+ * ========================================================
+ */
 
-const DRAFT_KEY = "quoteDraft";
-const QUOTES_KEY = "quotes";
-
-/* ---------- Toast Helper ---------- */
-function showToast(message, type = "success") {
-  let container = document.querySelector(".toast-container");
-  if (!container) {
-    container = document.createElement("div");
-    container.className = "toast-container position-fixed top-0 end-0 p-3";
-    document.body.appendChild(container);
-  }
-
-  const toast = document.createElement("div");
-  toast.className = `toast align-items-center text-bg-${type} border-0 show shadow mb-2`;
-  toast.innerHTML = `
-    <div class="d-flex">
-      <div class="toast-body fw-semibold">${message}</div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-    </div>
-  `;
-  container.appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
+:root {
+    --primary: #0d6efd;
+    --primary-dark: #0a58ca;
+    --background-light: #f8f9fa;
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+    --border-radius: 0.5rem;
 }
 
-/* ---------- LocalStorage Helpers ---------- */
-function saveDraft(draft) {
-  localStorage.setItem(DRAFT_KEY, JSON.stringify(draft || {}));
-}
-function loadDraft() {
-  const raw = localStorage.getItem(DRAFT_KEY);
-  return raw ? JSON.parse(raw) : {};
-}
-function clearDraft() {
-  localStorage.removeItem(DRAFT_KEY);
-}
-function saveFinalQuote(quote) {
-  const arr = JSON.parse(localStorage.getItem(QUOTES_KEY)) || [];
-  arr.unshift(quote);
-  localStorage.setItem(QUOTES_KEY, JSON.stringify(arr));
-}
-function getQuotes() {
-  return JSON.parse(localStorage.getItem(QUOTES_KEY)) || [];
+body {
+    background-color: var(--background-light);
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    min-height: 100vh;
 }
 
-/* ============================================================
-   PAGE DETECTION
-============================================================ */
-document.addEventListener("DOMContentLoaded", () => {
-  const path = window.location.pathname;
-  if (path.includes("dashboard.html")) initDashboardPage();
-  else if (path.includes("quote.html")) initQuotePage();
-});
-
-/* ============================================================
-   DASHBOARD PAGE
-============================================================ */
-function initDashboardPage() {
-  const tableBody = document.querySelector("#recentQuotesTable tbody");
-  const quotes = getQuotes();
-  const searchInput = document.querySelector("#searchInput");
-
-  function renderTable(filter = "") {
-    const filtered = quotes.filter(q => {
-      const fullName = `${q.applicant?.firstName ?? ""} ${q.applicant?.lastName ?? ""}`.toLowerCase();
-      const policy = q.policy?.policyForm?.toLowerCase() || "";
-      return fullName.includes(filter.toLowerCase()) || policy.includes(filter);
-    });
-
-    tableBody.innerHTML = filtered.length
-      ? ""
-      : `<tr><td colspan="5" class="text-center text-muted py-3">No quotes found.</td></tr>`;
-
-    filtered.forEach(q => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${q.applicant?.firstName ?? ""} ${q.applicant?.lastName ?? ""}</td>
-        <td>${q.policy?.policyForm ?? "—"}</td>
-        <td>${q.policy?.quoteDescription ?? "—"}</td>
-        <td>${q.policy?.ratingState ?? "—"}</td>
-        <td>${new Date(q.createdAt).toLocaleDateString()}</td>
-      `;
-      tableBody.appendChild(row);
-    });
-  }
-
-  renderTable();
-
-  // Live search
-  if (searchInput) {
-    searchInput.addEventListener("input", (e) => renderTable(e.target.value));
-  }
-
-  // Start Quote buttons
-  const startQuoteBtns = document.querySelectorAll("#startQuoteBtn, #startQuoteCardBtn, .startQuoteBtn");
-  startQuoteBtns.forEach(btn =>
-    btn.addEventListener("click", e => {
-      e.preventDefault();
-      window.location.href = "quote.html";
-    })
-  );
+.container {
+    padding-top: 2rem;
+    padding-bottom: 3rem;
 }
 
-/* ============================================================
-   QUOTE PAGE
-============================================================ */
-function initQuotePage() {
-  const quoteForm = document.getElementById("quoteForm");
-  if (!quoteForm) return;
+/* --- Card & Section Styling --- */
+.card {
+    border: none;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    transition: transform 0.2s ease-in-out;
+}
 
-  const fields = [
-    "firstName", "middleName", "lastName", "birthDate", "maritalStatus", "emailAddress",
-    "ratingState", "policyForm", "quoteDate", "effectiveDate", "agentNumber", "quoteDescription"
-  ];
+.card-header {
+    background-color: var(--background-light);
+    border-bottom: 1px solid #dee2e6;
+    font-weight: 600;
+    color: #343a40;
+    padding: 1.25rem 1.5rem;
+}
 
-  // Restore draft
-  const draft = loadDraft();
-  fields.forEach(f => {
-    const el = document.getElementById(f);
-    if (el && draft[f]) el.value = draft[f];
-  });
+/* --- Form Aesthetics --- */
+.form-label {
+    font-weight: 500;
+    color: #343a40;
+    margin-bottom: 0.25rem;
+}
 
-  // Auto-save on input change
-  fields.forEach(f => {
-    const el = document.getElementById(f);
-    if (!el) return;
-    el.addEventListener("input", () => {
-      const newDraft = {};
-      fields.forEach(f2 => {
-        const el2 = document.getElementById(f2);
-        if (el2) newDraft[f2] = el2.value;
-      });
-      saveDraft(newDraft);
-    });
-  });
+.form-control, .form-select {
+    border-radius: 0.375rem;
+}
 
-  // Handle Save Quote
-  quoteForm.addEventListener("submit", e => {
-    e.preventDefault();
+.required-star {
+    color: var(--primary);
+    font-weight: bold;
+    margin-left: 2px;
+}
 
-    const policy = {
-      ratingState: getVal("ratingState"),
-      policyForm: getVal("policyForm"),
-      quoteDate: getVal("quoteDate") || new Date().toISOString().split("T")[0],
-      effectiveDate: getVal("effectiveDate"),
-      agentNumber: getVal("agentNumber"),
-      quoteDescription: getVal("quoteDescription"),
-    };
+/* --- Button Enhancements --- */
+.btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
 
-    const applicant = {
-      firstName: getVal("firstName"),
-      middleName: getVal("middleName"),
-      lastName: getVal("lastName"),
-      birthDate: getVal("birthDate"),
-      maritalStatus: getVal("maritalStatus"),
-      emailAddress: getVal("emailAddress"),
-    };
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
 
-    if (!applicant.firstName || !applicant.lastName || !policy.policyForm || !policy.ratingState) {
-      showToast("Please complete all required fields.", "danger");
-      return;
-    }
+/* * ========================================================
+ * Dashboard Specific Styles
+ * ========================================================
+ */
 
-    const quote = { policy, applicant, createdAt: new Date().toISOString() };
-    saveFinalQuote(quote);
-    clearDraft();
-    showToast("✅ Quote saved successfully!", "success");
+#recentQuotesTable thead {
+    background-color: #e9ecef;
+}
 
-    setTimeout(() => (window.location.href = "dashboard.html"), 1000);
-  });
+#recentQuotesTable th {
+    font-weight: 600;
+}
 
-  // Helper to get field value
-  function getVal(id) {
-    const el = document.getElementById(id);
-    return el ? el.value.trim() : "";
-  }
+/* Responsive Table */
+.table-responsive-lg {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
 
-  /* ---------- TAB NAVIGATION ---------- */
-  document.querySelectorAll(".next-tab").forEach(btn =>
-    btn.addEventListener("click", (e) => {
-      const current = e.target.closest(".tab-pane");
-      const next = current?.nextElementSibling;
-      if (next) {
-        const tabTrigger = document.querySelector(`[data-bs-target="#${next.id}"]`);
-        if (tabTrigger) new bootstrap.Tab(tabTrigger).show();
-      }
-    })
-  );
+/* * ========================================================
+ * Quote Page Specific Styles
+ * ========================================================
+ */
 
-  document.querySelectorAll(".prev-tab").forEach(btn =>
-    btn.addEventListener("click", (e) => {
-      const current = e.target.closest(".tab-pane");
-      const prev = current?.previousElementSibling;
-      if (prev) {
-        const tabTrigger = document.querySelector(`[data-bs-target="#${prev.id}"]`);
-        if (tabTrigger) new bootstrap.Tab(tabTrigger).show();
-      }
-    })
-  );
+/* Multi-Step Tab Navigation */
+.nav-pills .nav-link {
+    color: #6c757d;
+    background-color: transparent;
+    border: 1px solid #dee2e6;
+    margin: 0.25rem;
+    border-radius: var(--border-radius);
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
 
-  // Save draft buttons in tabs
-  document.querySelectorAll("[id$='Save']").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const newDraft = {};
-      fields.forEach(f => {
-        const el = document.getElementById(f);
-        if (el) newDraft[f] = el.value;
-      });
-      saveDraft(newDraft);
-      showToast("Draft saved successfully!", "success");
-    });
-  });
+.nav-pills .nav-link.active,
+.nav-pills .nav-link:hover {
+    color: white;
+    background-color: var(--primary);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Tab Content Area */
+.tab-content {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    background-color: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+}
+
+/* Section Header in Tab Content */
+.tab-pane h4 {
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+    color: #343a40;
+}
+
+/* Underwriting Questions (Radio/Checkbox groups) */
+.underwriting-question {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border: 1px solid #e9ecef;
+    border-left: 4px solid var(--primary);
+    border-radius: 0.375rem;
+    background-color: #fafafa;
+}
+
+/* --- Action Bar --- */
+.action-bar {
+    padding-top: 1.5rem;
+    border-top: 1px solid #e9ecef;
+    margin-top: 1.5rem;
+}
+
+/* * ========================================================
+ * Toast Notification (Global)
+ * ========================================================
+ */
+.toast-container {
+    z-index: 1080; /* Higher than modal (1050) */
+}
+
+.toast {
+    opacity: 0.95 !important;
+    backdrop-filter: blur(5px);
+}
+
+.toast-body {
+    font-size: 0.9rem;
+}
+
+.toast.text-bg-success {
+    background-color: #28a745 !important;
+}
+.toast.text-bg-danger {
+    background-color: #dc3545 !important;
+}
+.toast.text-bg-info {
+    background-color: #17a2b8 !important;
 }
