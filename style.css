@@ -1,260 +1,216 @@
-/* =========================================
-   🌐 GLOBAL STYLES
-========================================= */
-body {
-  font-family: 'Poppins', sans-serif;
-  background-color: #f8f9fa;
-  color: #212529;
-  margin: 0;
-  min-height: 100vh;
-  scroll-behavior: smooth;
-}
+// =============================================================
+// UNIVERSAL SCRIPT for dashboard.html and quote.html
+// =============================================================
 
-h1, h2, h3, h4, h5 {
-  font-weight: 600;
-}
+const DRAFT_KEY = "quoteDraft";
+const QUOTES_KEY = "quotes";
 
-/* =========================================
-   🧭 NAVBAR
-========================================= */
-.navbar {
-  background: #fff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  padding: 0.75rem 1.5rem;
-}
-
-.navbar-brand img {
-  height: 42px;
-}
-
-.nav-link {
-  font-weight: 500;
-  color: #333 !important;
-  transition: color 0.2s;
-}
-
-.nav-link:hover {
-  color: #d00000 !important;
-}
-
-.btn-outline-primary {
-  border-color: #d00000;
-  color: #d00000;
-}
-
-.btn-outline-primary:hover {
-  background-color: #d00000;
-  color: #fff;
-}
-
-/* =========================================
-   🔐 LOGIN PAGE (Centered Layout)
-========================================= */
-body.login-page {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #ffffff;
-}
-
-.login-container {
-  background: #ffffff;
-  border: 1px solid #ddd;
-  padding: 40px;
-  border-radius: 16px;
-  text-align: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  width: 100%;
-  max-width: 380px;
-  transition: all 0.3s ease-in-out;
-}
-
-.login-container:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
-}
-
-.logo {
-  width: 160px;
-  margin-bottom: 20px;
-}
-
-.login-container h1 {
-  margin-top: 0;
-  color: #d00000;
-  font-size: 24px;
-  font-weight: 700;
-}
-
-.tagline {
-  color: #666;
-  font-size: 14px;
-  margin-bottom: 25px;
-}
-
-.login-container input {
-  display: block;
-  width: 100%;
-  margin: 10px 0;
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  outline: none;
-  font-size: 15px;
-  transition: all 0.2s ease;
-}
-
-.login-container input:focus {
-  border-color: #d00000;
-  box-shadow: 0 0 0 0.15rem rgba(208, 0, 0, 0.25);
-}
-
-.login-container button {
-  width: 100%;
-  padding: 12px;
-  border: none;
-  background-color: #d00000;
-  color: white;
-  font-weight: bold;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.3s, transform 0.2s;
-}
-
-.login-container button:hover {
-  background-color: #a10000;
-  transform: translateY(-2px);
-}
-
-.note {
-  font-size: 12px;
-  margin-top: 20px;
-  color: #888;
-}
-
-/* =========================================
-   🧱 DASHBOARD & QUOTES CARDS
-========================================= */
-.card {
-  border-radius: 12px;
-  overflow: hidden;
-  border: none;
-  background-color: #fff;
-  transition: box-shadow 0.2s;
-}
-
-.card:hover {
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-}
-
-.card-header {
-  background: #ffffff;
-  border-bottom: 1px solid #e5e5e5;
-  font-weight: 600;
-  font-size: 15px;
-}
-
-.table {
-  margin-bottom: 0;
-}
-
-.table thead th {
-  background-color: #f8f9fa;
-  font-weight: 600;
-  color: #333;
-}
-
-.table-striped tbody tr:nth-of-type(odd) {
-  background-color: #fafafa;
-}
-
-/* =========================================
-   🎨 BUTTONS
-========================================= */
-.btn-danger {
-  background-color: #d00000 !important;
-  border: none !important;
-}
-
-.btn-danger:hover {
-  background-color: #a10000 !important;
-}
-
-/* =========================================
-   🧾 FORMS
-========================================= */
-.form-label {
-  font-weight: 600;
-  color: #333;
-}
-
-.form-control, .form-select {
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  transition: all 0.2s ease;
-}
-
-.form-control:focus, .form-select:focus {
-  border-color: #d00000;
-  box-shadow: 0 0 0 0.15rem rgba(208, 0, 0, 0.25);
-}
-
-/* =========================================
-   📑 NAV TABS
-========================================= */
-.nav-tabs {
-  border-bottom: 2px solid #eee;
-}
-
-.nav-tabs .nav-link {
-  font-weight: 500;
-  color: #555;
-  border-radius: 0;
-  transition: all 0.2s ease;
-  padding: 0.75rem 1rem;
-}
-
-.nav-tabs .nav-link:hover {
-  color: #d00000;
-  border-color: transparent transparent #d00000;
-}
-
-.nav-tabs .nav-link.active {
-  color: #d00000;
-  border-color: #d00000 #d00000 #fff;
-  font-weight: 600;
-}
-
-/* =========================================
-   🔔 TOAST
-========================================= */
-.toast-container {
-  z-index: 1055;
-}
-
-.toast {
-  border-radius: 8px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-}
-
-.toast-body {
-  font-size: 14px;
-}
-
-/* =========================================
-   📱 RESPONSIVE
-========================================= */
-@media (max-width: 768px) {
-  .login-container {
-    padding: 30px;
-    width: 90%;
+/* ---------- Toast Helper ---------- */
+function showToast(message, type = "success") {
+  let container = document.querySelector(".toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.className = "toast-container position-fixed top-0 end-0 p-3";
+    document.body.appendChild(container);
   }
 
-  .navbar-nav {
-    text-align: center;
+  const toast = document.createElement("div");
+  toast.className = `toast align-items-center text-bg-${type} border-0 show shadow mb-2`;
+  toast.innerHTML = `
+    <div class="d-flex">
+      <div class="toast-body fw-semibold">${message}</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  `;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+/* ---------- LocalStorage Helpers ---------- */
+function saveDraft(draft) {
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(draft || {}));
+}
+function loadDraft() {
+  const raw = localStorage.getItem(DRAFT_KEY);
+  return raw ? JSON.parse(raw) : {};
+}
+function clearDraft() {
+  localStorage.removeItem(DRAFT_KEY);
+}
+function saveFinalQuote(quote) {
+  const arr = JSON.parse(localStorage.getItem(QUOTES_KEY)) || [];
+  arr.unshift(quote);
+  localStorage.setItem(QUOTES_KEY, JSON.stringify(arr));
+}
+function getQuotes() {
+  return JSON.parse(localStorage.getItem(QUOTES_KEY)) || [];
+}
+
+/* ============================================================
+   PAGE DETECTION
+============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
+  const path = window.location.pathname;
+  if (path.includes("dashboard.html")) initDashboardPage();
+  else if (path.includes("quote.html")) initQuotePage();
+});
+
+/* ============================================================
+   DASHBOARD PAGE
+============================================================ */
+function initDashboardPage() {
+  const tableBody = document.querySelector("#recentQuotesTable tbody");
+  const quotes = getQuotes();
+  const searchInput = document.querySelector("#searchInput");
+
+  function renderTable(filter = "") {
+    const filtered = quotes.filter(q => {
+      const fullName = `${q.applicant?.firstName ?? ""} ${q.applicant?.lastName ?? ""}`.toLowerCase();
+      const policy = q.policy?.policyForm?.toLowerCase() || "";
+      return fullName.includes(filter.toLowerCase()) || policy.includes(filter);
+    });
+
+    tableBody.innerHTML = filtered.length
+      ? ""
+      : `<tr><td colspan="5" class="text-center text-muted py-3">No quotes found.</td></tr>`;
+
+    filtered.forEach(q => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${q.applicant?.firstName ?? ""} ${q.applicant?.lastName ?? ""}</td>
+        <td>${q.policy?.policyForm ?? "—"}</td>
+        <td>${q.policy?.quoteDescription ?? "—"}</td>
+        <td>${q.policy?.ratingState ?? "—"}</td>
+        <td>${new Date(q.createdAt).toLocaleDateString()}</td>
+      `;
+      tableBody.appendChild(row);
+    });
   }
 
-  .card {
-    margin-bottom: 20px;
+  renderTable();
+
+  // Live search
+  if (searchInput) {
+    searchInput.addEventListener("input", (e) => renderTable(e.target.value));
   }
+
+  // Start Quote buttons
+  const startQuoteBtns = document.querySelectorAll("#startQuoteBtn, #startQuoteCardBtn, .startQuoteBtn");
+  startQuoteBtns.forEach(btn =>
+    btn.addEventListener("click", e => {
+      e.preventDefault();
+      window.location.href = "quote.html";
+    })
+  );
+}
+
+/* ============================================================
+   QUOTE PAGE
+============================================================ */
+function initQuotePage() {
+  const quoteForm = document.getElementById("quoteForm");
+  if (!quoteForm) return;
+
+  const fields = [
+    "firstName", "middleName", "lastName", "birthDate", "maritalStatus", "emailAddress",
+    "ratingState", "policyForm", "quoteDate", "effectiveDate", "agentNumber", "quoteDescription"
+  ];
+
+  // Restore draft
+  const draft = loadDraft();
+  fields.forEach(f => {
+    const el = document.getElementById(f);
+    if (el && draft[f]) el.value = draft[f];
+  });
+
+  // Auto-save on input change
+  fields.forEach(f => {
+    const el = document.getElementById(f);
+    if (!el) return;
+    el.addEventListener("input", () => {
+      const newDraft = {};
+      fields.forEach(f2 => {
+        const el2 = document.getElementById(f2);
+        if (el2) newDraft[f2] = el2.value;
+      });
+      saveDraft(newDraft);
+    });
+  });
+
+  // Handle Save Quote
+  quoteForm.addEventListener("submit", e => {
+    e.preventDefault();
+
+    const policy = {
+      ratingState: getVal("ratingState"),
+      policyForm: getVal("policyForm"),
+      quoteDate: getVal("quoteDate") || new Date().toISOString().split("T")[0],
+      effectiveDate: getVal("effectiveDate"),
+      agentNumber: getVal("agentNumber"),
+      quoteDescription: getVal("quoteDescription"),
+    };
+
+    const applicant = {
+      firstName: getVal("firstName"),
+      middleName: getVal("middleName"),
+      lastName: getVal("lastName"),
+      birthDate: getVal("birthDate"),
+      maritalStatus: getVal("maritalStatus"),
+      emailAddress: getVal("emailAddress"),
+    };
+
+    if (!applicant.firstName || !applicant.lastName || !policy.policyForm || !policy.ratingState) {
+      showToast("Please complete all required fields.", "danger");
+      return;
+    }
+
+    const quote = { policy, applicant, createdAt: new Date().toISOString() };
+    saveFinalQuote(quote);
+    clearDraft();
+    showToast("✅ Quote saved successfully!", "success");
+
+    setTimeout(() => (window.location.href = "dashboard.html"), 1000);
+  });
+
+  // Helper to get field value
+  function getVal(id) {
+    const el = document.getElementById(id);
+    return el ? el.value.trim() : "";
+  }
+
+  /* ---------- TAB NAVIGATION ---------- */
+  document.querySelectorAll(".next-tab").forEach(btn =>
+    btn.addEventListener("click", (e) => {
+      const current = e.target.closest(".tab-pane");
+      const next = current?.nextElementSibling;
+      if (next) {
+        const tabTrigger = document.querySelector(`[data-bs-target="#${next.id}"]`);
+        if (tabTrigger) new bootstrap.Tab(tabTrigger).show();
+      }
+    })
+  );
+
+  document.querySelectorAll(".prev-tab").forEach(btn =>
+    btn.addEventListener("click", (e) => {
+      const current = e.target.closest(".tab-pane");
+      const prev = current?.previousElementSibling;
+      if (prev) {
+        const tabTrigger = document.querySelector(`[data-bs-target="#${prev.id}"]`);
+        if (tabTrigger) new bootstrap.Tab(tabTrigger).show();
+      }
+    })
+  );
+
+  // Save draft buttons in tabs
+  document.querySelectorAll("[id$='Save']").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const newDraft = {};
+      fields.forEach(f => {
+        const el = document.getElementById(f);
+        if (el) newDraft[f] = el.value;
+      });
+      saveDraft(newDraft);
+      showToast("Draft saved successfully!", "success");
+    });
+  });
 }
