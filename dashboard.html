@@ -1,189 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Agent Dashboard | LAVA Safeco</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agent Dashboard | LAVA Safeco</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/style.css" />
 </head>
 
 <body class="bg-light">
 
-    <nav class="navbar navbar-expand-lg bg-white shadow-sm">
-    <div class="container-fluid">
-      <a class="navbar-brand d-flex align-items-center" href="#">
-        <img src="images/lava-safeco-logo.png" alt="LAVA Safeco Logo" height="40" class="me-2">
-      </a>
+    <nav class="navbar navbar-expand-lg bg-white shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="images/lava-safeco-logo.png" alt="LAVA Safeco Logo" height="40" class="me-2">
+            </a>
 
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link fw-semibold" href="#">Products</a></li>
-          <li class="nav-item"><a class="nav-link fw-semibold" href="#">Programs & Rewards</a></li>
-          <li class="nav-item"><a class="nav-link fw-semibold" href="#">Claims & Service</a></li>
-          <li class="nav-item"><a class="nav-link fw-semibold" href="#">My Agency</a></li>
-        </ul>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link fw-semibold" href="#">Products</a></li>
+                    <li class="nav-item"><a class="nav-link fw-semibold" href="#">Programs & Rewards</a></li>
+                    <li class="nav-item"><a class="nav-link fw-semibold" href="#">Claims & Service</a></li>
+                    <li class="nav-item"><a class="nav-link fw-semibold" href="#">My Agency</a></li>
+                </ul>
 
-        <div class="d-flex align-items-center">
-                    <button class="btn btn-outline-primary me-3" id="startQuoteBtn">Start Quote</button>
-          <a href="#" class="text-dark text-decoration-none me-3">Settings</a>
-          <a href="#" class="text-dark text-decoration-none">Logout</a>
-        </div>
-      </div>
-    </div>
-  </nav>
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-outline-primary me-3" id="startQuoteBtn">Start Quote</button>
+                    <a href="#" class="text-dark text-decoration-none me-3">Settings</a>
+                    <a href="#" class="text-dark text-decoration-none">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-    <div class="container-fluid mt-4">
-    <div class="row">
-      <aside class="col-md-3 col-lg-2 mb-4">
-        <div class="card mb-3 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title fw-semibold">Customer Lookup</h5>
-            <p class="text-muted small mb-2">Search by name, policy, email, or phone</p>
-            <input type="text" class="form-control mb-2" placeholder="Search customer..." />
-            <button class="btn btn-primary w-100">Search</button>
-          </div>
-        </div>
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <aside class="col-md-3 col-lg-2 mb-4">
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title fw-semibold">Customer Lookup</h5>
+                        <p class="text-muted small mb-2">Search by name, policy, email, or phone</p>
+                        <input type="text" class="form-control mb-2" placeholder="Search customer..." />
+                        <button class="btn btn-primary w-100">Search</button>
+                    </div>
+                </div>
 
-                <div class="card shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title fw-semibold">Quote</h5>
-            <select class="form-select mb-2" id="quoteStateSelect">
-              <option>North Carolina</option>
-              <option>California</option>
-              <option>Texas</option>
-            </select>
-            <select class="form-select mb-3" id="quoteProductSelect">
-              <option selected>Auto</option>
-              <option>Home</option>
-              <option>Life</option>
-            </select>
-            <button class="btn btn-outline-primary w-100" id="startQuoteCardBtn">Start Quote</button>
-          </div>
-        </div>
-      </aside>
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title fw-semibold">Quote</h5>
+                        <select class="form-select mb-2" id="quoteStateSelect">
+                            <option>North Carolina</option>
+                            <option>California</option>
+                            <option>Texas</option>
+                        </select>
+                        <select class="form-select mb-3" id="quoteProductSelect">
+                            <option>Auto</option>
+                            <option>Home</option>
+                            <option>Life</option>
+                        </select>
+                        <button class="btn btn-outline-primary w-100" id="startQuoteCardBtn">Start Quote</button>
+                    </div>
+                </div>
+            </aside>
 
-      <main class="col-md-9 col-lg-10">
-                <div class="mb-4 d-flex align-items-center">
-          <img src="images/lava-safeco-logo.png" alt="LAVA Safeco Logo" height="60" class="me-3">
-          <h4 class="fw-bold mb-0">Hi Agent!</h4>
-        </div>
+            <main class="col-md-9 col-lg-10">
+                <div class="mb-4 d-flex align-items-center">
+                    <img src="images/lava-safeco-logo.png" alt="LAVA Safeco Logo" height="60" class="me-3">
+                    <h4 class="fw-bold mb-0">Hi Agent!</h4>
+                </div>
 
-        <div class="row g-4">
-          <div class="col-lg-8">
-            <div class="card shadow-sm">
-              <div class="card-header bg-white fw-semibold">My Agency’s Customers</div>
-              <div class="card-body">
-                <h6 class="text-muted">No renewals right now</h6>
-                <p class="small text-muted">When clients have upcoming renewals, you’ll see them here.</p>
-                <a href="#" class="btn btn-sm btn-primary">Prepare for renewals</a>
-              </div>
-            </div>
-          </div>
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white fw-semibold">My Agency’s Customers</div>
+                            <div class="card-body">
+                                <h6 class="text-muted">No renewals right now</h6>
+                                <p class="small text-muted">When clients have upcoming renewals, you’ll see them here.</p>
+                                <a href="#" class="btn btn-sm btn-primary">Prepare for renewals</a>
+                            </div>
+                        </div>
+                    </div>
 
-          <div class="col-lg-4">
-            <div class="card shadow-sm h-100">
-              <div class="card-header bg-white fw-semibold">My Insights</div>
-              <div class="card-body">
-                <div class="alert alert-warning text-dark">
-                  <h5 class="fw-bold mb-1">85%</h5>
-                  <p class="mb-0 small">of customers say it’s important for agents to review policy coverages with them.</p>
-                </div>
-              </div>
-            </div>
-          </div>
+                    <div class="col-lg-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-header bg-white fw-semibold">My Insights</div>
+                            <div class="card-body">
+                                <div class="alert alert-warning text-dark">
+                                    <h5 class="fw-bold mb-1">85%</h5>
+                                    <p class="mb-0 small">of customers say it’s important for agents to review policy coverages with them.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-          <div class="col-lg-4">
-            <div class="card shadow-sm">
-              <div class="card-header bg-white fw-semibold">My Favorites</div>
-              <ul class="list-group list-group-flush">
-                <li class="list-group-item"><a href="#" class="text-decoration-none">Client list</a></li>
-                <li class="list-group-item"><a href="#" class="text-decoration-none">View policy summary</a></li>
-                <li class="list-group-item"><a href="#" class="text-decoration-none">Change or endorse</a></li>
-                <li class="list-group-item"><a href="#" class="text-decoration-none">Billing and payments</a></li>
-                <li class="list-group-item"><a href="#" class="text-decoration-none">Booklet / Record change</a></li>
-              </ul>
-            </div>
-          </div>
+                    <div class="col-lg-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white fw-semibold">My Favorites</div>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item"><a href="#" class="text-decoration-none">Client list</a></li>
+                                <li class="list-group-item"><a href="#" class="text-decoration-none">View policy summary</a></li>
+                                <li class="list-group-item"><a href="#" class="text-decoration-none">Change or endorse</a></li>
+                                <li class="list-group-item"><a href="#" class="text-decoration-none">Billing and payments</a></li>
+                                <li class="list-group-item"><a href="#" class="text-decoration-none">Booklet / Record change</a></li>
+                            </ul>
+                        </div>
+                    </div>
 
-          <div class="col-lg-8">
-            <div class="card shadow-sm">
-              <div class="card-header bg-white fw-semibold">My Production</div>
-              <div class="card-body">
-                <table class="table table-sm align-middle">
-                  <thead>
-                    <tr>
-                      <th>Type</th>
-                      <th>Pending</th>
-                      <th>Issued YTD</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr><td>eSign</td><td>0</td><td>0</td></tr>
-                    <tr><td>Auto</td><td>0</td><td>0</td></tr>
-                    <tr><td>Home</td><td>0</td><td>0</td></tr>
-                    <tr><td>Specialty</td><td>0</td><td>0</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+                    <div class="col-lg-8">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white fw-semibold">My Production</div>
+                            <div class="card-body">
+                                <table class="table table-sm align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Pending</th>
+                                            <th>Issued YTD</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>eSign</td><td>0</td><td>0</td></tr>
+                                        <tr><td>Auto</td><td>0</td><td>0</td></tr>
+                                        <tr><td>Home</td><td>0</td><td>0</td></tr>
+                                        <tr><td>Specialty</td><td>0</td><td>0</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
 
-                    <div class="col-lg-12">
-            <div class="card shadow-sm mt-4">
-              <div class="card-header bg-white fw-semibold">Recent Quotes</div>
-              <div class="card-body">
-                <table id="recentQuotesTable" class="table table-striped align-middle">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Type</th>
-                      <th>Quote</th>
-                      <th>State</th>
-                      <th>Date</th>
-                    </tr>
-                  </thead>
-                  <tbody></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+                    <div class="col-lg-12">
+                        <div class="card shadow-sm mt-4">
+                            <div class="card-header bg-white fw-semibold">Recent Quotes</div>
+                            <div class="card-body">
+                                <table id="recentQuotesTable" class="table table-striped align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Quote</th>
+                                            <th>State</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
 
-        </div>
-      </main>
-    </div>
-  </div>
+                </div>
+            </main>
+        </div>
+    </div>
 
-    <div class="toast-container position-fixed top-0 end-0 p-3"></div>
+    <div class="toast-container position-fixed top-0 end-0 p-3"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const startQuoteBtns = document.querySelectorAll('#startQuoteBtn, #startQuoteCardBtn');
-    const quoteProductSelect = document.getElementById('quoteProductSelect');
-
-    startQuoteBtns.forEach(btn => {
-      btn.addEventListener('click', function (e) {
-        e.preventDefault();
-        const selectedProduct = quoteProductSelect.value;
-        
-        // Route based on selected product
-        if (selectedProduct === 'Auto') {
-          window.location.href = 'quote.html?product=Auto';
-        } else if (selectedProduct === 'Home') {
-          window.location.href = 'quote.html?product=Home';
-        } else {
-          // Optional: Show a message for other products
-          alert(`Starting a new ${selectedProduct} quote... (Redirect to default quote page for now)`);
-          window.location.href = 'quote.html';
-        }
-      });
-    });
-
-    // Placeholder for script.js functionality (like recent quotes table fill)
-    // In a real app, you'd load this from a separate file.
-    console.log("Dashboard loaded. Product selection logic active.");
-  });
-</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
