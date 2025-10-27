@@ -35,7 +35,7 @@
         </ul>
 
         <div class="d-flex align-items-center">
-          <button class="btn btn-outline-primary me-3">Get a Quote</button>
+          <a href="quote.html" class="btn btn-outline-primary me-3">Get a Quote</a>
           <a href="#" class="text-dark text-decoration-none me-3">Settings</a>
           <a href="#" class="text-dark text-decoration-none">Logout</a>
         </div>
@@ -59,7 +59,7 @@
 
         <div class="card shadow-sm">
           <div class="card-body">
-            <h5 class="card-title fw-semibold">Quote</h5>
+            <h5 class="card-title fw-semibold">Quick Quote</h5>
             <select class="form-select mb-2">
               <option>North Carolina</option>
               <option>California</option>
@@ -70,7 +70,7 @@
               <option>Home</option>
               <option>Life</option>
             </select>
-            <button class="btn btn-outline-primary w-100">Start Quote</button>
+            <a href="quote.html" class="btn btn-outline-primary w-100">Start Quote</a>
           </div>
         </div>
       </aside>
@@ -142,6 +142,31 @@
               </div>
             </div>
           </div>
+
+          <!-- Recent Quotes -->
+          <div class="col-lg-12">
+            <div class="card shadow-sm mt-4">
+              <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+                <span>Recent Quotes</span>
+                <button id="clearQuotesBtn" class="btn btn-sm btn-outline-danger">Clear All</button>
+              </div>
+              <div class="card-body">
+                <table id="recentQuotesTable" class="table table-striped align-middle">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Type</th>
+                      <th>Quote</th>
+                      <th>State</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
         </div>
       </main>
     </div>
@@ -149,5 +174,7 @@
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Custom Script -->
+  <script src="script.js"></script>
 </body>
 </html>
