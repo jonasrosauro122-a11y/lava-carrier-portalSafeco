@@ -573,7 +573,42 @@
         </div>
     </div>
     
-    <!-- Custom Alert/Toast Container -->
-    <div class="custom-alert" id="custom-alert"></div>
+<!-- Other existing scripts -->
+<script src="script.js"></script>
+
+<!-- ✅ Add this new script below -->
+<script>
+  // ==========================================
+  // LAVA SAFECO Quote Type Auto-Detection
+  // ==========================================
+  document.addEventListener("DOMContentLoaded", () => {
+    const params = new URLSearchParams(window.location.search);
+    const quoteType = params.get("type");
+
+    // Preselect Auto/Home in dropdown if present in URL
+    const productSelect = document.getElementById("productTypeSelect");
+    if (quoteType && productSelect) {
+      const normalized = quoteType.trim().toLowerCase();
+      if (normalized === "auto" || normalized === "home") {
+        productSelect.value =
+          normalized.charAt(0).toUpperCase() + normalized.slice(1);
+      }
+    }
+
+    // Trigger UI update for the selected product type
+    if (typeof updateProductTypeDisplay === "function") {
+      updateProductTypeDisplay();
+    }
+
+    // ✅ Optional: Update the display title at top nav
+    const quoteTypeDisplay = document.getElementById("quoteTypeDisplay");
+    if (quoteTypeDisplay && quoteType) {
+      quoteTypeDisplay.textContent = `${
+        quoteType.charAt(0).toUpperCase() + quoteType.slice(1)
+      } Quote`;
+    }
+  });
+</script>
 </body>
 </html>
+
