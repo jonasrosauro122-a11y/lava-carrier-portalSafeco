@@ -3,14 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LAVA Carrier Portal - Login</title>
+  <title>LAVA Safeo Portal - Login</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="login-container">
-    <h1>LAVA Carrier Portal</h1>
+    <!-- Logo Section -->
+    <img src="images/lava-safeo-logo.png" alt="LAVA Safeo Logo" class="logo">
+
+    <h1>LAVA Safeo Portal</h1>
     <p class="tagline">Training Access for Students</p>
     
+    <!-- Login Form -->
     <form id="loginForm" onsubmit="return loginUser(event)">
       <input type="text" id="firstName" placeholder="First Name" required />
       <input type="text" id="lastName" placeholder="Last Name" required />
