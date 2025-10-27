@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LAVA Carrier Portal - Login</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="login-container">
+    <h1>LAVA Carrier Portal</h1>
+    <p class="tagline">Training Access for Students</p>
+    
+    <form id="loginForm" onsubmit="return loginUser(event)">
+      <input type="text" id="firstName" placeholder="First Name" required />
+      <input type="text" id="lastName" placeholder="Last Name" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
+    
+    <p class="note">* For training use only *</p>
+  </div>
+
+  <script>
+    function loginUser(event) {
+      event.preventDefault();
+      const firstName = document.getElementById('firstName').value.trim();
+      const lastName = document.getElementById('lastName').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (password === "Lavaautomation2025!") {
+        // Save the student's name for use on the dashboard
+        localStorage.setItem("studentName", firstName + " " + lastName);
+        window.location.href = "dashboard.html";
+      } else {
+        alert("Incorrect password. Please try again.");
+      }
+    }
+  </script>
+</body>
+</html>
