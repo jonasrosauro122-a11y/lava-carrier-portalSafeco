@@ -1,330 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agent Dashboard | LAVA Safeco</title>
-    <!-- Load Bootstrap 5.3 and Google Fonts for modern styling -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Dashboard | LAVA Safeco</title>
 
-    <style>
-        /* Custom Styles (Consolidated from original style.css and index.html) */
-        :root {
-            --primary-color: #0d6efd;
-            --bg-light: #f4f7f6;
-        }
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: var(--bg-light);
-            margin: 0;
-            padding-top: 56px; /* Space for fixed navbar */
-        }
-        .text-primary-lava { color: var(--primary-color); }
-        .btn-primary-lava { background-color: var(--primary-color); border-color: var(--primary-color); color: white; transition: background-color 0.2s; }
-        .btn-primary-lava:hover { background-color: #0b5ed7; border-color: #0b5ed7; }
-        .card { border-radius: 12px; border: none; }
+  <!-- Bootstrap + Google Fonts -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-        /* Custom Alert/Toast (replaces alert()) */
-        .custom-alert { position: fixed; top: 20px; right: 20px; z-index: 2000; padding: 15px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; }
-        .alert-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-    </style>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: #f4f7f6;
+      padding-top: 56px;
+    }
+    .text-primary-lava {
+      color: #0d6efd;
+    }
+    .btn-primary-lava {
+      background-color: #0d6efd;
+      border-color: #0d6efd;
+      color: white;
+    }
+    .btn-primary-lava:hover {
+      background-color: #0b5ed7;
+      border-color: #0b5ed7;
+    }
+    .card {
+      border-radius: 12px;
+      border: none;
+    }
+    .custom-alert {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 2000;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      display: none;
+    }
+    .alert-error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .alert-success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+  </style>
 </head>
 
 <body>
-
-<!-- Firebase & Data Logic (MUST be at the top to initialize) -->
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, onSnapshot, collection, query, limit, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    setLogLevel('Debug');
-
-    let db = null;
-    let auth = null;
-    let userId = null;
-    let userName = "Training Agent"; // Fallback name
-
-    // Global variables provided by the environment
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-    // --- Core Functions ---
-
-    function initializeFirebase() {
-        if (Object.keys(firebaseConfig).length === 0) {
-            console.error("Firebase config missing. Running with mock data.");
-            userId = "MOCK_USER_ID_12345";
-            updateDashboardUI();
-            updateDashboardQuotes(getMockQuotes());
-            return;
-        }
-
-        try {
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    userId = user.uid;
-                    // In a full app, you'd fetch the user's saved name here.
-                    // For this standalone demo, we use a placeholder:
-                    updateDashboardUI(userId); 
-                    setupQuoteListener();
-                } else {
-                    handleAuthInitialization();
-                }
-            });
-
-        } catch (error) {
-            console.error("Error initializing Firebase:", error);
-        }
-    }
-
-    async function handleAuthInitialization() {
-        try {
-            if (initialAuthToken) {
-                await signInWithCustomToken(auth, initialAuthToken);
-            } else {
-                await signInAnonymously(auth);
-            }
-        } catch (error) {
-            console.error("Firebase Sign-in Failed:", error);
-            showAlert('error', 'Authentication failed. Check console.');
-        }
-    }
-
-    function setupQuoteListener() {
-        if (!db || !userId) return;
-
-        // Private data path: /artifacts/{appId}/users/{userId}/quotes
-        const quotesPath = `artifacts/${appId}/users/${userId}/quotes`;
-        
-        // Note: Using limit(5) for a dashboard view
-        const q = query(collection(db, quotesPath), limit(5));
-
-        onSnapshot(q, (snapshot) => {
-            const quotes = [];
-            snapshot.forEach((doc) => {
-                quotes.push({ id: doc.id, ...doc.data() });
-            });
-            // Since firestore doesn't allow ordering without an index, we sort in JS
-            const sortedQuotes = quotes.sort((a, b) => b.date - a.date); 
-            updateDashboardQuotes(sortedQuotes);
-        }, (error) => {
-            console.error("Error fetching quotes:", error);
-            showAlert('error', 'Failed to load quotes from the database.');
-        });
-    }
-
-    function updateDashboardUI(currentUserId) {
-        const welcomeMsg = document.getElementById('welcome-agent-msg');
-        const agentDisplay = document.getElementById('agent-display');
-        
-        welcomeMsg.textContent = `Hi Agent ${userName}!`;
-        // Display the user ID is MANDATORY for multi-user apps
-        agentDisplay.textContent = `User ID: ${currentUserId || 'N/A'}`;
-    }
-
-    function updateDashboardQuotes(quotes) {
-        const tableBody = document.querySelector('#recentQuotesTable tbody');
-        tableBody.innerHTML = '';
-
-        if (!quotes || quotes.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted small">No recent quotes found. Start a new one!</td></tr>';
-            return;
-        }
-
-        quotes.forEach(quote => {
-            const row = tableBody.insertRow();
-            // Use fallback or default values if fields are missing
-            const clientName = quote.clientName || 'N/A';
-            const productType = quote.productType || 'Home';
-            const finalPremium = (quote.finalPremium || 0.00).toFixed(2);
-            const quoteNumber = quote.quoteNumber || 'N/A';
-            const date = quote.date ? new Date(quote.date).toLocaleDateString() : 'N/A';
-
-            row.innerHTML = `
-                <td>#${quoteNumber}</td>
-                <td>${clientName}</td>
-                <td>${productType}</td>
-                <td><span class="fw-bold text-success">$${finalPremium}</span></td>
-                <td>${date}</td>
-            `;
-        });
-    }
-
-    function getMockQuotes() {
-        // Mock data for when Firebase config is missing
-        return [
-            { quoteNumber: '10001', clientName: 'Mock Client 1', productType: 'Auto', finalPremium: 1250.00, date: Date.now() - 86400000 },
-            { quoteNumber: '10002', clientName: 'Mock Client 2', productType: 'Home', finalPremium: 2500.50, date: Date.now() },
-        ];
-    }
-
-    function showAlert(type, message) {
-        const alertBox = document.getElementById('custom-alert');
-        alertBox.textContent = message;
-        alertBox.className = 'custom-alert'; // Reset classes
-        alertBox.style.display = 'block';
-
-        if (type === 'error') {
-            alertBox.classList.add('alert-error');
-        } else if (type === 'success') {
-            alertBox.classList.add('alert-success');
-        }
-
-        setTimeout(() => {
-            alertBox.style.display = 'none';
-        }, 4000);
-    }
-    
-    // Fallback for demo navigation - would link to index.html in a real multi-page app
-    window.startQuote = () => showAlert('success', 'Starting a new quote... (In the full portal, this would load the quote view.)');
-    window.logout = () => showAlert('success', 'You have been logged out. (In the full portal, this would return to the login screen.)');
-
-
-    window.onload = initializeFirebase;
-</script>
-
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg bg-white shadow-sm fixed-top">
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg bg-white shadow-sm fixed-top">
     <div class="container-fluid">
-        <a class="navbar-brand d-flex align-items-center" href="#">
-            <img src="https://placehold.co/40x40/0d6efd/ffffff?text=LAVA" alt="LAVA Safeco Logo" height="40" class="me-2 rounded-lg">
-            <span class="fw-bold text-primary-lava">LAVA Safeco</span>
-        </a>
+      <a class="navbar-brand d-flex align-items-center" href="#">
+        <img src="images/lava-safeco-logo.png" alt="LAVA Safeco Logo" height="40" class="me-2 rounded-lg" />
+        <span class="fw-bold text-primary-lava">LAVA Safeco</span>
+      </a>
 
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a class="nav-link fw-semibold" href="#">Products</a></li>
-                <li class="nav-item"><a class="nav-link fw-semibold" href="#">Programs & Rewards</a></li>
-                <li class="nav-item"><a class="nav-link fw-semibold" href="#">Claims & Service</a></li>
-                <li class="nav-item"><a class="nav-link fw-semibold" href="#">My Agency</a></li>
-            </ul>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link fw-semibold" href="#">Products</a></li>
+          <li class="nav-item"><a class="nav-link fw-semibold" href="#">Programs & Rewards</a></li>
+          <li class="nav-item"><a class="nav-link fw-semibold" href="#">Claims & Service</a></li>
+          <li class="nav-item"><a class="nav-link fw-semibold" href="#">My Agency</a></li>
+        </ul>
 
-            <div class="d-flex align-items-center">
-                <button class="btn btn-primary-lava me-3" id="startQuoteBtn" onclick="startQuote()">Start Quote</button>
-                <span id="agent-display" class="me-3 text-muted small">Loading User ID...</span>
-                <a href="#" class="text-danger text-decoration-none fw-semibold" onclick="logout()">Logout</a>
-            </div>
+        <div class="d-flex align-items-center">
+          <button class="btn btn-primary-lava me-3" id="startQuoteBtn">Start Quote</button>
+          <span id="agent-display" class="me-3 text-muted small">Loading User ID...</span>
+          <a href="#" class="text-danger text-decoration-none fw-semibold" id="logoutBtn">Logout</a>
         </div>
+      </div>
     </div>
-</nav>
+  </nav>
 
-<!-- Dashboard View -->
-<div id="dashboard-view" class="container-fluid mt-4">
+  <!-- Dashboard -->
+  <div class="container-fluid mt-4">
     <div class="row">
-        <!-- Sidebar -->
-        <aside class="col-md-3 col-lg-2 mb-4">
-            <div class="card mb-3 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title fw-semibold">Customer Lookup</h5>
-                    <p class="text-muted small mb-2">Search by name, policy, email, or phone</p>
-                    <input type="text" class="form-control mb-2" placeholder="Search customer..." />
-                    <button class="btn btn-primary-lava w-100">Search</button>
-                </div>
-            </div>
+      <!-- Sidebar -->
+      <aside class="col-md-3 col-lg-2 mb-4">
+        <div class="card mb-3 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title fw-semibold">Customer Lookup</h5>
+            <p class="text-muted small mb-2">Search by name, policy, email, or phone</p>
+            <input type="text" class="form-control mb-2" placeholder="Search customer..." />
+            <button class="btn btn-primary-lava w-100">Search</button>
+          </div>
+        </div>
 
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title fw-semibold">Quote</h5>
-                    <select class="form-select mb-2" id="quoteStateSelect">
-                        <option>North Carolina</option><option>California</option><option>Texas</option>
-                    </select>
-                    <select class="form-select mb-3" id="quoteProductSelect">
-                        <option>Auto</option><option>Home</option><option>Life</option>
-                    </select>
-                    <button class="btn btn-outline-primary w-100" id="startQuoteCardBtn" onclick="startQuote()">Start Quote</button>
-                </div>
-            </div>
-        </aside>
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title fw-semibold">Quote</h5>
+            <select class="form-select mb-2" id="quoteStateSelect">
+              <option>North Carolina</option>
+              <option>California</option>
+              <option>Texas</option>
+            </select>
+            <select class="form-select mb-3" id="quoteProductSelect">
+              <option value="Auto">Auto</option>
+              <option value="Home">Home</option>
+              <option value="Life">Life</option>
+            </select>
+            <button class="btn btn-outline-primary w-100" id="startQuoteCardBtn">Start Quote</button>
+          </div>
+        </div>
+      </aside>
 
-        <!-- Main Content -->
-        <main class="col-md-9 col-lg-10">
-            <div class="mb-4 d-flex align-items-center">
-                <img src="https://placehold.co/60x60/0d6efd/ffffff?text=LAVA" alt="LAVA Safeco Logo" height="60" class="me-3 rounded-lg">
-                <h4 class="fw-bold mb-0" id="welcome-agent-msg">Hi Agent!</h4>
-            </div>
+      <!-- Main Content -->
+      <main class="col-md-9 col-lg-10">
+        <div class="mb-4 d-flex align-items-center">
+          <img src="images/lava-safeco-logo.png" alt="LAVA Safeco Logo" height="60" class="me-3 rounded-lg" />
+          <h4 class="fw-bold mb-0" id="welcome-agent-msg">Hi Agent!</h4>
+        </div>
 
-            <div class="row g-4">
-                <div class="col-lg-8">
-                    <div class="card shadow-sm">
-                        <div class="card-header bg-white fw-semibold">My Agency’s Customers</div>
-                        <div class="card-body">
-                            <h6 class="text-muted">No renewals right now</h6>
-                            <p class="small text-muted">When clients have upcoming renewals, you’ll see them here.</p>
-                            <a href="#" class="btn btn-sm btn-primary-lava">Prepare for renewals</a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-4">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-header bg-white fw-semibold">My Insights</div>
-                        <div class="card-body">
-                            <div class="alert alert-warning text-dark border-0 rounded-lg">
-                                <h5 class="fw-bold mb-1">85%</h5>
-                                <p class="mb-0 small">of customers say it’s important for agents to review policy coverages with them.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-4">
-                    <div class="card shadow-sm">
-                        <div class="card-header bg-white fw-semibold">My Favorites</div>
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item"><a href="#" class="text-decoration-none">Client list</a></li>
-                            <li class="list-group-item"><a href="#" class="text-decoration-none">View policy summary</a></li>
-                            <li class="list-group-item"><a href="#" class="text-decoration-none">Change or endorse</a></li>
-                            <li class="list-group-item"><a href="#" class="text-decoration-none">Billing and payments</a></li>
-                            <li class="list-group-item"><a href="#" class="text-decoration-none">Booklet / Record change</a></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="col-lg-8">
-                    <div class="card shadow-sm">
-                        <div class="card-header bg-white fw-semibold">My Production</div>
-                        <div class="card-body">
-                            <table class="table table-sm align-middle">
-                                <thead><tr><th>Type</th><th>Pending</th><th>Issued YTD</th></tr></thead>
-                                <tbody>
-                                    <tr><td>eSign</td><td>0</td><td>0</td></tr>
-                                    <tr><td>Auto</td><td>0</td><td>0</td></tr>
-                                    <tr><td>Home</td><td>0</td><td>0</td></tr>
-                                    <tr><td>Specialty</td><td>0</td><td>0</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-12">
-                    <div class="card shadow-sm mt-4">
-                        <div class="card-header bg-white fw-semibold">Recent Quotes</div>
-                        <div class="card-body">
-                            <table id="recentQuotesTable" class="table table-striped align-middle">
-                                <thead><tr><th>Quote #</th><th>Client Name</th><th>Type</th><th>Premium</th><th>Date</th></tr></thead>
-                                <tbody>
-                                    <tr><td colspan="5" class="text-center text-muted small">Loading recent quotes...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
+        <div class="card shadow-sm mt-4">
+          <div class="card-header bg-white fw-semibold">Recent Quotes</div>
+          <div class="card-body">
+            <table id="recentQuotesTable" class="table table-striped align-middle">
+              <thead>
+                <tr>
+                  <th>Quote #</th>
+                  <th>Client Name</th>
+                  <th>Type</th>
+                  <th>Premium</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="5" class="text-center text-muted small">Loading recent quotes...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
     </div>
-</div>
+  </div>
 
-<!-- Custom Alert/Toast Container (replaces the alert() call) -->
-<div class="custom-alert" id="custom-alert"></div>
+  <!-- Alert -->
+  <div class="custom-alert" id="custom-alert"></div>
+
+  <script>
+    // ✅ Unified Start Quote Logic
+    function startQuote() {
+      const productSelect = document.getElementById("quoteProductSelect");
+      const product = productSelect ? productSelect.value : "Auto";
+
+      if (product === "Auto") {
+        window.location.href = "auto-quote.html";
+      } else if (product === "Home") {
+        window.location.href = "home-quote.html";
+      } else {
+        showAlert("error", "Quote type not supported yet.");
+      }
+    }
+
+    // ✅ Alert Utility
+    function showAlert(type, message) {
+      const alertBox = document.getElementById("custom-alert");
+      alertBox.textContent = message;
+      alertBox.className = "custom-alert " + (type === "error" ? "alert-error" : "alert-success");
+      alertBox.style.display = "block";
+      setTimeout(() => (alertBox.style.display = "none"), 3000);
+    }
+
+    // ✅ Add event listeners
+    document.getElementById("startQuoteBtn").addEventListener("click", startQuote);
+    document.getElementById("startQuoteCardBtn").addEventListener("click", startQuote);
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      showAlert("success", "You have been logged out.");
+    });
+  </script>
 </body>
 </html>
