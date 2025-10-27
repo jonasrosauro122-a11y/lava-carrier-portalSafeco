@@ -1,22 +1,26 @@
+/* GLOBAL STYLES */
 body {
   font-family: 'Poppins', sans-serif;
-  background-color: #ffffff;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  background-color: #f8f9fa;
+  color: #212529;
   margin: 0;
-  color: #000000;
+  min-height: 100vh;
 }
 
+/* NAVBAR */
+.navbar {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* LOGIN CONTAINER */
 .login-container {
   background: #ffffff;
-  border: 1px solid #ccc;
+  border: 1px solid #ddd;
   padding: 40px;
   border-radius: 16px;
   text-align: center;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  width: 350px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  width: 360px;
 }
 
 .logo {
@@ -28,10 +32,11 @@ body {
   margin-top: 0;
   color: #d00000;
   font-size: 24px;
+  font-weight: 700;
 }
 
 .tagline {
-  color: #555;
+  color: #666;
   font-size: 14px;
   margin-bottom: 25px;
 }
@@ -47,6 +52,11 @@ body {
   font-size: 14px;
 }
 
+.login-container input:focus {
+  border-color: #d00000;
+  box-shadow: 0 0 0 0.1rem rgba(208, 0, 0, 0.25);
+}
+
 .login-container button {
   width: 100%;
   padding: 10px;
@@ -56,15 +66,90 @@ body {
   font-weight: bold;
   border-radius: 8px;
   cursor: pointer;
-  transition: 0.3s;
+  transition: background 0.3s;
 }
 
 .login-container button:hover {
   background-color: #a10000;
 }
 
-.note {
-  font-size: 12px;
-  margin-top: 20px;
-  color: #888;
+/* DASHBOARD TABLE */
+.card {
+  border-radius: 12px;
+  overflow: hidden;
+  border: none;
+}
+
+.card-header {
+  background: #ffffff;
+  border-bottom: 1px solid #e5e5e5;
+  font-weight: 600;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table thead th {
+  background-color: #f2f2f2;
+  font-weight: 600;
+  color: #333;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: #fafafa;
+}
+
+/* BUTTONS */
+.btn-danger {
+  background-color: #d00000 !important;
+  border: none !important;
+}
+
+.btn-danger:hover {
+  background-color: #a10000 !important;
+}
+
+/* FORM */
+.form-label {
+  font-weight: 600;
+}
+
+.form-control, .form-select {
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  transition: 0.2s;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #d00000;
+  box-shadow: 0 0 0 0.1rem rgba(208, 0, 0, 0.25);
+}
+
+/* NAV TABS */
+.nav-tabs .nav-link {
+  font-weight: 500;
+  color: #555;
+  border-radius: 0;
+  transition: all 0.2s ease;
+}
+
+.nav-tabs .nav-link.active {
+  color: #d00000;
+  border-color: #d00000 #d00000 #fff;
+  font-weight: 600;
+}
+
+/* TOAST */
+.toast-container {
+  z-index: 1055;
+}
+
+.toast {
+  border-radius: 8px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.toast-body {
+  font-size: 14px;
 }
