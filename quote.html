@@ -1,614 +1,238 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Create Quote | Training Portal</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <style>
-        /* General Styling */
-        body { font-family: 'Poppins', sans-serif; background: #f8f9fa; }
-        .required-star { color: red; font-weight: bold; margin-left: 2px; }
-        .card { border-radius: 12px; }
-        .card-header { font-weight: 600; background-color: #e9ecef; border-radius: 12px 12px 0 0 !important; }
-
-        /* Stepper/Tab Styling */
-        .nav-pills .nav-link { color: #6c757d; background: #e9ecef; margin-right: 0.5rem; border-radius: 8px; font-size: 0.9rem; }
-        .nav-pills .nav-link.active { color: white; background-color: #0d6efd; }
-        .nav-pills .nav-link.disabled { opacity: 0.5; pointer-events: none; }
-        .nav-item { flex-grow: 1; text-align: center; }
-
-        /* Dynamic Section Utilities */
-        /* These are handled by JS, but kept here for structure */
-        .tab-auto-only, .tab-home-only { display: none; } 
-
-        /* Custom Alert/Toast (replaces alert() and confirm()) */
-        .custom-alert { position: fixed; top: 20px; right: 20px; z-index: 2000; padding: 15px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; }
-        .alert-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LAVA Safeco | Quote</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background-color: #f4f7f6;
+      padding-top: 70px;
+    }
+    .navbar-brand img { height: 40px; border-radius: 8px; }
+    .tab-content {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 20px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+    .nav-tabs .nav-link.active { background-color: #0d6efd; color: #fff !important; }
+    .section-title { font-weight: 600; color: #0d6efd; margin-bottom: 10px; }
+    .quote-box {
+      border: 2px solid #0d6efd;
+      padding: 15px;
+      border-radius: 10px;
+      background-color: #f8faff;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
-    <!-- Firebase & Data Logic -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, addDoc, collection, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        setLogLevel('Debug');
-
-        let db = null;
-        let auth = null;
-        let userId = null;
-        let currentQuoteData = {}; 
-
-        // Global variables provided by the environment
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        // --- Firebase Initialization and Auth ---
-        window.onload = function() {
-            if (Object.keys(firebaseConfig).length === 0) {
-                console.error("Firebase config missing. Running in mock mode.");
-                // For mock mode, manually set a user ID and start quote process
-                userId = crypto.randomUUID(); 
-                startNewQuote();
-                return;
-            }
-
-            try {
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        console.log("User authenticated in quote view:", userId);
-                        startNewQuote(); 
-                    } else {
-                        handleAuthInitialization();
-                    }
-                });
-            } catch (error) {
-                console.error("Error initializing Firebase:", error);
-            }
-        };
-
-        async function handleAuthInitialization() {
-            try {
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (error) {
-                console.error("Firebase Sign-in Failed:", error);
-            }
-        }
-
-        // --- Quote Logic ---
-
-        // These IDs map to the tab buttons and content panes
-        const tabIds = ['quote_setup', 'client', 'address', 'vehicles', 'coverages', 'underwriting', 'review'];
-        let currentStepIndex = 0;
-
-        function startNewQuote() {
-            currentQuoteData = {
-                // Generate a simple unique ID for display
-                quoteNumber: Date.now().toString().slice(-8), 
-                date: Date.now(),
-                status: 'In Progress'
-            };
-            document.getElementById('quoteNumberDisplay').textContent = `#${currentQuoteData.quoteNumber}`;
-            updateProductTypeDisplay();
-        }
-
-        // Handles showing/hiding Auto-specific or Home-specific elements
-        function updateProductTypeDisplay() {
-            const product = document.getElementById('productTypeSelect').value;
-            const quoteTypeDisplay = document.getElementById('quoteTypeDisplay');
-            const autoTabs = document.querySelectorAll('.tab-auto-only');
-            const homeTabs = document.querySelectorAll('.tab-home-only');
-            const autoCoverages = document.getElementById('auto-coverages-options');
-            const homeCoverages = document.getElementById('home-coverages-options');
-            const coverageTypeNote = document.getElementById('coverageTypeNote');
-            const underwritingAutoQ = document.getElementById('underwriting-auto-q');
-            const underwritingHomeQ = document.getElementById('underwriting-home-q');
-            const vehiclesTabLink = document.querySelector('[data-tab-id="vehicles"]');
-            
-            // Show/Hide logic based on selection
-            if (product === 'Auto') {
-                // Show Auto tabs, hide Home tabs
-                autoTabs.forEach(tab => tab.style.display = 'block');
-                homeTabs.forEach(tab => tab.style.display = 'none');
-                
-                quoteTypeDisplay.textContent = 'Auto Quote';
-                if (autoCoverages) autoCoverages.style.display = 'block';
-                if (homeCoverages) homeCoverages.style.display = 'none';
-                if (coverageTypeNote) coverageTypeNote.textContent = 'Select coverage options for the Auto policy.';
-                if (underwritingHomeQ) underwritingHomeQ.style.display = 'none';
-                if (underwritingAutoQ) underwritingAutoQ.style.display = 'block';
-                if (vehiclesTabLink) vehiclesTabLink.style.display = 'block';
-            } else if (product === 'Home') {
-                // Show Home tabs, hide Auto tabs
-                autoTabs.forEach(tab => tab.style.display = 'none');
-                homeTabs.forEach(tab => tab.style.display = 'block');
-
-                quoteTypeDisplay.textContent = 'Home Quote';
-                if (autoCoverages) autoCoverages.style.display = 'none';
-                if (homeCoverages) homeCoverages.style.display = 'block';
-                if (coverageTypeNote) coverageTypeNote.textContent = 'Select coverage options for the Home policy.';
-                if (underwritingHomeQ) underwritingHomeQ.style.display = 'block';
-                if (underwritingAutoQ) underwritingAutoQ.style.display = 'none';
-                if (vehiclesTabLink) vehiclesTabLink.style.display = 'none';
-            }
-            
-            // Re-save the current product type
-            currentQuoteData.productType = product;
-        }
-
-        function switchTab(direction) {
-            let nextIndex = currentStepIndex;
-
-            // Step 1: Validate and save current step data if moving forward
-            if (direction > 0 && !saveCurrentStepData(tabIds[currentStepIndex])) {
-                return; // Stop if validation/save fails
-            }
-            
-            // Step 2: Determine the actual next index, skipping hidden tabs
-            while (true) {
-                nextIndex += direction;
-                if (nextIndex < 0 || nextIndex >= tabIds.length) break;
-
-                const nextTabId = tabIds[nextIndex];
-                const nextTabButton = document.querySelector(`[data-tab-id="${nextTabId}"]`);
-                
-                // If the next tab is visible or if we've reached the end/beginning, we stop searching
-                if (nextTabButton && nextTabButton.style.display !== 'none') {
-                    break;
-                }
-            }
-
-            // Step 3: Navigate or Finalize
-            if (nextIndex >= 0 && nextIndex < tabIds.length) {
-                currentStepIndex = nextIndex;
-                navigateToTab(tabIds[currentStepIndex]);
-            } else if (nextIndex === tabIds.length) {
-                finalizeQuote();
-            }
-        }
-
-        function navigateToTab(targetId) {
-            const targetElement = document.getElementById(targetId);
-            const targetButton = document.querySelector(`[data-tab-id="${targetId}"]`);
-            
-            if (targetElement && targetButton) {
-                // Deactivate current tab
-                document.querySelector('.tab-pane.show.active')?.classList.remove('show', 'active');
-                document.querySelector('.nav-link.active')?.classList.remove('active');
-
-                // Activate new tab
-                targetElement.classList.add('show', 'active');
-                targetButton.classList.add('active');
-
-                // Update button visibility
-                document.getElementById('backBtn').style.display = currentStepIndex > 0 ? 'block' : 'none';
-                document.getElementById('nextBtn').textContent = currentStepIndex === tabIds.length - 1 ? 'Generate Premium & Save' : 'Continue';
-            }
-        }
-
-        function saveCurrentStepData(stepId) {
-            const form = document.getElementById(`${stepId}-form`);
-            if (!form) {
-                // Handle underwriting/review steps which don't have a form, but may have data elements
-                if (stepId === 'underwriting') {
-                    const hadAccidents = document.getElementById('hadAccidents')?.checked || false;
-                    const hasGaps = document.getElementById('hasGaps')?.checked || false;
-                    const homeClaims = document.getElementById('homeClaims')?.checked || false;
-                    const homeDog = document.getElementById('homeDog')?.checked || false;
-                    
-                    currentQuoteData.underwriting = { hadAccidents, hasGaps, homeClaims, homeDog };
-                }
-                return true; 
-            }
-
-            const fields = form.querySelectorAll('input, select, textarea');
-            let isValid = true;
-
-            fields.forEach(field => {
-                // Basic required validation
-                if (field.hasAttribute('required') && field.value.trim() === '') {
-                    isValid = false;
-                    field.classList.add('is-invalid');
-                } else {
-                    field.classList.remove('is-invalid');
-                    // Store data
-                    currentQuoteData[field.id] = field.value.trim();
-                }
-            });
-
-            if (!isValid) {
-                showAlert('error', 'Please fill out all required fields before continuing.');
-                return false;
-            }
-            
-            console.log(`Step ${stepId} data saved:`, currentQuoteData);
-            return true;
-        }
-
-        async function finalizeQuote() {
-            // Step 1: Calculate Premium (Mock Calculation)
-            const productType = currentQuoteData.productType;
-            let finalPremium = 0;
-            if (productType === 'Auto') {
-                 // Simple mock logic based on liability limit
-                 const liability = currentQuoteData.liabilityLimit || '100/300/100';
-                 finalPremium = liability === '250/500/250' ? 1800.00 : 1200.00;
-            } else if (productType === 'Home') {
-                 // Simple mock logic based on dwelling coverage
-                 const dwelling = parseFloat(currentQuoteData.dwellingCoverage) || 350000;
-                 finalPremium = dwelling > 400000 ? 3200.00 : 2500.00;
-            }
-
-            currentQuoteData.finalPremium = finalPremium;
-            currentQuoteData.status = 'Quoted';
-            currentQuoteData.agentId = userId;
-
-            // Step 2: Save to Firestore
-            if (!db) {
-                showAlert('success', `Mock Quote #${currentQuoteData.quoteNumber} Quoted! Premium: $${finalPremium.toFixed(2)}`);
-                setTimeout(() => window.location.href = "dashboard.html", 1500);
-                return;
-            }
-
-            const quotesPath = `artifacts/${appId}/users/${userId}/quotes`;
-
-            try {
-                const docRef = await addDoc(collection(db, quotesPath), currentQuoteData);
-                showAlert('success', `Quote #${currentQuoteData.quoteNumber} successfully Quoted! Premium: $${finalPremium.toFixed(2)}`);
-                
-                // Redirect to dashboard
-                setTimeout(() => {
-                    window.location.href = "dashboard.html";
-                }, 1500);
-
-            } catch (error) {
-                console.error("Error saving final quote:", error);
-                showAlert('error', 'Failed to save the final quote to the database.');
-            }
-        }
-
-        function showAlert(type, message) {
-            const alertBox = document.getElementById('custom-alert');
-            alertBox.textContent = message;
-            alertBox.className = 'custom-alert'; 
-            alertBox.style.display = 'block';
-
-            if (type === 'error') {
-                alertBox.classList.add('alert-error');
-            } else if (type === 'success') {
-                alertBox.classList.add('alert-success');
-            }
-
-            setTimeout(() => {
-                alertBox.style.display = 'none';
-            }, 4000);
-        }
-
-        // --- Event Listeners ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // Initial setup for buttons
-            document.getElementById('productTypeSelect').addEventListener('change', updateProductTypeDisplay);
-            document.getElementById('nextBtn').addEventListener('click', () => switchTab(1));
-            document.getElementById('backBtn').addEventListener('click', () => switchTab(-1));
-            
-            // Set initial date for better UX
-            const effectiveDateInput = document.getElementById('effectiveDate');
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            effectiveDateInput.value = tomorrow.toISOString().split('T')[0];
-
-            // Initialize the first step manually
-            navigateToTab('quote_setup');
-        });
-    </script>
-
-
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
-        <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="dashboard.html">LAVA Safeco</a>
-            <span class="text-white small ms-3" id="quoteNumberDisplay">#Loading...</span>
-            <span class="text-white ms-4 me-auto fw-semibold" id="quoteTypeDisplay">New Quote</span>
-            <a href="dashboard.html" class="btn btn-outline-light btn-sm">← Back to Dashboard</a>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <div class="container-fluid mt-4">
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <div class="card shadow-lg mb-5">
-                    
-                    <!-- Tab Navigation (Stepper) -->
-                    <div class="card-header bg-white p-3">
-                        <ul class="nav nav-pills" id="quoteTabs" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" data-tab-id="quote_setup" type="button" role="tab" aria-controls="quote_setup">1. Setup</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" data-tab-id="client" type="button" role="tab" aria-controls="client">2. Client</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" data-tab-id="address" type="button" role="tab" aria-controls="address">3. Address</button>
-                            </li>
-                            <li class="nav-item tab-auto-only" role="presentation">
-                                <!-- This tab's display style is controlled by JS -->
-                                <button class="nav-link" data-tab-id="vehicles" type="button" role="tab" aria-controls="vehicles">4. Vehicles</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" data-tab-id="coverages" type="button" role="tab" aria-controls="coverages">5. Coverages</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" data-tab-id="underwriting" type="button" role="tab" aria-controls="underwriting">6. Underwriting</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" data-tab-id="review" type="button" role="tab" aria-controls="review">7. Review & Submit</button>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <!-- Tab Content -->
-                    <div class="card-body">
-                        <div class="tab-content" id="quoteTabContent">
-                            
-                            <!-- 1. Quote Setup -->
-                            <div class="tab-pane fade" id="quote_setup" role="tabpanel">
-                                <h4 class="mb-4">Quote Setup</h4>
-                                <form id="quote_setup-form">
-                                    <div class="row mb-3">
-                                        <div class="col-md-6">
-                                            <label for="productTypeSelect" class="form-label">Product Type <span class="required-star">*</span></label>
-                                            <select class="form-select" id="productTypeSelect" required>
-                                                <option value="Auto">Auto</option>
-                                                <option value="Home">Home</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="stateSelect" class="form-label">State <span class="required-star">*</span></label>
-                                            <select class="form-select" id="stateSelect" required>
-                                                <option value="NC">North Carolina</option>
-                                                <option value="CA">California</option>
-                                                <option value="TX">Texas</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="effectiveDate" class="form-label">Requested Effective Date <span class="required-star">*</span></label>
-                                        <input type="date" class="form-control" id="effectiveDate" required>
-                                    </div>
-                                </form>
-                            </div>
-
-                            <!-- 2. Client Information -->
-                            <div class="tab-pane fade" id="client" role="tabpanel">
-                                <h4 class="mb-4">Client Information (Insured)</h4>
-                                <form id="client-form">
-                                    <div class="row mb-3">
-                                        <div class="col-md-6">
-                                            <label for="clientFirstName" class="form-label">First Name <span class="required-star">*</span></label>
-                                            <input type="text" class="form-control" id="clientFirstName" required>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="clientLastName" class="form-label">Last Name <span class="required-star">*</span></label>
-                                            <input type="text" class="form-control" id="clientLastName" required>
-                                        </div>
-                                    </div>
-                                    <div class="row mb-3">
-                                        <div class="col-md-6">
-                                            <label for="clientEmail" class="form-label">Email <span class="required-star">*</span></label>
-                                            <input type="email" class="form-control" id="clientEmail" required>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="clientPhone" class="form-label">Phone</label>
-                                            <input type="tel" class="form-control" id="clientPhone">
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-
-                            <!-- 3. Address -->
-                            <div class="tab-pane fade" id="address" role="tabpanel">
-                                <h4 class="mb-4">Primary Risk Address</h4>
-                                <form id="address-form">
-                                    <div class="mb-3">
-                                        <label for="streetAddress" class="form-label">Street Address <span class="required-star">*</span></label>
-                                        <input type="text" class="form-control" id="streetAddress" required>
-                                    </div>
-                                    <div class="row mb-3">
-                                        <div class="col-md-6">
-                                            <label for="city" class="form-label">City <span class="required-star">*</span></label>
-                                            <input type="text" class="form-control" id="city" required>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="zipCode" class="form-label">Zip Code <span class="required-star">*</span></label>
-                                            <input type="text" class="form-control" id="zipCode" required>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-
-                            <!-- 4. Auto: Vehicle Details (Auto-only tab) -->
-                            <div class="tab-pane fade tab-auto-only" id="vehicles" role="tabpanel">
-                                <h4 class="mb-4">Vehicle Details</h4>
-                                <p class="text-muted">Enter the primary vehicle for the policy.</p>
-                                <form id="vehicles-form">
-                                    <div class="row mb-3">
-                                        <div class="col-md-4">
-                                            <label for="vehicleYear" class="form-label">Year <span class="required-star">*</span></label>
-                                            <input type="number" class="form-control" id="vehicleYear" min="1980" max="2026" required>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label for="vehicleMake" class="form-label">Make <span class="required-star">*</span></label>
-                                            <input type="text" class="form-control" id="vehicleMake" required>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label for="vehicleModel" class="form-label">Model <span class="required-star">*</span></label>
-                                            <input type="text" class="form-control" id="vehicleModel" required>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="vinNumber" class="form-label">VIN (optional)</label>
-                                        <input type="text" class="form-control" id="vinNumber">
-                                    </div>
-                                </form>
-                            </div>
-
-                            <!-- 5. Coverages -->
-                            <div class="tab-pane fade" id="coverages" role="tabpanel">
-                                <h4 class="mb-4">Policy Coverages</h4>
-                                <p class="text-muted" id="coverageTypeNote">Select coverage options.</p>
-
-                                <!-- Auto Coverages -->
-                                <div id="auto-coverages-options">
-                                    <form id="coverages-auto-form">
-                                        <div class="mb-3">
-                                            <label for="liabilityLimit" class="form-label">Liability Limit <span class="required-star">*</span></label>
-                                            <select class="form-select" id="liabilityLimit" required>
-                                                <option>50/100/50</option>
-                                                <option selected>100/300/100</option>
-                                                <option>250/500/250</option>
-                                            </select>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="compDeductible" class="form-label">Comprehensive Deductible <span class="required-star">*</span></label>
-                                            <select class="form-select" id="compDeductible" required>
-                                                <option>$500</option>
-                                                <option selected>$1,000</option>
-                                                <option>$2,500</option>
-                                            </select>
-                                        </div>
-                                    </form>
-                                </div>
-
-                                <!-- Home Coverages -->
-                                <div id="home-coverages-options" style="display: none;">
-                                    <form id="coverages-home-form">
-                                        <div class="mb-3">
-                                            <label for="dwellingCoverage" class="form-label">Dwelling Coverage (A) <span class="required-star">*</span></label>
-                                            <input type="number" class="form-control" id="dwellingCoverage" value="350000" min="50000" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="homeDeductible" class="form-label">All Peril Deductible <span class="required-star">*</span></label>
-                                            <select class="form-select" id="homeDeductible" required>
-                                                <option selected>$1,000</option>
-                                                <option>$2,500</option>
-                                                <option>$5,000</option>
-                                            </select>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                            
-                            <!-- 6. Underwriting Questions -->
-                            <div class="tab-pane fade" id="underwriting" role="tabpanel">
-                                <h4 class="mb-4">Underwriting Questions</h4>
-
-                                <!-- Auto Underwriting -->
-                                <div id="underwriting-auto-q">
-                                    <p class="mb-3 fw-bold">Auto Eligibility Check</p>
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="checkbox" id="hadAccidents">
-                                        <label class="form-check-label" for="hadAccidents">Has the client had any moving violations in the last 3 years?</label>
-                                    </div>
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="checkbox" id="hasGaps">
-                                        <label class="form-check-label" for="hasGaps">Has the client had any gaps in coverage in the last 6 months?</label>
-                                    </div>
-                                </div>
-
-                                <!-- Home Underwriting -->
-                                <div id="underwriting-home-q" style="display: none;">
-                                    <p class="mb-3 fw-bold">Home Eligibility Check</p>
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="checkbox" id="homeClaims">
-                                        <label class="form-check-label" for="homeClaims">Has the client had more than one property claim in the last 5 years?</label>
-                                    </div>
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="checkbox" id="homeDog">
-                                        <label class="form-check-label" for="homeDog">Does the client own any restricted dog breeds (e.g., Pitbull, Rottweiler)?</label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 7. Review and Submit -->
-                            <div class="tab-pane fade" id="review" role="tabpanel">
-                                <h4 class="mb-4">Review and Finalize</h4>
-                                <div class="alert alert-info">
-                                    <p class="fw-bold mb-1">Quote Summary:</p>
-                                    <p class="mb-0">Product Type: <strong id="reviewProductType">Loading...</strong></p>
-                                    <p class="mb-0">Client: <strong id="reviewClientName">Loading...</strong></p>
-                                    <p class="mb-0">Risk Address: <strong id="reviewAddress">Loading...</strong></p>
-                                    <p class="mb-2">Effective Date: <strong id="reviewDate">Loading...</strong></p>
-                                    <p class="fw-bold">Click the button below to finalize the quote, calculate the estimated premium, and save the record to the dashboard.</p>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <!-- Footer Buttons -->
-                    <div class="card-footer bg-light d-flex justify-content-between p-3">
-                        <button class="btn btn-outline-secondary" id="backBtn" style="display: none;">← Back</button>
-                        <button class="btn btn-primary" id="nextBtn">Continue</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg bg-white shadow-sm fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand d-flex align-items-center" href="dashboard.html">
+        <img src="images/lava-safeco-logo.png" alt="LAVA Safeco Logo" class="me-2" />
+        <span class="fw-bold text-primary">LAVA Safeco</span>
+      </a>
+      <h5 class="ms-auto me-3 fw-bold text-primary" id="quoteTypeDisplay">Quote</h5>
+      <a href="dashboard.html" class="btn btn-outline-primary me-3">Back to Dashboard</a>
     </div>
-    
-<!-- Other existing scripts -->
-<script src="script.js"></script>
+  </nav>
 
-<!-- ✅ Add this new script below -->
-<script>
-  // ==========================================
-  // LAVA SAFECO Quote Type Auto-Detection
-  // ==========================================
-  document.addEventListener("DOMContentLoaded", () => {
-    const params = new URLSearchParams(window.location.search);
-    const quoteType = params.get("type");
+  <!-- Tabs Navigation -->
+  <div class="container mt-4">
+    <ul class="nav nav-tabs" id="quoteTabs"></ul>
+    <div class="tab-content" id="tabContent"></div>
+  </div>
 
-    // Preselect Auto/Home in dropdown if present in URL
-    const productSelect = document.getElementById("productTypeSelect");
-    if (quoteType && productSelect) {
-      const normalized = quoteType.trim().toLowerCase();
-      if (normalized === "auto" || normalized === "home") {
-        productSelect.value =
-          normalized.charAt(0).toUpperCase() + normalized.slice(1);
-      }
+  <!-- ==========================
+       SCRIPT SECTION
+  =========================== -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const params = new URLSearchParams(window.location.search);
+      const quoteType = params.get("type")?.toLowerCase() || "auto";
+      const quoteTabs = document.getElementById("quoteTabs");
+      const tabContent = document.getElementById("tabContent");
+      const quoteTypeDisplay = document.getElementById("quoteTypeDisplay");
+
+      // Tab names
+      const tabs = {
+        auto: [
+          "Policy Information",
+          "Driver Information",
+          "Vehicle Information",
+          "Coverage Selection",
+          "Discounts",
+          "Underwriting",
+          "Review",
+          "Billing",
+          "Issue",
+        ],
+        home: [
+          "Applicant",
+          "Dwelling Information",
+          "Cost Guide Features",
+          "Underwriting",
+          "Coverage Selection",
+          "Summary",
+          "Order Report",
+          "Billing",
+          "Issue",
+        ],
+      };
+
+      // Templates
+      const templates = {
+        "Policy Information": `
+          <h5 class="section-title">Policy Information</h5>
+          <div class="row g-3">
+            <div class="col-md-3"><label>Rating State</label><input id="autoState" type="text" class="form-control" /></div>
+            <div class="col-md-3"><label>Policy Form</label><input type="text" class="form-control" /></div>
+            <div class="col-md-3"><label>Agent Number</label><input type="text" class="form-control" /></div>
+            <div class="col-md-3"><label>Quote Date</label><input type="date" class="form-control" /></div>
+          </div>
+        `,
+        "Driver Information": `
+          <h5 class="section-title">Driver Information</h5>
+          <div class="row g-3">
+            <div class="col-md-4"><label>Driver Age</label><input id="driverAge" type="number" class="form-control" /></div>
+            <div class="col-md-4"><label>Gender</label><select class="form-select"><option>Male</option><option>Female</option></select></div>
+            <div class="col-md-4"><label>Years Licensed</label><input id="yearsLicensed" type="number" class="form-control" /></div>
+          </div>
+        `,
+        "Vehicle Information": `
+          <h5 class="section-title">Vehicle Information</h5>
+          <div class="row g-3">
+            <div class="col-md-3"><label>Year</label><input id="vehicleYear" type="number" class="form-control" /></div>
+            <div class="col-md-3"><label>Make</label><input id="vehicleMake" type="text" class="form-control" /></div>
+            <div class="col-md-3"><label>Model</label><input id="vehicleModel" type="text" class="form-control" /></div>
+            <div class="col-md-3"><label>Annual Mileage</label><input id="annualMileage" type="number" class="form-control" /></div>
+          </div>
+        `,
+        "Coverage Selection": `
+          <h5 class="section-title">Coverage Selection</h5>
+          <div class="row g-3">
+            <div class="col-md-3"><label>Liability (BI/PD)</label><input type="text" class="form-control" placeholder="100/300/100" /></div>
+            <div class="col-md-3"><label>Comp Deductible</label><input id="compDeductible" type="number" class="form-control" /></div>
+            <div class="col-md-3"><label>Collision Deductible</label><input id="collDeductible" type="number" class="form-control" /></div>
+          </div>
+        `,
+        Discounts: `
+          <h5 class="section-title">Discounts</h5>
+          <div class="row g-3">
+            <div class="col-md-3"><label>Homeowner</label><select id="homeowner" class="form-select"><option>No</option><option>Yes</option></select></div>
+            <div class="col-md-3"><label>Multi-car</label><select id="multiCar" class="form-select"><option>No</option><option>Yes</option></select></div>
+          </div>
+        `,
+        Underwriting: `
+          <h5 class="section-title">Underwriting</h5>
+          <p>Answer underwriting questions truthfully to ensure accurate pricing.</p>
+        `,
+        Review: `
+          <h5 class="section-title">Review</h5>
+          <p>Review collected information and generate your auto quote.</p>
+          <button class="btn btn-primary" onclick="generateAutoQuote()">Generate Quote</button>
+          <div id="autoQuoteResult" class="quote-box mt-3"></div>
+        `,
+        Applicant: `
+          <h5 class="section-title">Applicant Information</h5>
+          <div class="row g-3">
+            <div class="col-md-4"><label>Applicant Age</label><input id="applicantAge" type="number" class="form-control" /></div>
+            <div class="col-md-4"><label>Credit Score</label><input id="creditScore" type="number" class="form-control" /></div>
+          </div>
+        `,
+        "Dwelling Information": `
+          <h5 class="section-title">Dwelling Information</h5>
+          <div class="row g-3">
+            <div class="col-md-4"><label>Year Built</label><input id="yearBuilt" type="number" class="form-control" /></div>
+            <div class="col-md-4"><label>Square Footage</label><input id="sqft" type="number" class="form-control" /></div>
+            <div class="col-md-4"><label>Roof Type</label><input id="roofType" type="text" class="form-control" /></div>
+          </div>
+        `,
+        "Cost Guide Features": `
+          <h5 class="section-title">Cost Guide Features</h5>
+          <div class="row g-3">
+            <div class="col-md-4"><label>Stories</label><input id="stories" type="number" class="form-control" /></div>
+            <div class="col-md-4"><label>Garage Type</label><input type="text" class="form-control" /></div>
+          </div>
+        `,
+        Summary: `
+          <h5 class="section-title">Summary</h5>
+          <p>Review home details and generate your quote.</p>
+          <button class="btn btn-primary" onclick="generateHomeQuote()">Generate Home Quote</button>
+          <div id="homeQuoteResult" class="quote-box mt-3"></div>
+        `,
+        Billing: `<h5 class="section-title">Billing Information</h5><p>Set up billing options here.</p>`,
+        Issue: `<h5 class="section-title">Issue Policy</h5><p>Finalize and issue policy.</p>`,
+        "Order Report": `<h5 class="section-title">Order Report</h5><p>Order property or claim reports here.</p>`
+      };
+
+      // Render Tabs
+      const selectedTabs = quoteType === "home" ? tabs.home : tabs.auto;
+      quoteTypeDisplay.textContent = quoteType.charAt(0).toUpperCase() + quoteType.slice(1) + " Quote";
+      selectedTabs.forEach((tabName, index) => {
+        quoteTabs.innerHTML += `
+          <li class="nav-item">
+            <a class="nav-link ${index === 0 ? "active" : ""}" data-bs-toggle="tab" href="#tab${index}">${tabName}</a>
+          </li>`;
+        tabContent.innerHTML += `
+          <div class="tab-pane fade ${index === 0 ? "show active" : ""}" id="tab${index}">
+            ${templates[tabName] || "<p>Form not defined.</p>"}
+          </div>`;
+      });
+    });
+
+    // ==========================
+    // AUTO QUOTE CALCULATOR
+    // ==========================
+    function generateAutoQuote() {
+      const age = parseInt(document.getElementById("driverAge").value) || 30;
+      const year = parseInt(document.getElementById("vehicleYear").value) || 2020;
+      const mileage = parseInt(document.getElementById("annualMileage").value) || 12000;
+      const yearsLicensed = parseInt(document.getElementById("yearsLicensed").value) || 5;
+      const homeowner = document.getElementById("homeowner")?.value === "Yes";
+      const multiCar = document.getElementById("multiCar")?.value === "Yes";
+
+      let baseRate = 700;
+      baseRate += (2025 - year) * 5;
+      if (age < 25) baseRate += 150;
+      if (mileage > 15000) baseRate += 100;
+      if (yearsLicensed > 10) baseRate -= 50;
+      if (homeowner) baseRate -= 75;
+      if (multiCar) baseRate -= 100;
+
+      document.getElementById("autoQuoteResult").innerHTML = `
+        <h6>Estimated Auto Premium:</h6>
+        <p><strong>$${baseRate.toFixed(2)}</strong> / 6-month policy</p>
+        <small>Includes multi-factor adjustments based on age, vehicle year, and discounts.</small>`;
     }
 
-    // Trigger UI update for the selected product type
-    if (typeof updateProductTypeDisplay === "function") {
-      updateProductTypeDisplay();
-    }
+    // ==========================
+    // HOME QUOTE CALCULATOR
+    // ==========================
+    function generateHomeQuote() {
+      const yearBuilt = parseInt(document.getElementById("yearBuilt").value) || 2000;
+      const sqft = parseInt(document.getElementById("sqft").value) || 1500;
+      const creditScore = parseInt(document.getElementById("creditScore").value) || 700;
+      const stories = parseInt(document.getElementById("stories").value) || 1;
 
-    // ✅ Optional: Update the display title at top nav
-    const quoteTypeDisplay = document.getElementById("quoteTypeDisplay");
-    if (quoteTypeDisplay && quoteType) {
-      quoteTypeDisplay.textContent = `${
-        quoteType.charAt(0).toUpperCase() + quoteType.slice(1)
-      } Quote`;
+      let baseRate = 800;
+      baseRate += (2025 - yearBuilt) * 2;
+      baseRate += (sqft / 1000) * 50;
+      if (creditScore > 750) baseRate -= 75;
+      if (stories > 1) baseRate += 40;
+
+      document.getElementById("homeQuoteResult").innerHTML = `
+        <h6>Estimated Home Premium:</h6>
+        <p><strong>$${baseRate.toFixed(2)}</strong> / annual policy</p>
+        <small>Based on dwelling size, age, and credit rating.</small>`;
     }
-  });
-</script>
+  </script>
 </body>
 </html>
-
