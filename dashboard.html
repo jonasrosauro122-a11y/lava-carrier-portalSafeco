@@ -3,201 +3,321 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Agent Dashboard | LAVA Safeco</title>
-
-  <!-- Bootstrap + Google Fonts -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
+  <title>LAVA Safeco | Dashboard</title>
   <style>
-    body {
-      font-family: "Poppins", sans-serif;
-      background: #f4f7f6;
-      padding-top: 56px;
+    /* ----------- BASE STYLES ----------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", Arial, sans-serif;
     }
-    .text-primary-lava {
+    body {
+      background-color: #f4f7f6;
+      padding-top: 70px;
+    }
+
+    /* ----------- NAVBAR ----------- */
+    nav {
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 100;
+    }
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      color: #0d6efd;
+      text-decoration: none;
+    }
+    .navbar-brand img {
+      height: 40px;
+      border-radius: 6px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover {
       color: #0d6efd;
     }
-    .btn-primary-lava {
-      background-color: #0d6efd;
-      border-color: #0d6efd;
-      color: white;
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
     }
-    .btn-primary-lava:hover {
-      background-color: #0b5ed7;
-      border-color: #0b5ed7;
+    .btn {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .btn-primary {
+      background: #0d6efd;
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: #0b5ed7;
+    }
+    .btn-outline {
+      background: transparent;
+      color: #0d6efd;
+      border: 2px solid #0d6efd;
+    }
+    .btn-outline:hover {
+      background: #0d6efd;
+      color: #fff;
+    }
+
+    /* ----------- LAYOUT ----------- */
+    .container {
+      display: flex;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    /* ----------- SIDEBAR ----------- */
+    aside {
+      flex: 0 0 250px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
     .card {
-      border-radius: 12px;
-      border: none;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+      padding: 16px;
     }
-    .custom-alert {
+    .card h3 {
+      font-size: 18px;
+      color: #0d6efd;
+      margin-bottom: 8px;
+    }
+    .card p {
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 8px;
+    }
+    .form-input,
+    .form-select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    /* ----------- MAIN CONTENT ----------- */
+    main {
+      flex: 1;
+    }
+    .welcome-section {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .welcome-section img {
+      height: 60px;
+      border-radius: 6px;
+    }
+    .welcome-section h2 {
+      color: #0d6efd;
+      font-weight: 600;
+    }
+
+    .recent-quotes {
+      background: #fff;
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+    .recent-quotes h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background-color: #f0f2f5;
+      font-weight: 600;
+    }
+    tr:hover {
+      background-color: #f9fbff;
+    }
+    .text-muted {
+      color: #888;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    /* ----------- ALERT ----------- */
+    .alert {
       position: fixed;
       top: 20px;
       right: 20px;
-      z-index: 2000;
-      padding: 15px;
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+      padding: 10px 16px;
       border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       display: none;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
     }
-    .alert-error {
-      background-color: #f8d7da;
+    .alert.error {
+      background: #f8d7da;
       color: #721c24;
       border: 1px solid #f5c6cb;
     }
-    .alert-success {
-      background-color: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
+
+    /* ----------- RESPONSIVE ----------- */
+    @media (max-width: 900px) {
+      .container {
+        flex-direction: column;
+      }
+      aside {
+        flex: 1 1 auto;
+      }
     }
   </style>
 </head>
 
 <body>
   <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg bg-white shadow-sm fixed-top">
-    <div class="container-fluid">
-      <a class="navbar-brand d-flex align-items-center" href="#">
-        <img src="images/lava-safeco-logo.png" alt="LAVA Safeco Logo" height="40" class="me-2 rounded-lg" />
-        <span class="fw-bold text-primary-lava">LAVA Safeco</span>
-      </a>
+  <nav>
+    <a href="#" class="navbar-brand">
+      <img src="images/lava-safeco-logo.png" alt="LAVA Safeco Logo" />
+      LAVA Safeco
+    </a>
 
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link fw-semibold" href="#">Products</a></li>
-          <li class="nav-item"><a class="nav-link fw-semibold" href="#">Programs & Rewards</a></li>
-          <li class="nav-item"><a class="nav-link fw-semibold" href="#">Claims & Service</a></li>
-          <li class="nav-item"><a class="nav-link fw-semibold" href="#">My Agency</a></li>
-        </ul>
+    <div class="nav-links">
+      <a href="#">Products</a>
+      <a href="#">Programs</a>
+      <a href="#">Claims</a>
+      <a href="#">My Agency</a>
+    </div>
 
-        <div class="d-flex align-items-center">
-          <button class="btn btn-primary-lava me-3" id="startQuoteBtn">Start Quote</button>
-          <span id="agent-display" class="me-3 text-muted small">Loading User ID...</span>
-          <a href="#" class="text-danger text-decoration-none fw-semibold" id="logoutBtn">Logout</a>
-        </div>
-      </div>
+    <div class="nav-right">
+      <button class="btn btn-primary" onclick="startQuote()">Start Quote</button>
+      <span id="agent-display" style="font-size:13px;color:#777;">User ID: Agent Johnson</span>
+      <a href="#" style="color:#d33;font-weight:600;text-decoration:none;" onclick="logout()">Logout</a>
     </div>
   </nav>
 
-  <!-- Dashboard -->
-  <div class="container-fluid mt-4">
-    <div class="row">
-      <!-- Sidebar -->
-      <aside class="col-md-3 col-lg-2 mb-4">
-        <div class="card mb-3 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title fw-semibold">Customer Lookup</h5>
-            <p class="text-muted small mb-2">Search by name, policy, email, or phone</p>
-            <input type="text" class="form-control mb-2" placeholder="Search customer..." />
-            <button class="btn btn-primary-lava w-100">Search</button>
-          </div>
-        </div>
+  <!-- Main Layout -->
+  <div class="container">
+    <!-- Sidebar -->
+    <aside>
+      <div class="card">
+        <h3>Customer Lookup</h3>
+        <p>Search by name, policy, email, or phone</p>
+        <input type="text" class="form-input" placeholder="Search customer..." />
+        <button class="btn btn-primary w-100">Search</button>
+      </div>
 
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title fw-semibold">Quote</h5>
-            <select class="form-select mb-2" id="quoteStateSelect">
-              <option>North Carolina</option>
-              <option>California</option>
-              <option>Texas</option>
-            </select>
-            <select class="form-select mb-3" id="quoteProductSelect">
-              <option value="Auto">Auto</option>
-              <option value="Home">Home</option>
-              <option value="Life">Life</option>
-            </select>
-            <button class="btn btn-outline-primary w-100" id="startQuoteCardBtn">Start Quote</button>
-          </div>
-        </div>
-      </aside>
+      <div class="card">
+        <h3>Quote</h3>
+        <select class="form-select" id="quoteStateSelect">
+          <option>North Carolina</option>
+          <option>California</option>
+          <option>Texas</option>
+        </select>
+        <select class="form-select" id="quoteProductSelect">
+          <option value="Auto">Auto</option>
+          <option value="Home">Home</option>
+          <option value="Life">Life</option>
+        </select>
+        <button class="btn btn-outline w-100" onclick="startQuote()">Start Quote</button>
+      </div>
+    </aside>
 
-      <!-- Main Content -->
-      <main class="col-md-9 col-lg-10">
-        <div class="mb-4 d-flex align-items-center">
-          <img src="images/lava-safeco-logo.png" alt="LAVA Safeco Logo" height="60" class="me-3 rounded-lg" />
-          <h4 class="fw-bold mb-0" id="welcome-agent-msg">Hi Agent!</h4>
-        </div>
+    <!-- Main Content -->
+    <main>
+      <div class="welcome-section">
+        <img src="images/lava-safeco-logo.png" alt="LAVA Safeco Logo" />
+        <h2 id="welcome-agent-msg">Hi Agent Johnson!</h2>
+      </div>
 
-        <div class="card shadow-sm mt-4">
-          <div class="card-header bg-white fw-semibold">Recent Quotes</div>
-          <div class="card-body">
-            <table id="recentQuotesTable" class="table table-striped align-middle">
-              <thead>
-                <tr>
-                  <th>Quote #</th>
-                  <th>Client Name</th>
-                  <th>Type</th>
-                  <th>Premium</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td colspan="5" class="text-center text-muted small">Loading recent quotes...</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </main>
-    </div>
+      <div class="recent-quotes">
+        <h3>Recent Quotes</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Quote #</th>
+              <th>Client Name</th>
+              <th>Type</th>
+              <th>Premium</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="5" class="text-muted">No recent quotes available.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
   </div>
 
   <!-- Alert -->
-  <div class="custom-alert" id="custom-alert"></div>
+  <div class="alert" id="alertBox"></div>
 
-  <!-- ✅ Updated LAVA DASHBOARD SCRIPT -->
+  <!-- Inline Script -->
   <script>
-    /* ======================================================
-       LAVA SAFECO DASHBOARD SCRIPT (Updated)
-       - Single quote.html routing
-       - Works for Auto / Home / Life (future)
-       ====================================================== */
-
-    // ✅ Show Alert Utility
     function showAlert(type, message) {
-      const alertBox = document.getElementById("custom-alert");
-      alertBox.textContent = message;
-      alertBox.className =
-        "custom-alert " + (type === "error" ? "alert-error" : "alert-success");
-      alertBox.style.display = "block";
-      setTimeout(() => (alertBox.style.display = "none"), 3000);
+      const box = document.getElementById("alertBox");
+      box.textContent = message;
+      box.className = "alert" + (type === "error" ? " error" : "");
+      box.style.display = "block";
+      setTimeout(() => (box.style.display = "none"), 3000);
     }
 
-    // ✅ Start Quote Logic (with dynamic redirect)
     function startQuote() {
-      const productSelect = document.getElementById("quoteProductSelect");
-      const product = productSelect ? productSelect.value.trim().toLowerCase() : "";
-
+      const product = document.getElementById("quoteProductSelect").value.toLowerCase();
       if (product === "auto" || product === "home") {
-        // Redirect to quote.html with query parameter
         window.location.href = `quote.html?type=${product}`;
       } else {
-        // Handle unsupported quote types (e.g. Life)
-        showAlert("error", "Sorry, this quote type is not yet supported.");
+        showAlert("error", "This quote type is not yet supported.");
       }
     }
 
-    // ✅ Simulate loading agent name (for demo)
-    document.addEventListener("DOMContentLoaded", () => {
-      const agentDisplay = document.getElementById("agent-display");
-      const welcomeMsg = document.getElementById("welcome-agent-msg");
-
-      // Example agent name
-      const agentName = "Agent Johnson";
-      agentDisplay.textContent = `User ID: ${agentName}`;
-      welcomeMsg.textContent = `Hi ${agentName}!`;
-    });
-
-    // ✅ Event Listeners
-    document.getElementById("startQuoteBtn").addEventListener("click", startQuote);
-    document.getElementById("startQuoteCardBtn").addEventListener("click", startQuote);
-
-    document.getElementById("logoutBtn").addEventListener("click", () => {
+    function logout() {
       showAlert("success", "You have been logged out.");
-    });
+    }
   </script>
 </body>
 </html>
