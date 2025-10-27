@@ -148,31 +148,50 @@
   <!-- Alert -->
   <div class="custom-alert" id="custom-alert"></div>
 
+  <!-- ✅ Updated LAVA DASHBOARD SCRIPT -->
   <script>
-    // ✅ Unified Start Quote Logic
-    function startQuote() {
-      const productSelect = document.getElementById("quoteProductSelect");
-      const product = productSelect ? productSelect.value : "Auto";
+    /* ======================================================
+       LAVA SAFECO DASHBOARD SCRIPT (Updated)
+       - Single quote.html routing
+       - Works for Auto / Home / Life (future)
+       ====================================================== */
 
-      if (product === "Auto") {
-        window.location.href = "auto-quote.html";
-      } else if (product === "Home") {
-        window.location.href = "home-quote.html";
-      } else {
-        showAlert("error", "Quote type not supported yet.");
-      }
-    }
-
-    // ✅ Alert Utility
+    // ✅ Show Alert Utility
     function showAlert(type, message) {
       const alertBox = document.getElementById("custom-alert");
       alertBox.textContent = message;
-      alertBox.className = "custom-alert " + (type === "error" ? "alert-error" : "alert-success");
+      alertBox.className =
+        "custom-alert " + (type === "error" ? "alert-error" : "alert-success");
       alertBox.style.display = "block";
       setTimeout(() => (alertBox.style.display = "none"), 3000);
     }
 
-    // ✅ Add event listeners
+    // ✅ Start Quote Logic (with dynamic redirect)
+    function startQuote() {
+      const productSelect = document.getElementById("quoteProductSelect");
+      const product = productSelect ? productSelect.value.trim().toLowerCase() : "";
+
+      if (product === "auto" || product === "home") {
+        // Redirect to quote.html with query parameter
+        window.location.href = `quote.html?type=${product}`;
+      } else {
+        // Handle unsupported quote types (e.g. Life)
+        showAlert("error", "Sorry, this quote type is not yet supported.");
+      }
+    }
+
+    // ✅ Simulate loading agent name (for demo)
+    document.addEventListener("DOMContentLoaded", () => {
+      const agentDisplay = document.getElementById("agent-display");
+      const welcomeMsg = document.getElementById("welcome-agent-msg");
+
+      // Example agent name
+      const agentName = "Agent Johnson";
+      agentDisplay.textContent = `User ID: ${agentName}`;
+      welcomeMsg.textContent = `Hi ${agentName}!`;
+    });
+
+    // ✅ Event Listeners
     document.getElementById("startQuoteBtn").addEventListener("click", startQuote);
     document.getElementById("startQuoteCardBtn").addEventListener("click", startQuote);
 
