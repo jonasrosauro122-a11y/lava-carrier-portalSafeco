@@ -6,957 +6,574 @@
     <title>Create Quote | Training Portal</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
     <style>
-        /* Simple custom style to visually separate sections */
-        .required-star {
-            color: red;
-            font-weight: bold;
-            margin-left: 2px;
-        }
-        /* Utility for Home/Auto specific tabs */
-        .tab-auto-only, .tab-home-only {
-            display: none;
-        }
-        /* Adjustments for better form readability */
-        .card-header {
-            font-weight: bold;
-            background-color: #f8f9fa; /* Light grey background */
-        }
+        /* General Styling */
+        body { font-family: 'Poppins', sans-serif; background: #f8f9fa; }
+        .required-star { color: red; font-weight: bold; margin-left: 2px; }
+        .card { border-radius: 12px; }
+        .card-header { font-weight: 600; background-color: #e9ecef; border-radius: 12px 12px 0 0 !important; }
+
+        /* Stepper/Tab Styling */
+        .nav-pills .nav-link { color: #6c757d; background: #e9ecef; margin-right: 0.5rem; border-radius: 8px; font-size: 0.9rem; }
+        .nav-pills .nav-link.active { color: white; background-color: #0d6efd; }
+        .nav-pills .nav-link.disabled { opacity: 0.5; pointer-events: none; }
+        .nav-item { flex-grow: 1; text-align: center; }
+
+        /* Dynamic Section Utilities */
+        /* These are handled by JS, but kept here for structure */
+        .tab-auto-only, .tab-home-only { display: none; } 
+
+        /* Custom Alert/Toast (replaces alert() and confirm()) */
+        .custom-alert { position: fixed; top: 20px; right: 20px; z-index: 2000; padding: 15px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; }
+        .alert-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
     </style>
 </head>
 <body>
+    <!-- Firebase & Data Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, addDoc, collection, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        setLogLevel('Debug');
+
+        let db = null;
+        let auth = null;
+        let userId = null;
+        let currentQuoteData = {}; 
+
+        // Global variables provided by the environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // --- Firebase Initialization and Auth ---
+        window.onload = function() {
+            if (Object.keys(firebaseConfig).length === 0) {
+                console.error("Firebase config missing. Running in mock mode.");
+                // For mock mode, manually set a user ID and start quote process
+                userId = crypto.randomUUID(); 
+                startNewQuote();
+                return;
+            }
+
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        console.log("User authenticated in quote view:", userId);
+                        startNewQuote(); 
+                    } else {
+                        handleAuthInitialization();
+                    }
+                });
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+            }
+        };
+
+        async function handleAuthInitialization() {
+            try {
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Firebase Sign-in Failed:", error);
+            }
+        }
+
+        // --- Quote Logic ---
+
+        // These IDs map to the tab buttons and content panes
+        const tabIds = ['quote_setup', 'client', 'address', 'vehicles', 'coverages', 'underwriting', 'review'];
+        let currentStepIndex = 0;
+
+        function startNewQuote() {
+            currentQuoteData = {
+                // Generate a simple unique ID for display
+                quoteNumber: Date.now().toString().slice(-8), 
+                date: Date.now(),
+                status: 'In Progress'
+            };
+            document.getElementById('quoteNumberDisplay').textContent = `#${currentQuoteData.quoteNumber}`;
+            updateProductTypeDisplay();
+        }
+
+        // Handles showing/hiding Auto-specific or Home-specific elements
+        function updateProductTypeDisplay() {
+            const product = document.getElementById('productTypeSelect').value;
+            const quoteTypeDisplay = document.getElementById('quoteTypeDisplay');
+            const autoTabs = document.querySelectorAll('.tab-auto-only');
+            const homeTabs = document.querySelectorAll('.tab-home-only');
+            const autoCoverages = document.getElementById('auto-coverages-options');
+            const homeCoverages = document.getElementById('home-coverages-options');
+            const coverageTypeNote = document.getElementById('coverageTypeNote');
+            const underwritingAutoQ = document.getElementById('underwriting-auto-q');
+            const underwritingHomeQ = document.getElementById('underwriting-home-q');
+            const vehiclesTabLink = document.querySelector('[data-tab-id="vehicles"]');
+            
+            // Show/Hide logic based on selection
+            if (product === 'Auto') {
+                // Show Auto tabs, hide Home tabs
+                autoTabs.forEach(tab => tab.style.display = 'block');
+                homeTabs.forEach(tab => tab.style.display = 'none');
+                
+                quoteTypeDisplay.textContent = 'Auto Quote';
+                if (autoCoverages) autoCoverages.style.display = 'block';
+                if (homeCoverages) homeCoverages.style.display = 'none';
+                if (coverageTypeNote) coverageTypeNote.textContent = 'Select coverage options for the Auto policy.';
+                if (underwritingHomeQ) underwritingHomeQ.style.display = 'none';
+                if (underwritingAutoQ) underwritingAutoQ.style.display = 'block';
+                if (vehiclesTabLink) vehiclesTabLink.style.display = 'block';
+            } else if (product === 'Home') {
+                // Show Home tabs, hide Auto tabs
+                autoTabs.forEach(tab => tab.style.display = 'none');
+                homeTabs.forEach(tab => tab.style.display = 'block');
+
+                quoteTypeDisplay.textContent = 'Home Quote';
+                if (autoCoverages) autoCoverages.style.display = 'none';
+                if (homeCoverages) homeCoverages.style.display = 'block';
+                if (coverageTypeNote) coverageTypeNote.textContent = 'Select coverage options for the Home policy.';
+                if (underwritingHomeQ) underwritingHomeQ.style.display = 'block';
+                if (underwritingAutoQ) underwritingAutoQ.style.display = 'none';
+                if (vehiclesTabLink) vehiclesTabLink.style.display = 'none';
+            }
+            
+            // Re-save the current product type
+            currentQuoteData.productType = product;
+        }
+
+        function switchTab(direction) {
+            let nextIndex = currentStepIndex;
+
+            // Step 1: Validate and save current step data if moving forward
+            if (direction > 0 && !saveCurrentStepData(tabIds[currentStepIndex])) {
+                return; // Stop if validation/save fails
+            }
+            
+            // Step 2: Determine the actual next index, skipping hidden tabs
+            while (true) {
+                nextIndex += direction;
+                if (nextIndex < 0 || nextIndex >= tabIds.length) break;
+
+                const nextTabId = tabIds[nextIndex];
+                const nextTabButton = document.querySelector(`[data-tab-id="${nextTabId}"]`);
+                
+                // If the next tab is visible or if we've reached the end/beginning, we stop searching
+                if (nextTabButton && nextTabButton.style.display !== 'none') {
+                    break;
+                }
+            }
+
+            // Step 3: Navigate or Finalize
+            if (nextIndex >= 0 && nextIndex < tabIds.length) {
+                currentStepIndex = nextIndex;
+                navigateToTab(tabIds[currentStepIndex]);
+            } else if (nextIndex === tabIds.length) {
+                finalizeQuote();
+            }
+        }
+
+        function navigateToTab(targetId) {
+            const targetElement = document.getElementById(targetId);
+            const targetButton = document.querySelector(`[data-tab-id="${targetId}"]`);
+            
+            if (targetElement && targetButton) {
+                // Deactivate current tab
+                document.querySelector('.tab-pane.show.active')?.classList.remove('show', 'active');
+                document.querySelector('.nav-link.active')?.classList.remove('active');
+
+                // Activate new tab
+                targetElement.classList.add('show', 'active');
+                targetButton.classList.add('active');
+
+                // Update button visibility
+                document.getElementById('backBtn').style.display = currentStepIndex > 0 ? 'block' : 'none';
+                document.getElementById('nextBtn').textContent = currentStepIndex === tabIds.length - 1 ? 'Generate Premium & Save' : 'Continue';
+            }
+        }
+
+        function saveCurrentStepData(stepId) {
+            const form = document.getElementById(`${stepId}-form`);
+            if (!form) {
+                // Handle underwriting/review steps which don't have a form, but may have data elements
+                if (stepId === 'underwriting') {
+                    const hadAccidents = document.getElementById('hadAccidents')?.checked || false;
+                    const hasGaps = document.getElementById('hasGaps')?.checked || false;
+                    const homeClaims = document.getElementById('homeClaims')?.checked || false;
+                    const homeDog = document.getElementById('homeDog')?.checked || false;
+                    
+                    currentQuoteData.underwriting = { hadAccidents, hasGaps, homeClaims, homeDog };
+                }
+                return true; 
+            }
+
+            const fields = form.querySelectorAll('input, select, textarea');
+            let isValid = true;
+
+            fields.forEach(field => {
+                // Basic required validation
+                if (field.hasAttribute('required') && field.value.trim() === '') {
+                    isValid = false;
+                    field.classList.add('is-invalid');
+                } else {
+                    field.classList.remove('is-invalid');
+                    // Store data
+                    currentQuoteData[field.id] = field.value.trim();
+                }
+            });
+
+            if (!isValid) {
+                showAlert('error', 'Please fill out all required fields before continuing.');
+                return false;
+            }
+            
+            console.log(`Step ${stepId} data saved:`, currentQuoteData);
+            return true;
+        }
+
+        async function finalizeQuote() {
+            // Step 1: Calculate Premium (Mock Calculation)
+            const productType = currentQuoteData.productType;
+            let finalPremium = 0;
+            if (productType === 'Auto') {
+                 // Simple mock logic based on liability limit
+                 const liability = currentQuoteData.liabilityLimit || '100/300/100';
+                 finalPremium = liability === '250/500/250' ? 1800.00 : 1200.00;
+            } else if (productType === 'Home') {
+                 // Simple mock logic based on dwelling coverage
+                 const dwelling = parseFloat(currentQuoteData.dwellingCoverage) || 350000;
+                 finalPremium = dwelling > 400000 ? 3200.00 : 2500.00;
+            }
+
+            currentQuoteData.finalPremium = finalPremium;
+            currentQuoteData.status = 'Quoted';
+            currentQuoteData.agentId = userId;
+
+            // Step 2: Save to Firestore
+            if (!db) {
+                showAlert('success', `Mock Quote #${currentQuoteData.quoteNumber} Quoted! Premium: $${finalPremium.toFixed(2)}`);
+                setTimeout(() => window.location.href = "dashboard.html", 1500);
+                return;
+            }
+
+            const quotesPath = `artifacts/${appId}/users/${userId}/quotes`;
+
+            try {
+                const docRef = await addDoc(collection(db, quotesPath), currentQuoteData);
+                showAlert('success', `Quote #${currentQuoteData.quoteNumber} successfully Quoted! Premium: $${finalPremium.toFixed(2)}`);
+                
+                // Redirect to dashboard
+                setTimeout(() => {
+                    window.location.href = "dashboard.html";
+                }, 1500);
+
+            } catch (error) {
+                console.error("Error saving final quote:", error);
+                showAlert('error', 'Failed to save the final quote to the database.');
+            }
+        }
+
+        function showAlert(type, message) {
+            const alertBox = document.getElementById('custom-alert');
+            alertBox.textContent = message;
+            alertBox.className = 'custom-alert'; 
+            alertBox.style.display = 'block';
+
+            if (type === 'error') {
+                alertBox.classList.add('alert-error');
+            } else if (type === 'success') {
+                alertBox.classList.add('alert-success');
+            }
+
+            setTimeout(() => {
+                alertBox.style.display = 'none';
+            }, 4000);
+        }
+
+        // --- Event Listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initial setup for buttons
+            document.getElementById('productTypeSelect').addEventListener('change', updateProductTypeDisplay);
+            document.getElementById('nextBtn').addEventListener('click', () => switchTab(1));
+            document.getElementById('backBtn').addEventListener('click', () => switchTab(-1));
+            
+            // Set initial date for better UX
+            const effectiveDateInput = document.getElementById('effectiveDate');
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            effectiveDateInput.value = tomorrow.toISOString().split('T')[0];
+
+            // Initialize the first step manually
+            navigateToTab('quote_setup');
+        });
+    </script>
+
+
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
-        <a class="navbar-brand fw-bold text-white" href="dashboard.html">LAVA Safeo</a>
-        <div class="ms-auto">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="dashboard.html">LAVA Safeco</a>
+            <span class="text-white small ms-3" id="quoteNumberDisplay">#Loading...</span>
+            <span class="text-white ms-4 me-auto fw-semibold" id="quoteTypeDisplay">New Quote</span>
             <a href="dashboard.html" class="btn btn-outline-light btn-sm">← Back to Dashboard</a>
         </div>
     </nav>
 
-<div class="container mt-4 mb-5">
+    <!-- Main Content -->
+    <div class="container-fluid mt-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card shadow-lg mb-5">
+                    
+                    <!-- Tab Navigation (Stepper) -->
+                    <div class="card-header bg-white p-3">
+                        <ul class="nav nav-pills" id="quoteTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" data-tab-id="quote_setup" type="button" role="tab" aria-controls="quote_setup">1. Setup</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-tab-id="client" type="button" role="tab" aria-controls="client">2. Client</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-tab-id="address" type="button" role="tab" aria-controls="address">3. Address</button>
+                            </li>
+                            <li class="nav-item tab-auto-only" role="presentation">
+                                <!-- This tab's display style is controlled by JS -->
+                                <button class="nav-link" data-tab-id="vehicles" type="button" role="tab" aria-controls="vehicles">4. Vehicles</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-tab-id="coverages" type="button" role="tab" aria-controls="coverages">5. Coverages</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-tab-id="underwriting" type="button" role="tab" aria-controls="underwriting">6. Underwriting</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-tab-id="review" type="button" role="tab" aria-controls="review">7. Review & Submit</button>
+                            </li>
+                        </ul>
+                    </div>
 
-    <div class="d-flex align-items-center mb-4">
-        <img src="images/lava-safeco-logo.png" alt="LAVA Safeco Logo" height="50" class="me-3">
-        <h3 class="text-danger fw-semibold mb-0">📝 Start a New <span id="quoteTypeDisplay">Quote</span></h3>
+                    <!-- Tab Content -->
+                    <div class="card-body">
+                        <div class="tab-content" id="quoteTabContent">
+                            
+                            <!-- 1. Quote Setup -->
+                            <div class="tab-pane fade" id="quote_setup" role="tabpanel">
+                                <h4 class="mb-4">Quote Setup</h4>
+                                <form id="quote_setup-form">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="productTypeSelect" class="form-label">Product Type <span class="required-star">*</span></label>
+                                            <select class="form-select" id="productTypeSelect" required>
+                                                <option value="Auto">Auto</option>
+                                                <option value="Home">Home</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="stateSelect" class="form-label">State <span class="required-star">*</span></label>
+                                            <select class="form-select" id="stateSelect" required>
+                                                <option value="NC">North Carolina</option>
+                                                <option value="CA">California</option>
+                                                <option value="TX">Texas</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="effectiveDate" class="form-label">Requested Effective Date <span class="required-star">*</span></label>
+                                        <input type="date" class="form-control" id="effectiveDate" required>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- 2. Client Information -->
+                            <div class="tab-pane fade" id="client" role="tabpanel">
+                                <h4 class="mb-4">Client Information (Insured)</h4>
+                                <form id="client-form">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="clientFirstName" class="form-label">First Name <span class="required-star">*</span></label>
+                                            <input type="text" class="form-control" id="clientFirstName" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="clientLastName" class="form-label">Last Name <span class="required-star">*</span></label>
+                                            <input type="text" class="form-control" id="clientLastName" required>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="clientEmail" class="form-label">Email <span class="required-star">*</span></label>
+                                            <input type="email" class="form-control" id="clientEmail" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="clientPhone" class="form-label">Phone</label>
+                                            <input type="tel" class="form-control" id="clientPhone">
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- 3. Address -->
+                            <div class="tab-pane fade" id="address" role="tabpanel">
+                                <h4 class="mb-4">Primary Risk Address</h4>
+                                <form id="address-form">
+                                    <div class="mb-3">
+                                        <label for="streetAddress" class="form-label">Street Address <span class="required-star">*</span></label>
+                                        <input type="text" class="form-control" id="streetAddress" required>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="city" class="form-label">City <span class="required-star">*</span></label>
+                                            <input type="text" class="form-control" id="city" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="zipCode" class="form-label">Zip Code <span class="required-star">*</span></label>
+                                            <input type="text" class="form-control" id="zipCode" required>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- 4. Auto: Vehicle Details (Auto-only tab) -->
+                            <div class="tab-pane fade tab-auto-only" id="vehicles" role="tabpanel">
+                                <h4 class="mb-4">Vehicle Details</h4>
+                                <p class="text-muted">Enter the primary vehicle for the policy.</p>
+                                <form id="vehicles-form">
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <label for="vehicleYear" class="form-label">Year <span class="required-star">*</span></label>
+                                            <input type="number" class="form-control" id="vehicleYear" min="1980" max="2026" required>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="vehicleMake" class="form-label">Make <span class="required-star">*</span></label>
+                                            <input type="text" class="form-control" id="vehicleMake" required>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="vehicleModel" class="form-label">Model <span class="required-star">*</span></label>
+                                            <input type="text" class="form-control" id="vehicleModel" required>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="vinNumber" class="form-label">VIN (optional)</label>
+                                        <input type="text" class="form-control" id="vinNumber">
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- 5. Coverages -->
+                            <div class="tab-pane fade" id="coverages" role="tabpanel">
+                                <h4 class="mb-4">Policy Coverages</h4>
+                                <p class="text-muted" id="coverageTypeNote">Select coverage options.</p>
+
+                                <!-- Auto Coverages -->
+                                <div id="auto-coverages-options">
+                                    <form id="coverages-auto-form">
+                                        <div class="mb-3">
+                                            <label for="liabilityLimit" class="form-label">Liability Limit <span class="required-star">*</span></label>
+                                            <select class="form-select" id="liabilityLimit" required>
+                                                <option>50/100/50</option>
+                                                <option selected>100/300/100</option>
+                                                <option>250/500/250</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="compDeductible" class="form-label">Comprehensive Deductible <span class="required-star">*</span></label>
+                                            <select class="form-select" id="compDeductible" required>
+                                                <option>$500</option>
+                                                <option selected>$1,000</option>
+                                                <option>$2,500</option>
+                                            </select>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <!-- Home Coverages -->
+                                <div id="home-coverages-options" style="display: none;">
+                                    <form id="coverages-home-form">
+                                        <div class="mb-3">
+                                            <label for="dwellingCoverage" class="form-label">Dwelling Coverage (A) <span class="required-star">*</span></label>
+                                            <input type="number" class="form-control" id="dwellingCoverage" value="350000" min="50000" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="homeDeductible" class="form-label">All Peril Deductible <span class="required-star">*</span></label>
+                                            <select class="form-select" id="homeDeductible" required>
+                                                <option selected>$1,000</option>
+                                                <option>$2,500</option>
+                                                <option>$5,000</option>
+                                            </select>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            
+                            <!-- 6. Underwriting Questions -->
+                            <div class="tab-pane fade" id="underwriting" role="tabpanel">
+                                <h4 class="mb-4">Underwriting Questions</h4>
+
+                                <!-- Auto Underwriting -->
+                                <div id="underwriting-auto-q">
+                                    <p class="mb-3 fw-bold">Auto Eligibility Check</p>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="hadAccidents">
+                                        <label class="form-check-label" for="hadAccidents">Has the client had any moving violations in the last 3 years?</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="hasGaps">
+                                        <label class="form-check-label" for="hasGaps">Has the client had any gaps in coverage in the last 6 months?</label>
+                                    </div>
+                                </div>
+
+                                <!-- Home Underwriting -->
+                                <div id="underwriting-home-q" style="display: none;">
+                                    <p class="mb-3 fw-bold">Home Eligibility Check</p>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="homeClaims">
+                                        <label class="form-check-label" for="homeClaims">Has the client had more than one property claim in the last 5 years?</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="homeDog">
+                                        <label class="form-check-label" for="homeDog">Does the client own any restricted dog breeds (e.g., Pitbull, Rottweiler)?</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 7. Review and Submit -->
+                            <div class="tab-pane fade" id="review" role="tabpanel">
+                                <h4 class="mb-4">Review and Finalize</h4>
+                                <div class="alert alert-info">
+                                    <p class="fw-bold mb-1">Quote Summary:</p>
+                                    <p class="mb-0">Product Type: <strong id="reviewProductType">Loading...</strong></p>
+                                    <p class="mb-0">Client: <strong id="reviewClientName">Loading...</strong></p>
+                                    <p class="mb-0">Risk Address: <strong id="reviewAddress">Loading...</strong></p>
+                                    <p class="mb-2">Effective Date: <strong id="reviewDate">Loading...</strong></p>
+                                    <p class="fw-bold">Click the button below to finalize the quote, calculate the estimated premium, and save the record to the dashboard.</p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Footer Buttons -->
+                    <div class="card-footer bg-light d-flex justify-content-between p-3">
+                        <button class="btn btn-outline-secondary" id="backBtn" style="display: none;">← Back</button>
+                        <button class="btn btn-primary" id="nextBtn">Continue</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <ul class="nav nav-tabs" id="quoteTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="tab-policyInfo" data-bs-toggle="tab" data-bs-target="#policyInfo" type="button" role="tab">Policy Information</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab-address" data-bs-toggle="tab" data-bs-target="#address" type="button" role="tab">Address</button>
-        </li>
-        
-        <li class="nav-item tab-auto-only" role="presentation">
-            <button class="nav-link" id="tab-driver" data-bs-toggle="tab" data-bs-target="#driver" type="button" role="tab">Driver</button>
-        </li>
-        <li class="nav-item tab-auto-only" role="presentation">
-            <button class="nav-link" id="tab-vehicle" data-bs-toggle="tab" data-bs-target="#vehicle" type="button" role="tab">Vehicle</button>
-        </li>
-        
-        <li class="nav-item tab-home-only" role="presentation">
-            <button class="nav-link" id="tab-applicant" data-bs-toggle="tab" data-bs-target="#applicant" type="button" role="tab">Applicant</button>
-        </li>
-        <li class="nav-item tab-home-only" role="presentation">
-            <button class="nav-link" id="tab-dwellingInfo" data-bs-toggle="tab" data-bs-target="#dwellingInfo" type="button" role="tab">Dwelling Information</button>
-        </li>
-        <li class="nav-item tab-home-only" role="presentation">
-            <button class="nav-link" id="tab-costGuide" data-bs-toggle="tab" data-bs-target="#costGuide" type="button" role="tab">Cost Guide Features</button>
-        </li>
-
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab-underwriting" data-bs-toggle="tab" data-bs-target="#underwriting" type="button" role="tab">Underwriting</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab-coverages" data-bs-toggle="tab" data-bs-target="#coverages" type="button" role="tab">Coverage Selection</button>
-        </li>
-
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab-summary" data-bs-toggle="tab" data-bs-target="#summary" type="button" role="tab">Summary</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab-orderReports" data-bs-toggle="tab" data-bs-target="#orderReports" type="button" role="tab">Order Report</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab-billing" data-bs-toggle="tab" data-bs-target="#billing" type="button" role="tab">Billing</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab-issue" data-bs-toggle="tab" data-bs-target="#issue" type="button" role="tab">Issue</button>
-        </li>
-    </ul>
-
-    <div class="tab-content mt-4">
-
-        <div class="tab-pane fade show active" id="policyInfo" role="tabpanel">
-            <div class="card shadow-sm">
-                <div class="card-header">Policy Information</div>
-                <div class="card-body">
-                    <form id="form-policyInfo" autocomplete="off">
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Rating State<span class="required-star">*</span></label>
-                                <select id="ratingState" class="form-select" required>
-                                    <option value="">Select</option>
-                                    <option>California</option>
-                                    <option>Florida</option>
-                                    <option>North Carolina</option>
-                                    <option>Texas</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Policy Form</label>
-                                <select id="policyForm" class="form-select">
-                                    <option value="">Select</option>
-                                    <option>HO3 - Special Form</option>
-                                    <option>Auto</option>
-                                    <option>HO6 - Condo Form</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Agent Number</label>
-                                <input id="agentNumber" class="form-control">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Producer/Other ID</label>
-                                <input id="producerOtherId" class="form-control">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Quote Date</label>
-                                <input type="date" id="quoteDate" class="form-control">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Effective Date</label>
-                                <input type="date" id="effectiveDate" class="form-control">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Original Quote Date</label>
-                                <input type="date" id="originalQuoteDate" class="form-control">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Agency ID for Customer</label>
-                                <input id="agencyId" class="form-control">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Reason for Policy</label>
-                                <input id="reasonForPolicy" class="form-control">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Quote Description</label>
-                                <input id="quoteDescription" class="form-control" placeholder="Optional">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Additional Policy Information</label>
-                                <textarea id="additionalPolicyInfo" class="form-control" rows="1"></textarea>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between mt-3">
-                            <button type="button" class="btn btn-outline-secondary" id="policyBack">Back to Dashboard</button>
-                            <div>
-                                <button type="button" class="btn btn-secondary me-2" id="policySave">Save</button>
-                                <button type="button" class="btn btn-primary" id="policyContinue">Continue</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div class="tab-pane fade" id="address" role="tabpanel">
-            <div class="card shadow-sm">
-                <div class="card-header">Address Information</div>
-                <div class="card-body">
-                    <h5 class="mb-3">Mailing Address</h5>
-                    <form id="form-address">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Mailing Address<span class="required-star">*</span></label>
-                                <input id="addrStreet" class="form-control" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Address Line 2</label>
-                                <input id="addrLine2" class="form-control">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">City<span class="required-star">*</span></label>
-                                <input id="addrCity" class="form-control" required>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">State<span class="required-star">*</span></label>
-                                <select id="addrState" class="form-select" required>
-                                    <option value="">Select</option>
-                                    <option>NC</option>
-                                    <option>CA</option>
-                                    <option>TX</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">ZIP Code<span class="required-star">*</span></label>
-                                <input id="addrZip" class="form-control" required>
-                            </div>
-                        </div>
-
-                        <hr>
-
-                        <div class="mb-3">
-                            <label class="form-label d-block">Is the location address<span class="required-star">*</span> the same as the mailing address?</label>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="sameAddress" value="Yes" checked>
-                                <label class="form-check-label">Yes</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="sameAddress" value="No">
-                                <label class="form-check-label">No</label>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Time at Present Address</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" placeholder="Yrs" min="0" id="timeYrs">
-                                    <span class="input-group-text">Yrs</span>
-                                    <input type="number" class="form-control" placeholder="Mos" min="0" max="11" id="timeMos">
-                                    <span class="input-group-text">Mos</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between mt-3">
-                            <button type="button" class="btn btn-outline-secondary" id="addressBack">Back</button>
-                            <div>
-                                <button type="button" class="btn btn-secondary me-2" id="addressSave">Save</button>
-                                <button type="button" class="btn btn-primary" id="addressContinue">Continue</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div class="tab-pane fade tab-auto-only" id="driver" role="tabpanel">
-            <div class="card shadow-sm">
-                <div class="card-header">Driver Information</div>
-                <div class="card-body">
-                    <h5 class="mb-3">Add/Edit Driver Details</h5>
-                    <form id="form-driver">
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">First Name<span class="required-star">*</span></label>
-                                <input id="driverFirstName" class="form-control" required>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Last Name<span class="required-star">*</span></label>
-                                <input id="driverLastName" class="form-control" required>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Date of Birth<span class="required-star">*</span></label>
-                                <input id="driverBirthDate" type="date" class="form-control" required>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Driver's License Number<span class="required-star">*</span></label>
-                                <input id="driverLicenseNum" class="form-control" required>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">License State<span class="required-star">*</span></label>
-                                <select id="driverLicenseState" class="form-select" required>
-                                    <option value="">Select</option>
-                                    <option>NC</option>
-                                    <option>CA</option>
-                                    <option>TX</option>
-                                    <option>...</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Marital Status</label>
-                                <select id="driverMaritalStatus" class="form-select">
-                                    <option>Single</option>
-                                    <option>Married</option>
-                                    <option>Divorced</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Relationship to Applicant<span class="required-star">*</span></label>
-                                <select id="driverRelationship" class="form-select" required>
-                                    <option value="">Select</option>
-                                    <option>Self</option>
-                                    <option>Spouse</option>
-                                    <option>Child</option>
-                                    <option>Other</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Primary Vehicle Driven</label>
-                                <select id="primaryVehicle" class="form-select">
-                                    <option value="">Select Vehicle</option>
-                                    <option disabled>-- Add Vehicle First --</option>
-                                </select>
-                            </div>
-                            <div class="col-md-12 mb-3">
-                                <label class="form-label">Accidents/Violations (Past 5 Years)</label>
-                                <textarea id="driverHistory" class="form-control" rows="2" placeholder="List any accidents, tickets, or major violations..."></textarea>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between mt-3">
-                            <button type="button" class="btn btn-outline-secondary" id="driverBack">Previous</button>
-                            <div>
-                                <button type="button" class="btn btn-secondary me-2" id="driverSave">Save Driver</button>
-                                <button type="button" class="btn btn-success me-2" id="addAnotherDriver">Add Another Driver</button>
-                                <button type="button" class="btn btn-primary" id="driverContinue">Next</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div class="tab-pane fade tab-auto-only" id="vehicle" role="tabpanel">
-            <div class="card shadow-sm">
-                <div class="card-header">Vehicle Information</div>
-                <div class="card-body">
-                    <h5 class="mb-3">Add/Edit Vehicle Details</h5>
-                    <form id="form-vehicle">
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">VIN (Vehicle Identification Number)<span class="required-star">*</span></label>
-                                <input id="vehicleVIN" class="form-control" maxlength="17" required>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Year<span class="required-star">*</span></label>
-                                <input id="vehicleYear" type="number" class="form-control" min="1980" max="2026" required>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Make<span class="required-star">*</span></label>
-                                <input id="vehicleMake" class="form-control" required>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Model<span class="required-star">*</span></label>
-                                <input id="vehicleModel" class="form-control" required>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Body Type</label>
-                                <input id="vehicleBodyType" class="form-control" placeholder="e.g., Sedan, SUV, Truck">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Odometer Reading (Approx. Miles)</label>
-                                <input id="vehicleOdometer" type="number" class="form-control" min="0">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Primary Use<span class="required-star">*</span></label>
-                                <select id="vehiclePrimaryUse" class="form-select" required>
-                                    <option value="">Select</option>
-                                    <option>Commuting</option>
-                                    <option>Pleasure</option>
-                                    <option>Business</option>
-                                    <option>Farm</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Annual Mileage</label>
-                                <input id="annualMileage" type="number" class="form-control" min="0">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Ownership Status<span class="required-star">*</span></label>
-                                <select id="vehicleOwnership" class="form-select" required>
-                                    <option value="">Select</option>
-                                    <option>Owned/Paid Off</option>
-                                    <option>Financed/Leased</option>
-                                </select>
-                            </div>
-                            <div class="col-md-12 mb-3">
-                                <label class="form-label">Safety/Anti-Theft Devices</label>
-                                <select id="safetyFeatures" class="form-select">
-                                    <option value="">Select</option>
-                                    <option>Standard Airbags & ABS</option>
-                                    <option>Anti-Lock Brakes (ABS)</option>
-                                    <option>Alarm System (Standard)</option>
-                                    <option>LoJack / GPS Tracker</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between mt-3">
-                            <button type="button" class="btn btn-outline-secondary" id="vehicleBack">Previous</button>
-                            <div>
-                                <button type="button" class="btn btn-secondary me-2" id="vehicleSave">Save Vehicle</button>
-                                <button type="button" class="btn btn-success me-2" id="addAnotherVehicle">Add Another Vehicle</button>
-                                <button type="button" class="btn btn-primary" id="vehicleContinue">Next</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-        
-        <div class="tab-pane fade tab-home-only" id="applicant" role="tabpanel">
-            <div class="card shadow-sm">
-                <div class="card-header">Applicant Information</div>
-                <div class="card-body">
-                    <form id="form-applicant">
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">First Name<span class="required-star">*</span></label>
-                                <input id="applicantFirstName" class="form-control" value="Jonas" required>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Last Name<span class="required-star">*</span></label>
-                                <input id="applicantLastName" class="form-control" value="Rossauro" required>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Birth Date<span class="required-star">*</span></label>
-                                <input id="applicantBirthDate" type="date" class="form-control" value="1987-01-01" required>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Marital Status</label>
-                                <select id="applicantMaritalStatus" class="form-select">
-                                    <option>Single</option>
-                                    <option>Married</option>
-                                    <option>Divorced</option>
-                                </select>
-                            </div>
-                            <div class="col-md-8 mb-3">
-                                <label class="form-label">Social Security Number</label>
-                                <input id="applicantSSN" class="form-control" placeholder="Optional: Enter SSN to improve chance of getting a hit.">
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between mt-3">
-                            <button type="button" class="btn btn-outline-secondary" id="applicantBack">Back</button>
-                            <div>
-                                <button type="button" class="btn btn-secondary me-2" id="applicantSave">Save</button>
-                                <button type="button" class="btn btn-primary" id="applicantContinue">Continue</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div class="tab-pane fade tab-home-only" id="dwellingInfo" role="tabpanel">
-            <div class="card shadow-sm">
-                <div class="card-header">Dwelling Information Details</div>
-                <div class="card-body">
-                    <form id="form-dwellingInfo">
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Number of Stories<span class="required-star">*</span></label>
-                                <select id="numStories" class="form-select" required>
-                                    <option value="">Select</option>
-                                    <option selected>2</option>
-                                    <option>1</option>
-                                    <option>3</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Protection Class<span class="required-star">*</span></label>
-                                <select id="protectionClass" class="form-select" required>
-                                    <option selected>1</option>
-                                    <option>2</option>
-                                    <option>3</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Total Living Area<span class="required-star">*</span></label>
-                                <input id="totalLivingArea" type="number" class="form-control" value="1588" required>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Year Originally Built<span class="required-star">*</span></label>
-                                <input id="yearBuilt" type="number" class="form-control" value="1987" required>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Maintenance Condition<span class="required-star">*</span></label>
-                                <select id="maintenanceCondition" class="form-select" required>
-                                    <option value="">Select</option>
-                                    <option>Excellent</option>
-                                    <option>Average</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Construction Style<span class="required-star">*</span></label>
-                                <select id="constructionStyle" class="form-select" required>
-                                    <option>Row/Townhouse</option>
-                                    <option>Single Family</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Dwelling Type<span class="required-star">*</span></label>
-                                <select id="dwellingType" class="form-select" required>
-                                    <option>Single family dwelling</option>
-                                    <option>Duplex</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Dwelling Located In<span class="required-star">*</span></label>
-                                <select id="dwellingLocatedIn" class="form-select" required>
-                                    <option value="">Select</option>
-                                    <option>Urban</option>
-                                    <option>Suburban</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Roof Material</label>
-                                <select id="roofMaterial" class="form-select">
-                                    <option>Shingles, Asphalt</option>
-                                    <option>Tile</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Roof Renovation</label>
-                                <select id="roofRenovation" class="form-select">
-                                    <option value="">Select</option>
-                                    <option>2020</option>
-                                    <option>2010</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Heating</label>
-                                <select id="heating" class="form-select">
-                                    <option>Gas, Average</option>
-                                    <option>Electric</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Exterior Walls</label>
-                                <select id="exteriorWalls" class="form-select">
-                                    <option>Siding, Wood</option>
-                                    <option>Brick</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Foundation Type</label>
-                                <select id="foundationType" class="form-select">
-                                    <option>Crawl Space</option>
-                                    <option>Slab</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Total # Of Full Baths</label>
-                                <input id="fullBaths" type="number" class="form-control" value="2" min="0">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Total # Of 3/4 Baths</label>
-                                <input id="partialBaths" type="number" class="form-control" value="1" min="0">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Fire Protection District</label>
-                                <input id="fireProtectionDistrict" class="form-control">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Inspection Date</label>
-                                <input id="inspectionDate" type="date" class="form-control">
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label d-block">Is this a secondary dwelling?<span class="required-star">*</span></label>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="secondaryDwelling" value="No" checked>
-                                    <label class="form-check-label">No</label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="secondaryDwelling" value="Yes">
-                                    <label class="form-check-label">Yes</label>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label d-block">Bypass Cost Guide for Quote?</label>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="bypassCostGuide" value="No" checked>
-                                    <label class="form-check-label">No</label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="bypassCostGuide" value="Yes">
-                                    <label class="form-check-label">Yes</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-between mt-3">
-                            <button type="button" class="btn btn-outline-secondary" id="dwellingInfoBack">Back</button>
-                            <div>
-                                <button type="button" class="btn btn-secondary me-2" id="dwellingInfoSave">Save</button>
-                                <button type="button" class="btn btn-primary" id="dwellingInfoContinue">Continue</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div class="tab-pane fade tab-home-only" id="costGuide" role="tabpanel">
-            <div class="card shadow-sm">
-                <div class="card-header">Cost Guide Features / Discounts & Surcharges</div>
-                <div class="card-body">
-                    <p class="text-muted">Fields for Discount & Surcharges Renewal Credit Date, Alarm type Dropdown, and other cost factors.</p>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Renewal Credit Date</label>
-                            <input type="date" class="form-control" id="renewalCreditDate">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Alarm Type</label>
-                            <select class="form-select" id="alarmType">
-                                <option value="">Select</option>
-                                <option>Central Station Alarm</option>
-                                <option>Local Alarm</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-between mt-3">
-                        <button type="button" class="btn btn-outline-secondary" id="costGuideBack">Back</button>
-                        <div>
-                            <button type="button" class="btn btn-secondary me-2" id="costGuideSave">Save</button>
-                            <button type="button" class="btn btn-primary" id="costGuideContinue">Continue</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-        <div class="tab-pane fade" id="underwriting" role="tabpanel">
-            <div class="card shadow-sm">
-                <div class="card-header">Underwriting Questions (Risk Factors)</div>
-                <div class="card-body">
-                    <form id="form-underwriting">
-                        <div id="underwriting-home-questions">
-                            <h6>Home Specific Questions<span class="required-star">*</span></h6>
-                            <div class="mb-3">
-                                <label class="form-label d-block">Is the home under construction?</label>
-                                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="underConstruction" value="Yes"><label class="form-check-label">Yes</label></div>
-                                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="underConstruction" value="No" checked><label class="form-check-label">No</label></div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label d-block">Is there a business on the premises?</label>
-                                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="businessOnPremises" value="Yes"><label class="form-check-label">Yes</label></div>
-                                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="businessOnPremises" value="No" checked><label class="form-check-label">No</label></div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label d-block">Is there a swimming pool on the premises?</label>
-                                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="swimmingPool" value="Yes"><label class="form-check-label">Yes</label></div>
-                                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="swimmingPool" value="No" checked><label class="form-check-label">No</label></div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label d-block">Are horses and/or livestock kept on the premises?</label>
-                                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="livestock" value="Yes"><label class="form-check-label">Yes</label></div>
-                                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="livestock" value="No" checked><label class="form-check-label">No</label></div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Current or most recent property insurance carrier</label>
-                                <select class="form-select" id="priorCarrier">
-                                    <option value="">Select</option>
-                                    <option>State Farm</option>
-                                    <option>Allstate</option>
-                                    <option>Add a New item</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div id="underwriting-auto-questions" style="display:none;">
-                            <h6>Auto Specific Questions<span class="required-star">*</span></h6>
-                            <div class="mb-3">
-                                <label class="form-label d-block">Any vehicle used for ride-sharing (Uber/Lyft) or delivery?</label>
-                                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="rideShare" value="Yes"><label class="form-check-label">Yes</label></div>
-                                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="rideShare" value="No" checked><label class="form-check-label">No</label></div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label d-block">Any drivers required to file an SR-22/FR-44?</label>
-                                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="sr22" value="Yes"><label class="form-check-label">Yes</label></div>
-                                <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="sr22" value="No" checked><label class="form-check-label">No</label></div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Prior Losses (describe)</label>
-                                <textarea id="priorLosses" class="form-control" rows="2" placeholder="Describe any claims/losses in the last 5 years."></textarea>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Credit Score</label>
-                                <input id="creditScore" class="form-control" placeholder="Optional: Used for rating/discount.">
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between mt-3">
-                            <button type="button" class="btn btn-outline-secondary" id="underwritingBack">Previous</button>
-                            <div>
-                                <button type="button" class="btn btn-secondary me-2" id="underwritingSave">Save</button>
-                                <button type="button" class="btn btn-primary" id="underwritingContinue">Continue</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div class="tab-pane fade" id="coverages" role="tabpanel">
-            <div class="card shadow-sm">
-                <div class="card-header">Coverage Selection</div>
-                <div class="card-body">
-                    <p class="text-muted" id="coverageTypeNote">Select coverage options for the policy type.</p>
-
-                    <div id="auto-coverages-fields">
-                        <h6>Auto Liability & Deductibles</h6>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Liability Limits (e.g., 100/300/100)<span class="required-star">*</span></label>
-                                <select id="liabilityLimits" class="form-select" required>
-                                    <option value="">Select</option>
-                                    <option>25/50/25</option>
-                                    <option>50/100/50</option>
-                                    <option selected>100/300/100</option>
-                                    <option>250/500/100</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Uninsured/Underinsured Motorist (UM/UIM)</label>
-                                <select id="umUim" class="form-select">
-                                    <option value="">Select</option>
-                                    <option>Reject</option>
-                                    <option>Same as Liability</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Collision Deductible</label>
-                                <select id="collisionDeductible" class="form-select">
-                                    <option>$500</option>
-                                    <option selected>$1,000</option>
-                                    <option>$2,500</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Comprehensive Deductible</label>
-                                <select id="compDeductible" class="form-select">
-                                    <option selected>$500</option>
-                                    <option>$1,000</option>
-                                    <option>No Deductible</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="home-coverages-fields" style="display:none;">
-                        <h6>Home Property & Liability</h6>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Dwelling Limit (Coverage A)<span class="required-star">*</span></label>
-                                <input id="dwellingLimit" type="number" class="form-control" placeholder="$250,000" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Personal Liability Limit<span class="required-star">*</span></label>
-                                <select id="personalLiabilityLimit" class="form-select" required>
-                                    <option value="">Select</option>
-                                    <option>$100,000</option>
-                                    <option>$300,000</option>
-                                    <option>$500,000</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-between mt-3">
-                        <button type="button" class="btn btn-outline-secondary" id="coveragesBack">Previous</button>
-                        <div>
-                            <button type="button" class="btn btn-secondary me-2" id="coveragesSave">Save</button>
-                            <button type="button" class="btn btn-primary" id="coveragesContinue">Next</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="tab-pane fade" id="summary" role="tabpanel">
-            <div class="card shadow-sm">
-                <div class="card-header">Summary</div>
-                <div class="card-body">
-                    <p class="text-muted">The final quote summary details will appear here.</p>
-
-                    <div class="d-flex justify-content-between mt-3">
-                        <button type="button" class="btn btn-outline-secondary" id="summaryBack">Previous</button>
-                        <div>
-                            <button type="button" class="btn btn-secondary me-2" id="summarySaveDraft">Save Draft</button>
-                            <button type="button" class="btn btn-primary" id="summarySaveQuote">Save Quote</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="tab-pane fade" id="orderReports" role="tabpanel">
-            <div class="card shadow-sm">
-                <div class="card-header">Order Report</div>
-                <div class="card-body">
-                    <h5 class="mb-3">Reports to Order</h5>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="mvrReport" checked>
-                        <label class="form-check-label" for="mvrReport">Motor Vehicle Report (MVR)</label>
-                    </div>
-                    <div class="form-check tab-home-only">
-                        <input class="form-check-input" type="checkbox" id="propertyInspection">
-                        <label class="form-check-label" for="propertyInspection">Property Inspection</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="creditReport" checked>
-                        <label class="form-check-label" for="creditReport">Credit Report</label>
-                    </div>
-
-                    <div class="d-flex justify-content-between mt-3">
-                        <button type="button" class="btn btn-outline-secondary" id="orderReportsBack">Previous</button>
-                        <div>
-                            <button type="button" class="btn btn-secondary me-2" id="orderReportsSave">Save</button>
-                            <button type="button" class="btn btn-primary" id="orderReportsContinue">Next</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="tab-pane fade" id="billing" role="tabpanel">
-            <div class="card shadow-sm">
-                <div class="card-header">Billing</div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Payment Plan</label>
-                            <select id="paymentPlan" class="form-select">
-                                <option>Annual</option>
-                                <option>Semi-Annual</option>
-                                <option>Monthly</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Billing Account #</label>
-                            <input id="billingAccount" class="form-control">
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-between mt-3">
-                        <button type="button" class="btn btn-outline-secondary" id="billingBack">Previous</button>
-                        <div>
-                            <button type="button" class="btn btn-secondary me-2" id="billingSave">Save</button>
-                            <button type="button" class="btn btn-primary" id="billingContinue">Next</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="tab-pane fade" id="issue" role="tabpanel">
-            <div class="card shadow-sm">
-                <div class="card-header">Issue</div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label">Final Notes</label>
-                        <textarea class="form-control" rows="3"></textarea>
-                    </div>
-
-                    <div class="d-flex justify-content-between mt-3">
-                        <button type="button" class="btn btn-outline-secondary" id="issueBack">Previous</button>
-                        <div>
-                            <button type="button" class="btn btn-secondary me-2" id="issueSave">Save</button>
-                            <button type="button" class="btn btn-danger" id="issuePolicy">Issue Policy</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const product = urlParams.get('product');
-
-        // References to the auto-specific elements
-        const autoTabs = document.querySelectorAll('.tab-auto-only');
-        const homeTabs = document.querySelectorAll('.tab-home-only');
-        const coverageTypeNote = document.getElementById('coverageTypeNote');
-        const autoCoverages = document.getElementById('auto-coverages-fields');
-        const homeCoverages = document.getElementById('home-coverages-fields');
-        const underwritingHomeQ = document.getElementById('underwriting-home-questions');
-        const underwritingAutoQ = document.getElementById('underwriting-auto-questions');
-        const quoteTypeDisplay = document.getElementById('quoteTypeDisplay');
-
-
-        if (product && product.toLowerCase() === 'auto') {
-            // 1. Show/Hide Tabs
-            homeTabs.forEach(tab => tab.style.display = 'none');
-            autoTabs.forEach(tab => tab.style.display = 'block');
-            
-            // 2. Set Quote Type Title
-            quoteTypeDisplay.textContent = 'Auto Quote';
-
-            // 3. Set Coverages Fields
-            if (autoCoverages && homeCoverages) {
-                autoCoverages.style.display = 'block';
-                homeCoverages.style.display = 'none';
-            }
-            if (coverageTypeNote) {
-                coverageTypeNote.textContent = 'Select coverage options for the Auto policy.';
-            }
-
-            // 4. Set Underwriting Questions
-            if (underwritingHomeQ && underwritingAutoQ) {
-                underwritingHomeQ.style.display = 'none';
-                underwritingAutoQ.style.display = 'block';
-            }
-
-            // 5. Auto-switch to the first auto-specific tab (Driver) or Address if Driver isn't next
-            // This is a simple logic; a full app would track progress
-            const addressTabBtn = document.getElementById('tab-address');
-            const driverTabBtn = document.getElementById('tab-driver');
-
-            // Find the current active tab and move to the next logical one.
-            // Since we load on Policy Info, the first step is usually to move to Address.
-            // A simple force to the Address tab on load is often desired.
-            if (addressTabBtn) {
-                 // Deactivate the Policy Info tab pane
-                 const activeTabPane = document.querySelector('#policyInfo');
-                 if (activeTabPane) {
-                    activeTabPane.classList.remove('show', 'active');
-                 }
-
-                 // Activate the Address tab button
-                 const activeTabButton = document.querySelector('#tab-policyInfo');
-                 if (activeTabButton) {
-                    activeTabButton.classList.remove('active');
-                 }
-                 addressTabBtn.classList.add('active');
-
-                 // Activate the Address tab pane
-                 const addressTabPane = document.querySelector('#address');
-                 if (addressTabPane) {
-                    addressTabPane.classList.add('show', 'active');
-                 }
-            }
-
-
-        } else if (product && product.toLowerCase() === 'home') {
-            // Logic for a Home quote
-            homeTabs.forEach(tab => tab.style.display = 'block');
-            autoTabs.forEach(tab => tab.style.display = 'none');
-            quoteTypeDisplay.textContent = 'Home Quote';
-            
-            if (autoCoverages && homeCoverages) {
-                autoCoverages.style.display = 'none';
-                homeCoverages.style.display = 'block';
-            }
-            if (coverageTypeNote) {
-                coverageTypeNote.textContent = 'Select coverage options for the Home policy.';
-            }
-            if (underwritingHomeQ && underwritingAutoQ) {
-                underwritingHomeQ.style.display = 'block';
-                underwritingAutoQ.style.display = 'none';
-            }
-        }
-    });
-
-    // NOTE: In a real application, you would also add event listeners to the 
-    // "Continue" and "Back" buttons to properly save data, validate forms, and switch tabs.
-    // For this fix, I'm focusing purely on the form content structure.
-</script>
+    
+    <!-- Custom Alert/Toast Container -->
+    <div class="custom-alert" id="custom-alert"></div>
 </body>
 </html>
