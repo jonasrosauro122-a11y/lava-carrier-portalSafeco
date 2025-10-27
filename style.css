@@ -1,34 +1,54 @@
 body {
   font-family: 'Poppins', sans-serif;
-  background: linear-gradient(135deg, #000000, #a10000);
+  background-color: #ffffff;
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  color: white;
   margin: 0;
+  color: #000000;
 }
 
 .login-container {
-  background: rgba(255, 255, 255, 0.1);
+  background: #ffffff;
+  border: 1px solid #ccc;
   padding: 40px;
-  border-radius: 20px;
+  border-radius: 16px;
   text-align: center;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  width: 350px;
+}
+
+.logo {
+  width: 150px;
+  margin-bottom: 15px;
+}
+
+.login-container h1 {
+  margin-top: 0;
+  color: #d00000;
+  font-size: 24px;
+}
+
+.tagline {
+  color: #555;
+  font-size: 14px;
+  margin-bottom: 25px;
 }
 
 .login-container input {
   display: block;
-  width: 250px;
-  margin: 10px auto;
+  width: 100%;
+  margin: 10px 0;
   padding: 10px;
-  border: none;
+  border: 1px solid #ccc;
   border-radius: 8px;
   outline: none;
+  font-size: 14px;
 }
 
 .login-container button {
-  width: 270px;
+  width: 100%;
   padding: 10px;
   border: none;
   background-color: #d00000;
@@ -40,11 +60,11 @@ body {
 }
 
 .login-container button:hover {
-  background-color: #ff1a1a;
+  background-color: #a10000;
 }
 
 .note {
   font-size: 12px;
-  margin-top: 15px;
-  color: #ccc;
+  margin-top: 20px;
+  color: #888;
 }
