@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Dashboard | LAVA Safeo</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body class="bg-light">
+
+  <!-- Header -->
+  <nav class="navbar navbar-expand-lg bg-white shadow-sm">
+    <div class="container-fluid">
+      <!-- Logo -->
+      <a class="navbar-brand d-flex align-items-center" href="#">
+        <img src="images/lava-safeo-logo.png" alt="LAVA Safeo Logo" height="40" class="me-2">
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link fw-semibold" href="#">Products</a></li>
+          <li class="nav-item"><a class="nav-link fw-semibold" href="#">Programs & Rewards</a></li>
+          <li class="nav-item"><a class="nav-link fw-semibold" href="#">Claims & Service</a></li>
+          <li class="nav-item"><a class="nav-link fw-semibold" href="#">My Agency</a></li>
+        </ul>
+
+        <div class="d-flex align-items-center">
+          <button class="btn btn-outline-primary me-3">Get a Quote</button>
+          <a href="#" class="text-dark text-decoration-none me-3">Settings</a>
+          <a href="#" class="text-dark text-decoration-none">Logout</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container-fluid mt-4">
+    <div class="row">
+      <!-- Sidebar -->
+      <aside class="col-md-3 col-lg-2 mb-4">
+        <div class="card mb-3 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title fw-semibold">Customer Lookup</h5>
+            <p class="text-muted small mb-2">Search by name, policy, email, or phone</p>
+            <input type="text" class="form-control mb-2" placeholder="Search customer..." />
+            <button class="btn btn-primary w-100">Search</button>
+          </div>
+        </div>
+
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title fw-semibold">Quote</h5>
+            <select class="form-select mb-2">
+              <option>North Carolina</option>
+              <option>California</option>
+              <option>Texas</option>
+            </select>
+            <select class="form-select mb-3">
+              <option>Auto</option>
+              <option>Home</option>
+              <option>Life</option>
+            </select>
+            <button class="btn btn-outline-primary w-100">Start Quote</button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Dashboard Area -->
+      <main class="col-md-9 col-lg-10">
+        <h4 class="fw-bold mb-4">Hi Agent!</h4>
+
+        <div class="row g-4">
+          <!-- My Customers -->
+          <div class="col-lg-8">
+            <div class="card shadow-sm">
+              <div class="card-header bg-white fw-semibold">My Agency’s Customers</div>
+              <div class="card-body">
+                <h6 class="text-muted">No renewals right now</h6>
+                <p class="small text-muted">When clients have upcoming renewals, you’ll see them here.</p>
+                <a href="#" class="btn btn-sm btn-primary">Prepare for renewals</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- My Insights -->
+          <div class="col-lg-4">
+            <div class="card shadow-sm h-100">
+              <div class="card-header bg-white fw-semibold">My Insights</div>
+              <div class="card-body">
+                <div class="alert alert-warning text-dark">
+                  <h5 class="fw-bold mb-1">85%</h5>
+                  <p class="mb-0 small">of customers say it’s important for agents to review policy coverages with them.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- My Favorites -->
+          <div class="col-lg-4">
+            <div class="card shadow-sm">
+              <div class="card-header bg-white fw-semibold">My Favorites</div>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item"><a href="#" class="text-decoration-none">Client list</a></li>
+                <li class="list-group-item"><a href="#" class="text-decoration-none">View policy summary</a></li>
+                <li class="list-group-item"><a href="#" class="text-decoration-none">Change or endorse</a></li>
+                <li class="list-group-item"><a href="#" class="text-decoration-none">Billing and payments</a></li>
+                <li class="list-group-item"><a href="#" class="text-decoration-none">Booklet / Record change</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- My Production -->
+          <div class="col-lg-8">
+            <div class="card shadow-sm">
+              <div class="card-header bg-white fw-semibold">My Production</div>
+              <div class="card-body">
+                <table class="table table-sm align-middle">
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>Pending</th>
+                      <th>Issued YTD</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>eSign</td><td>0</td><td>0</td></tr>
+                    <tr><td>Auto</td><td>0</td><td>0</td></tr>
+                    <tr><td>Home</td><td>0</td><td>0</td></tr>
+                    <tr><td>Specialty</td><td>0</td><td>0</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
