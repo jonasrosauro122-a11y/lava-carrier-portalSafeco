@@ -1,11 +1,20 @@
 // =============================================================
 // UNIVERSAL SCRIPT for dashboard.html and quote.html
+// This script handles global utilities, local storage management, 
+// and page-specific initialization logic.
 // =============================================================
 
+// --- CONSTANTS ---
 const DRAFT_KEY = "quoteDraft";
 const QUOTES_KEY = "quotes";
 
-/* ---------- Toast Helper ---------- */
+// --- GLOBAL UTILITIES ---
+
+/** * Shows a Bootstrap-style toast notification. 
+ * Requires Bootstrap CSS and the .toast-container element (can be dynamically created).
+ * @param {string} message - The message content.
+ * @param {string} type - 'success', 'danger', 'info', or 'warning'.
+ */
 function showToast(message, type = "success") {
     let container = document.querySelector(".toast-container");
     if (!container) {
@@ -15,7 +24,7 @@ function showToast(message, type = "success") {
     }
 
     const toast = document.createElement("div");
-    // Use 'show' class to display immediately
+    // Use 'show' class and appropriate background color class
     toast.className = `toast align-items-center text-bg-${type} border-0 show shadow mb-2`;
     toast.setAttribute('role', 'alert');
     toast.setAttribute('aria-live', 'assertive');
@@ -32,77 +41,111 @@ function showToast(message, type = "success") {
     setTimeout(() => toast.remove(), 3000);
 }
 
-/* ---------- LocalStorage Helpers ---------- */
+// --- LOCAL STORAGE HELPERS ---
+
+/** Returns the product-specific draft key (e.g., "quoteDraft_Auto"). */
 function getDraftKey(productType) {
     return `${DRAFT_KEY}_${productType}`;
 }
 
+/** Saves the current quote draft to localStorage. */
 function saveDraft(draft, productType) {
-    localStorage.setItem(getDraftKey(productType), JSON.stringify(draft || {}));
+    try {
+        localStorage.setItem(getDraftKey(productType), JSON.stringify(draft || {}));
+        console.log(`Draft for ${productType} saved.`);
+    } catch (e) {
+        console.error("Error saving draft to localStorage:", e);
+    }
 }
 
+/** Loads the current quote draft from localStorage. */
 function loadDraft(productType) {
-    const raw = localStorage.getItem(getDraftKey(productType));
-    return raw ? JSON.parse(raw) : {};
+    try {
+        const raw = localStorage.getItem(getDraftKey(productType));
+        return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+        console.error("Error loading draft from localStorage:", e);
+        return {};
+    }
 }
 
+/** Clears a specific product draft from localStorage. */
 function clearDraft(productType) {
     localStorage.removeItem(getDraftKey(productType));
+    console.log(`Draft for ${productType} cleared.`);
 }
 
+/** Saves a finalized quote to the main quotes array in localStorage. */
 function saveFinalQuote(quote) {
-    const arr = JSON.parse(localStorage.getItem(QUOTES_KEY)) || [];
-    arr.unshift(quote);
-    localStorage.setItem(QUOTES_KEY, JSON.stringify(arr));
+    try {
+        const arr = JSON.parse(localStorage.getItem(QUOTES_KEY)) || [];
+        arr.unshift(quote); // Add new quote to the beginning
+        localStorage.setItem(QUOTES_KEY, JSON.stringify(arr));
+        console.log("Final quote saved.");
+    } catch (e) {
+        console.error("Error saving final quote to localStorage:", e);
+    }
 }
 
-/* ---------- Helper to get field value ---------- */
+/** Gets the value of an input element by ID. */
 function getVal(id) {
     const el = document.getElementById(id);
     return el ? el.value.trim() : "";
 }
 
-/* ---------- Helper to get checked radio value ---------- */
+/** Gets the value of a checked radio button by name. */
 function getRadioVal(name) {
     const radio = document.querySelector(`input[name="${name}"]:checked`);
     return radio ? radio.value : '';
 }
 
-/* ============================================================
-    PAGE DETECTION
-    ============================================================ */
+
+// ============================================================
+// PAGE INITIALIZATION AND DETECTION
+// ============================================================
 document.addEventListener("DOMContentLoaded", () => {
     const path = window.location.pathname;
-    if (path.includes("dashboard.html")) initDashboardPage();
-    else if (path.includes("quote.html")) initQuotePage();
+    
+    if (path.includes("dashboard.html")) {
+        initDashboardPage();
+    }
+    else if (path.includes("quote.html")) {
+        initQuotePage();
+    }
 });
 
-/* ============================================================
-    DASHBOARD PAGE
-    ============================================================ */
+// ============================================================
+// DASHBOARD PAGE LOGIC
+// ============================================================
 function initDashboardPage() {
     const tableBody = document.querySelector("#recentQuotesTable tbody");
     const quotes = JSON.parse(localStorage.getItem(QUOTES_KEY)) || [];
 
     if (tableBody) {
+        // Clear previous content
+        tableBody.innerHTML = '';
+        
         // Populate recent quotes table
-        tableBody.innerHTML = quotes.length
-            ? ""
-            : `<tr><td colspan="5" class="text-center text-muted py-3">No recent quotes found.</td></tr>`;
+        if (quotes.length === 0) {
+             tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">No recent quotes found.</td></tr>`;
+        } else {
+            // Sort by createdAt descending
+            quotes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-        quotes.forEach((q) => {
-            const name = q.applicant?.firstName || q.applicant?.applicantFirstName || '';
-            const lastName = q.applicant?.lastName || q.applicant?.applicantLastName || '';
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${name} ${lastName}</td>
-                <td>${q.productType ?? "—"}</td>
-                <td>${q.policy?.quoteDescription ?? "—"}</td>
-                <td>${q.policy?.ratingState ?? "—"}</td>
-                <td>${new Date(q.createdAt).toLocaleDateString()}</td>
-            `;
-            tableBody.appendChild(row);
-        });
+            quotes.forEach((q) => {
+                const name = q.applicant?.firstName || q.applicant?.applicantFirstName || '';
+                const lastName = q.applicant?.lastName || q.applicant?.applicantLastName || '';
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${name} ${lastName}</td>
+                    <td>${q.productType ?? "—"}</td>
+                    <td>${q.policy?.quoteDescription ?? "—"}</td>
+                    <td>${q.policy?.ratingState ?? "—"}</td>
+                    <td>${new Date(q.createdAt).toLocaleDateString()}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
     }
 
     // Handle Start Quote button routing
@@ -114,9 +157,10 @@ function initDashboardPage() {
     startQuoteBtns.forEach((btn) =>
         btn.addEventListener("click", (e) => {
             e.preventDefault();
-            const selectedProduct = quoteProductSelect.value;
+            const selectedProduct = quoteProductSelect ? quoteProductSelect.value : 'Auto';
             
             if (selectedProduct === 'Auto' || selectedProduct === 'Home') {
+                // Redirect and pass the selected product type via URL parameter
                 window.location.href = `quote.html?product=${selectedProduct}`;
             } else {
                 showToast(`Starting a new ${selectedProduct} quote... (Not yet implemented)`, "info");
@@ -125,9 +169,9 @@ function initDashboardPage() {
     );
 }
 
-/* ============================================================
-    QUOTE PAGE
-    ============================================================ */
+// ============================================================
+// QUOTE PAGE LOGIC
+// ============================================================
 function initQuotePage() {
     const urlParams = new URLSearchParams(window.location.search);
     const productType = urlParams.get('product') || 'Auto';
@@ -135,12 +179,12 @@ function initQuotePage() {
     document.getElementById('quoteTypeDisplay').textContent = `${productType} Quote`;
     
     // --- Setup Tabs and Content Based on Product Type ---
-    
     const autoTabs = document.querySelectorAll('.tab-auto-only');
     const homeTabs = document.querySelectorAll('.tab-home-only');
     const underwritingHome = document.getElementById('underwriting-home-questions');
     const underwritingAuto = document.getElementById('underwriting-auto-questions');
     
+    // Determine the first content tab and the previous tab for Underwriting
     let firstContentTabId = productType === 'Home' ? '#applicant' : '#driver';
     let prevUnderwritingTarget = productType === 'Home' ? '#costGuide' : '#vehicle';
 
@@ -156,13 +200,17 @@ function initQuotePage() {
         if (underwritingAuto) underwritingAuto.style.display = 'block';
     }
 
-    // Ensure initial tab is Policy Info
-    const policyInfoTab = new bootstrap.Tab(document.getElementById('tab-policyInfo'));
-    policyInfoTab.show();
+    // Ensure initial tab is Policy Info using Bootstrap Tab API
+    const policyInfoTabElement = document.getElementById('tab-policyInfo');
+    if (policyInfoTabElement) {
+        const policyInfoTab = new bootstrap.Tab(policyInfoTabElement);
+        policyInfoTab.show();
+    }
 
 
-    // --- Form Field Mapping and Draft Loading ---
+    // --- Form Field Mapping and Draft Loading/Saving ---
 
+    // Define all fields and their group name for drafting
     const allFields = {
         // Policy Info (Shared)
         ratingState: 'policy', policyForm: 'policy', agentNumber: 'policy', producerOtherId: 'policy',
@@ -173,9 +221,12 @@ function initQuotePage() {
         addrStreet: 'address', addrLine2: 'address', addrCity: 'address', addrState: 'address', 
         addrZip: 'address', timeYrs: 'address', timeMos: 'address',
 
-        // Applicant (Home)
+        // Applicant (Home) / Driver (Auto, if those fields were included)
         applicantFirstName: 'applicant', applicantLastName: 'applicant', applicantBirthDate: 'applicant', 
         applicantMaritalStatus: 'applicant', applicantSSN: 'applicant',
+        
+        // Vehicle (Auto, if those fields were included)
+        // vehicleYear: 'vehicle', vehicleMake: 'vehicle', // etc. 
 
         // Dwelling (Home)
         numStories: 'dwelling', protectionClass: 'dwelling', totalLivingArea: 'dwelling', 
@@ -191,7 +242,7 @@ function initQuotePage() {
     
     const draft = loadDraft(productType);
 
-    // Restore draft data & set up auto-save
+    // Restore draft data & set up auto-save listeners
     Object.keys(allFields).forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -205,7 +256,7 @@ function initQuotePage() {
         }
     });
 
-    // Handle radio button draft restore/save (Mailing Address, Secondary Dwelling)
+    // Handle radio button draft restore/save
     ['sameAddress', 'secondaryDwelling', 'bypassCostGuide'].forEach(name => {
         const value = draft.radios ? draft.radios[name] : null;
         if (value) {
@@ -217,6 +268,7 @@ function initQuotePage() {
         );
     });
 
+    /** Collects all form data and saves it as a draft to localStorage. */
     function saveCurrentDraft() {
         const newDraft = { policy: {}, address: {}, applicant: {}, dwelling: {}, coverages: {}, radios: {} };
         
@@ -235,12 +287,15 @@ function initQuotePage() {
         });
 
         saveDraft(newDraft, productType);
+        showToast("Draft saved...", "info");
     }
 
 
     // --- Navigation Flow (Next/Previous Buttons) ---
     
+    /** Shows the target tab pane using Bootstrap's API. */
     function navigateToTab(targetId) {
+        // targetId will be like '#address' or '#costGuide'
         const targetTabElement = document.getElementById(`tab-${targetId.replace('#', '')}`);
         if (targetTabElement) {
             const tab = new bootstrap.Tab(targetTabElement);
@@ -248,67 +303,80 @@ function initQuotePage() {
         }
     }
 
-    // Set custom next/previous targets
-    document.getElementById('policyContinue').addEventListener('click', () => navigateToTab('#address'));
-    document.getElementById('policyBack').addEventListener('click', () => window.location.href = 'dashboard.html');
+    // Set custom next/previous targets for all steps
+    const navMap = {
+        'policyContinue': '#address',
+        'policyBack': 'dashboard.html',
+        'addressBack': '#policyInfo',
+        'addressContinue': firstContentTabId,
+        
+        // Auto Flow (Driver, Vehicle) - Assumes these tabs exist
+        'driverBack': '#address',
+        'driverContinue': '#vehicle',
+        'vehicleBack': '#driver',
+        'vehicleContinue': '#underwriting',
 
-    document.getElementById('addressBack').addEventListener('click', () => navigateToTab('#policyInfo'));
-    document.getElementById('addressContinue').addEventListener('click', () => navigateToTab(firstContentTabId));
-    
-    // Auto flow nav - driver/vehicle
-    if (productType === 'Auto') {
-        document.getElementById('driverBack').addEventListener('click', () => navigateToTab('#address'));
-        document.getElementById('driverContinue').addEventListener('click', () => navigateToTab('#vehicle'));
-        document.getElementById('vehicleBack').addEventListener('click', () => navigateToTab('#driver'));
-        document.getElementById('vehicleContinue').addEventListener('click', () => navigateToTab('#underwriting'));
-    }
+        // Home Flow (Applicant, Dwelling, Cost Guide)
+        'applicantBack': '#address',
+        'applicantContinue': '#dwellingInfo',
+        'dwellingInfoBack': '#applicant',
+        'dwellingInfoContinue': '#costGuide',
+        'costGuideBack': '#dwellingInfo',
+        'costGuideContinue': '#underwriting',
+        
+        // Shared Flow
+        'underPrev': prevUnderwritingTarget, // Dynamically set above
+        'underNext': '#coverages',
+        'coverPrev': '#underwriting',
+        'coverNext': '#summary',
+        'summaryPrev': '#coverages',
+        'summaryNext': '#orderReports',
+        'orderPrev': '#summary',
+        'orderNext': '#billing',
+        'billingPrev': '#orderReports',
+        'billingNext': '#issue',
+        'issuePrev': '#billing',
+    };
 
-    // Home flow nav - applicant/dwelling/costGuide
-    if (productType === 'Home') {
-        document.getElementById('applicantBack').addEventListener('click', () => navigateToTab('#address'));
-        document.getElementById('applicantContinue').addEventListener('click', () => navigateToTab('#dwellingInfo'));
-        document.getElementById('dwellingInfoBack').addEventListener('click', () => navigateToTab('#applicant'));
-        document.getElementById('dwellingInfoContinue').addEventListener('click', () => navigateToTab('#costGuide'));
-        document.getElementById('costGuideBack').addEventListener('click', () => navigateToTab('#dwellingInfo'));
-        document.getElementById('costGuideContinue').addEventListener('click', () => navigateToTab('#underwriting'));
-    }
-
-    // Shared flow nav - Underwriting
-    document.getElementById('underPrev').addEventListener('click', () => navigateToTab(prevUnderwritingTarget));
-    document.getElementById('underNext').addEventListener('click', () => navigateToTab('#coverages'));
-    
-    // Shared flow nav - Coverages to Issue
-    document.getElementById('coverPrev').addEventListener('click', () => navigateToTab('#underwriting'));
-    document.getElementById('coverNext').addEventListener('click', () => navigateToTab('#summary'));
-    document.getElementById('summaryPrev').addEventListener('click', () => navigateToTab('#coverages'));
-    document.getElementById('summaryNext').addEventListener('click', () => navigateToTab('#orderReports'));
-    document.getElementById('orderPrev').addEventListener('click', () => navigateToTab('#summary'));
-    document.getElementById('orderNext').addEventListener('click', () => navigateToTab('#billing'));
-    document.getElementById('billingPrev').addEventListener('click', () => navigateToTab('#orderReports'));
-    document.getElementById('billingNext').addEventListener('click', () => navigateToTab('#issue'));
-    document.getElementById('issuePrev').addEventListener('click', () => navigateToTab('#billing'));
-
+    Object.keys(navMap).forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = navMap[btnId];
+                
+                if (btnId === 'policyBack') {
+                     window.location.href = target;
+                } else if (target.startsWith('#')) {
+                    // Save draft on navigating forward before switching tabs
+                    if (btnId.includes('Continue') || btnId.includes('Next')) {
+                       saveCurrentDraft();
+                    }
+                    navigateToTab(target);
+                }
+            });
+        }
+    });
 
     // --- Final Quote Save and Issue Logic ---
 
-    document.getElementById('policySave').addEventListener('click', saveCurrentDraft);
-    document.getElementById('addressSave').addEventListener('click', saveCurrentDraft);
-    document.getElementById('applicantSave').addEventListener('click', saveCurrentDraft);
-    document.getElementById('dwellingInfoSave').addEventListener('click', saveCurrentDraft);
-    document.getElementById('costGuideSave').addEventListener('click', saveCurrentDraft);
-    document.getElementById('underSave').addEventListener('click', saveCurrentDraft);
-    document.getElementById('coverSave').addEventListener('click', saveCurrentDraft);
-    document.getElementById('orderSave').addEventListener('click', saveCurrentDraft);
-    document.getElementById('billingSave').addEventListener('click', saveCurrentDraft);
-    document.getElementById('issueSave').addEventListener('click', saveCurrentDraft);
+    // Bind saveCurrentDraft to all individual save buttons
+    ['policySave', 'addressSave', 'applicantSave', 'dwellingInfoSave', 'costGuideSave', 'underSave', 'coverSave', 'orderSave', 'billingSave', 'issueSave'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.addEventListener('click', saveCurrentDraft);
+    });
 
+
+    // Save Full Quote (Finalize)
     document.getElementById('saveFullQuote').addEventListener('click', () => {
         // Collect ALL data from the draft and radios
         const finalDraft = loadDraft(productType);
         
-        // Simple validation check (can be expanded)
-        if (!finalDraft.policy || !finalDraft.policy.ratingState) {
-            showToast("Please complete Policy Information before saving the full quote.", "danger");
+        // Simple validation check (e.g., must have a state and applicant name)
+        if (!finalDraft.policy || !finalDraft.policy.ratingState || 
+            !finalDraft.applicant || (!finalDraft.applicant.applicantFirstName && !finalDraft.applicant.firstName)) 
+        {
+            showToast("Please complete Policy and Applicant/Driver Information before saving the full quote.", "danger");
             return;
         }
 
@@ -320,19 +388,21 @@ function initQuotePage() {
             dwelling: finalDraft.dwelling,
             coverages: finalDraft.coverages,
             underwritingRadios: finalDraft.radios,
-            createdAt: new Date().toISOString()
+            createdAt: Date.now() // Use timestamp for sorting
         };
 
         saveFinalQuote(quote);
         clearDraft(productType);
         showToast("✅ Quote saved successfully!", "success");
 
-        // Navigate to next step automatically
+        // Navigate to the next step (Order Reports)
         navigateToTab('#orderReports');
     });
 
+    // Issue Policy Logic
     document.getElementById('issuePolicy').addEventListener('click', () => {
         showToast("Policy Issued! Redirecting to Dashboard...", "success");
+        // Wait briefly for the toast to display, then redirect
         setTimeout(() => (window.location.href = "dashboard.html"), 1000);
     });
 }
