@@ -36,20 +36,20 @@ function loadQuotes() {
 // DASHBOARD BUTTON LOGIC
 // =========================
 document.addEventListener("DOMContentLoaded", () => {
-  // Load saved quotes if on dashboard
+  // Load quotes if dashboard table exists
   loadQuotes();
 
-  // Handle both "Start Quote" buttons
-  const startQuoteBtn = document.getElementById("startQuoteBtn");
-  const startQuoteCardBtn = document.getElementById("startQuoteCardBtn");
+  // Detect all "Start Quote" buttons
+  const startQuoteButtons = document.querySelectorAll(
+    "#startQuoteBtn, #startQuoteCardBtn, .startQuoteBtn"
+  );
 
-  [startQuoteBtn, startQuoteCardBtn].forEach((btn) => {
-    if (btn) {
-      btn.addEventListener("click", (e) => {
-        e.preventDefault();
-        window.location.href = "quote.html";
-      });
-    }
+  startQuoteButtons.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      // Redirect to quote.html
+      window.location.href = "quote.html";
+    });
   });
 });
 
@@ -70,8 +70,8 @@ document.addEventListener("DOMContentLoaded", () => {
       new Date().toISOString().split("T")[0];
     const quoteDescription =
       document.getElementById("quoteDescription").value || "";
-    const firstName = document.getElementById("firstName").value;
-    const lastName = document.getElementById("lastName").value;
+    const firstName = document.getElementById("firstName").value.trim();
+    const lastName = document.getElementById("lastName").value.trim();
 
     if (!firstName || !lastName || !ratingState || !policyForm) {
       showToast("Please complete all required fields.", "danger");
@@ -89,6 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
     saveQuote(quoteData);
     showToast("Quote saved successfully!", "success");
 
+    // Redirect back to dashboard after short delay
     setTimeout(() => {
       window.location.href = "dashboard.html";
     }, 1200);
@@ -107,7 +108,7 @@ function showToast(message, type = "success") {
   }
 
   const toast = document.createElement("div");
-  toast.className = `toast align-items-center text-bg-${type} border-0 show`;
+  toast.className = `toast align-items-center text-bg-${type} border-0 show shadow-lg mb-2`;
   toast.innerHTML = `
     <div class="d-flex">
       <div class="toast-body fw-semibold">${message}</div>
