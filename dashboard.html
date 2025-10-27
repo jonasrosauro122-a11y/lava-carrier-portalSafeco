@@ -1,166 +1,154 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Agent Dashboard | LAVA Safeo</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css" />
-</head>
+// =============================================================
+// UNIVERSAL SCRIPT for dashboard.html and quote.html
+// Works for both pages (dashboard + quote)
+// Includes search, quote creation, saving, tab navigation
+// =============================================================
 
-<body class="bg-light">
+const QUOTES_KEY = "quotes";
+const DRAFT_KEY = "quoteDraft";
 
-  <!-- Header -->
-  <nav class="navbar navbar-expand-lg bg-white shadow-sm">
-    <div class="container-fluid">
-      <a class="navbar-brand d-flex align-items-center" href="#">
-        <img src="images/lava-safeo-logo.png" alt="LAVA Safeo Logo" height="40" class="me-2">
-      </a>
+/* ---------- TOAST UTILITY ---------- */
+function showToast(message, type = "success") {
+  let container = document.querySelector(".toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.className = "toast-container position-fixed top-0 end-0 p-3";
+    document.body.appendChild(container);
+  }
+  const toast = document.createElement("div");
+  toast.className = `toast align-items-center text-bg-${type} border-0 show shadow mb-2`;
+  toast.innerHTML = `
+    <div class="d-flex">
+      <div class="toast-body fw-semibold">${message}</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>`;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
 
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link fw-semibold" href="#">Products</a></li>
-          <li class="nav-item"><a class="nav-link fw-semibold" href="#">Programs & Rewards</a></li>
-          <li class="nav-item"><a class="nav-link fw-semibold" href="#">Claims & Service</a></li>
-          <li class="nav-item"><a class="nav-link fw-semibold" href="#">My Agency</a></li>
-        </ul>
+/* ---------- LOCAL STORAGE HELPERS ---------- */
+function saveQuotes(quotes) {
+  localStorage.setItem(QUOTES_KEY, JSON.stringify(quotes));
+}
+function getQuotes() {
+  return JSON.parse(localStorage.getItem(QUOTES_KEY)) || [];
+}
+function saveQuoteToStorage(quote) {
+  const quotes = getQuotes();
+  quotes.unshift(quote);
+  saveQuotes(quotes);
+}
 
-        <div class="d-flex align-items-center">
-          <!-- Main "Start Quote" -->
-          <button class="btn btn-outline-primary me-3" id="startQuoteBtn">Start Quote</button>
-          <a href="#" class="text-dark text-decoration-none me-3">Settings</a>
-          <a href="#" class="text-dark text-decoration-none">Logout</a>
-        </div>
-      </div>
-    </div>
-  </nav>
+/* =============================================================
+   PAGE DETECTION
+   ============================================================= */
+document.addEventListener("DOMContentLoaded", () => {
+  const path = window.location.pathname;
+  if (path.includes("dashboard.html")) initDashboard();
+  if (path.includes("quote.html")) initQuotePage();
+});
 
-  <!-- Main Content -->
-  <div class="container-fluid mt-4">
-    <div class="row">
-      <aside class="col-md-3 col-lg-2 mb-4">
-        <div class="card mb-3 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title fw-semibold">Customer Lookup</h5>
-            <p class="text-muted small mb-2">Search by name, policy, email, or phone</p>
-            <input type="text" class="form-control mb-2" placeholder="Search customer..." />
-            <button class="btn btn-primary w-100">Search</button>
-          </div>
-        </div>
+/* =============================================================
+   DASHBOARD PAGE LOGIC
+   ============================================================= */
+function initDashboard() {
+  const tableBody = document.querySelector("#recentQuotesTable tbody");
+  const searchInput = document.querySelector("input[placeholder='Search customer...']");
+  const startQuoteButtons = document.querySelectorAll("#startQuoteBtn, #startQuoteCardBtn, .startQuoteBtn");
 
-        <!-- Sidebar "Start Quote" -->
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title fw-semibold">Quote</h5>
-            <select class="form-select mb-2">
-              <option>North Carolina</option>
-              <option>California</option>
-              <option>Texas</option>
-            </select>
-            <select class="form-select mb-3">
-              <option>Auto</option>
-              <option>Home</option>
-              <option>Life</option>
-            </select>
-            <button class="btn btn-outline-primary w-100" id="startQuoteCardBtn">Start Quote</button>
-          </div>
-        </div>
-      </aside>
+  function renderTable(filter = "") {
+    const quotes = getQuotes();
+    const filtered = quotes.filter((q) => {
+      const fullName = `${q.firstName} ${q.lastName}`.toLowerCase();
+      const policy = q.policyForm?.toLowerCase() || "";
+      return fullName.includes(filter) || policy.includes(filter);
+    });
 
-      <main class="col-md-9 col-lg-10">
-        <h4 class="fw-bold mb-4">Hi Agent!</h4>
+    tableBody.innerHTML = filtered.length
+      ? ""
+      : `<tr><td colspan="5" class="text-center text-muted py-3">No quotes found.</td></tr>`;
 
-        <div class="row g-4">
-          <div class="col-lg-8">
-            <div class="card shadow-sm">
-              <div class="card-header bg-white fw-semibold">My Agency’s Customers</div>
-              <div class="card-body">
-                <h6 class="text-muted">No renewals right now</h6>
-                <p class="small text-muted">When clients have upcoming renewals, you’ll see them here.</p>
-                <a href="#" class="btn btn-sm btn-primary">Prepare for renewals</a>
-              </div>
-            </div>
-          </div>
+    filtered.forEach((q) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${q.firstName} ${q.lastName}</td>
+        <td>${q.policyForm || "—"}</td>
+        <td>${q.quoteDescription || "—"}</td>
+        <td>${q.ratingState || "—"}</td>
+        <td>${q.date || new Date().toLocaleDateString()}</td>`;
+      tableBody.appendChild(row);
+    });
+  }
 
-          <div class="col-lg-4">
-            <div class="card shadow-sm h-100">
-              <div class="card-header bg-white fw-semibold">My Insights</div>
-              <div class="card-body">
-                <div class="alert alert-warning text-dark">
-                  <h5 class="fw-bold mb-1">85%</h5>
-                  <p class="mb-0 small">of customers say it’s important for agents to review policy coverages with them.</p>
-                </div>
-              </div>
-            </div>
-          </div>
+  renderTable();
 
-          <div class="col-lg-4">
-            <div class="card shadow-sm">
-              <div class="card-header bg-white fw-semibold">My Favorites</div>
-              <ul class="list-group list-group-flush">
-                <li class="list-group-item"><a href="#" class="text-decoration-none">Client list</a></li>
-                <li class="list-group-item"><a href="#" class="text-decoration-none">View policy summary</a></li>
-                <li class="list-group-item"><a href="#" class="text-decoration-none">Change or endorse</a></li>
-                <li class="list-group-item"><a href="#" class="text-decoration-none">Billing and payments</a></li>
-                <li class="list-group-item"><a href="#" class="text-decoration-none">Booklet / Record change</a></li>
-              </ul>
-            </div>
-          </div>
+  // Live search
+  if (searchInput) {
+    searchInput.addEventListener("input", (e) => {
+      renderTable(e.target.value.toLowerCase());
+    });
+  }
 
-          <div class="col-lg-8">
-            <div class="card shadow-sm">
-              <div class="card-header bg-white fw-semibold">My Production</div>
-              <div class="card-body">
-                <table class="table table-sm align-middle">
-                  <thead>
-                    <tr>
-                      <th>Type</th>
-                      <th>Pending</th>
-                      <th>Issued YTD</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr><td>eSign</td><td>0</td><td>0</td></tr>
-                    <tr><td>Auto</td><td>0</td><td>0</td></tr>
-                    <tr><td>Home</td><td>0</td><td>0</td></tr>
-                    <tr><td>Specialty</td><td>0</td><td>0</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+  // Start Quote buttons
+  startQuoteButtons.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.location.href = "quote.html";
+    });
+  });
+}
 
-          <!-- Recent Quotes -->
-          <div class="col-lg-12">
-            <div class="card shadow-sm mt-4">
-              <div class="card-header bg-white fw-semibold">Recent Quotes</div>
-              <div class="card-body">
-                <table id="recentQuotesTable" class="table table-striped align-middle">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Type</th>
-                      <th>Quote</th>
-                      <th>State</th>
-                      <th>Date</th>
-                    </tr>
-                  </thead>
-                  <tbody></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+/* =============================================================
+   QUOTE PAGE LOGIC (Multi-Tab + Save)
+   ============================================================= */
+function initQuotePage() {
+  const form = document.getElementById("quoteForm");
+  if (!form) return;
 
-        </div>
-      </main>
-    </div>
-  </div>
+  // Tab controls
+  document.querySelectorAll(".next-tab").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const nextPane = this.closest(".tab-pane").nextElementSibling;
+      if (!nextPane) return;
+      const tabId = nextPane.getAttribute("id");
+      const nextTab = document.querySelector(`[data-bs-target="#${tabId}"]`);
+      new bootstrap.Tab(nextTab).show();
+    });
+  });
 
-  <!-- Toast Container -->
-  <div class="toast-container position-fixed top-0 end-0 p-3"></div>
+  document.querySelectorAll(".prev-tab").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const prevPane = this.closest(".tab-pane").previousElementSibling;
+      if (!prevPane) return;
+      const tabId = prevPane.getAttribute("id");
+      const prevTab = document.querySelector(`[data-bs-target="#${tabId}"]`);
+      new bootstrap.Tab(prevTab).show();
+    });
+  });
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="script.js"></script>
-</body>
-</html>
+  // Save Quote
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
 
+    const quote = {
+      firstName: form.firstName?.value.trim(),
+      lastName: form.lastName?.value.trim(),
+      policyForm: form.policyForm?.value,
+      quoteDescription: form.quoteDescription?.value,
+      ratingState: form.ratingState?.value,
+      date: new Date().toLocaleDateString(),
+    };
+
+    if (!quote.firstName || !quote.lastName || !quote.policyForm || !quote.ratingState) {
+      showToast("Please complete all required fields.", "danger");
+      return;
+    }
+
+    saveQuoteToStorage(quote);
+    showToast("Quote saved successfully!", "success");
+
+    setTimeout(() => {
+      window.location.href = "dashboard.html";
+    }, 1200);
+  });
+}
