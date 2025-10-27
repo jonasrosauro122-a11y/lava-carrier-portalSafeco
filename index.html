@@ -5,7 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LAVA Safeo Portal - Login</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Add fallback centering here in case style.css isn't loaded */
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f8f9fa;
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+    }
+  </style>
 </head>
+
 <body>
   <div class="login-container">
     <!-- Logo Section -->
@@ -33,7 +46,6 @@
       const password = document.getElementById('password').value;
 
       if (password === "Lavaautomation2025!") {
-        // Save the student's name for use on the dashboard
         localStorage.setItem("studentName", firstName + " " + lastName);
         window.location.href = "dashboard.html";
       } else {
