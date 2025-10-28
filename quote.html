@@ -749,10 +749,18 @@ document.addEventListener('click', (ev)=>{
     const data = JSON.stringify(quoteData, null, 2);
     const blob = new Blob([data], {type:'application/json'});
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href=url; a.download = `quote_${quoteData.quoteNumber||'draft'}.json`; a.click(); a.remove();
+    const a = document.createElement('a'); 
+    a.href = url; 
+    a.download = `quote_${quoteData.quoteNumber || 'draft'}.json`; 
+    a.click(); 
+    a.remove();
   }
 });
 
+<!-- ✅ Load your shared JavaScript logic before inline init -->
+<script src="script.js"></script>
+
+<script>
 /* ---------- init ---------- */
 function init(){
   // show selection card by default
@@ -766,8 +774,7 @@ function init(){
   // if draft exists for previous flows, we still start selection first
 }
 init();
-
 </script>
+
 </body>
 </html>
-
