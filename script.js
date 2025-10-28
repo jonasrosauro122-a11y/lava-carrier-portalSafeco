@@ -1,6 +1,5 @@
 // =============================================================
-// UNIVERSAL SCRIPT for dashboard.html and quote.html (New Version)
-// Compatible with dynamic Auto + Home quote.html
+// UNIVERSAL SCRIPT for dashboard.html and quote.html (FINAL FIXED VERSION)
 // =============================================================
 
 // --- CONSTANTS ---
@@ -21,8 +20,6 @@ function showToast(message, type = "success") {
   const toast = document.createElement("div");
   toast.className = `toast align-items-center text-bg-${type} border-0 show shadow mb-2`;
   toast.setAttribute("role", "alert");
-  toast.setAttribute("aria-live", "assertive");
-  toast.setAttribute("aria-atomic", "true");
   toast.innerHTML = `
     <div class="d-flex">
       <div class="toast-body fw-semibold">${message}</div>
@@ -108,29 +105,35 @@ function initDashboardPage() {
 }
 
 // =============================================================
-// QUOTE PAGE (Dynamic Auto + Home Integration)
+// QUOTE PAGE (FULLY FIXED)
 // =============================================================
 function initQuotePage() {
   const params = new URLSearchParams(window.location.search);
   const type = params.get("type")?.toLowerCase() || null;
 
-  // If URL includes ?type=auto or ?type=home → start flow directly
+  const btnAuto = document.getElementById("chooseAuto");
+  const btnHome = document.getElementById("chooseHome");
+  const backBtn = document.getElementById("backBtn");
+
+  // ✅ Auto-start quote flow if URL includes ?type=auto or ?type=home
   if (type === "auto" || type === "home") {
     startFlow(type);
   }
 
-  // Buttons for manual selection (if visible)
-  const btnAuto = document.getElementById("chooseAuto");
-  const btnHome = document.getElementById("chooseHome");
+  // ✅ Manual selection (if visible)
+  if (btnAuto) btnAuto.addEventListener("click", () => startFlow("auto"));
+  if (btnHome) btnHome.addEventListener("click", () => startFlow("home"));
 
-  if (btnAuto)
-    btnAuto.addEventListener("click", () => startFlow("auto"));
-  if (btnHome)
-    btnHome.addEventListener("click", () => startFlow("home"));
+  // ✅ Back button logic
+  if (backBtn) {
+    backBtn.addEventListener("click", () => {
+      window.location.href = "dashboard.html";
+    });
+  }
 }
 
 // =============================================================
-// START FLOW (main fix for auto-launch on ?type)
+// START FLOW FUNCTION (Auto + Home Switching)
 // =============================================================
 function startFlow(type) {
   const selectCard = document.getElementById("selectCard");
@@ -138,6 +141,7 @@ function startFlow(type) {
   const homeSection = document.getElementById("homeQuoteSection");
 
   if (selectCard) selectCard.classList.add("hidden");
+
   if (type === "auto" && autoSection) {
     autoSection.classList.remove("hidden");
     homeSection?.classList.add("hidden");
@@ -146,11 +150,11 @@ function startFlow(type) {
     autoSection?.classList.add("hidden");
   }
 
-  // Restore saved draft if exists
+  // ✅ Restore saved draft if exists
   const draft = loadDraft(type);
   restoreDraftData(draft);
 
-  // Auto-save inputs
+  // ✅ Auto-save on any input
   document.querySelectorAll("input, select").forEach((el) => {
     el.addEventListener("input", () => autoSaveDraft(type));
   });
@@ -200,30 +204,29 @@ function calcHomePremium(yearBuilt, sqft, creditScore, stories) {
 // HOME COVERAGE-BASED PREMIUM CALCULATOR (Coverage A–E)
 // =============================================================
 function calculateHomePremium() {
-  const a = Number(document.getElementById('coverageA')?.value || 0);
-  const b = Number(document.getElementById('coverageB')?.value || 0);
-  const c = Number(document.getElementById('coverageC')?.value || 0);
-  const d = Number(document.getElementById('coverageD')?.value || 0);
-  const e = Number(document.getElementById('coverageE')?.value || 0);
-  const name = document.getElementById('applicantName')?.value.trim() || 'Applicant';
+  const a = Number(document.getElementById("coverageA")?.value || 0);
+  const b = Number(document.getElementById("coverageB")?.value || 0);
+  const c = Number(document.getElementById("coverageC")?.value || 0);
+  const d = Number(document.getElementById("coverageD")?.value || 0);
+  const e = Number(document.getElementById("coverageE")?.value || 0);
+  const name = document.getElementById("applicantName")?.value.trim() || "Applicant";
 
   if (!a || !b || !c || !d || !e) {
-    alert('Please fill all coverage amounts first.');
+    alert("Please fill all coverage amounts first.");
     return;
   }
 
-  // Simple sample formula for mock premium calculation
   const base = (a + b + c + d + e) / 1000;
   const premium = Math.round(base * 0.9 + 450);
 
-  const result = document.getElementById('homeQuoteResult');
-  result.classList.remove('hidden');
+  const result = document.getElementById("homeQuoteResult");
+  result.classList.remove("hidden");
   result.innerHTML = `
     <strong>${name}</strong>, your estimated annual home premium is:<br>
     <span style="font-size:20px;font-weight:800;color:#0d6efd;">$${premium.toLocaleString()}</span>
   `;
 
-  // Save the quote
+  // ✅ Save the quote to dashboard
   const quote = {
     quoteNumber: "H-" + Date.now().toString().slice(-6),
     productType: "Home",
