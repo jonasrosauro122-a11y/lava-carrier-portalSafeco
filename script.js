@@ -205,3 +205,41 @@ function calcHomePremium(yearBuilt, sqft, creditScore, stories) {
   if (stories > 1) rate += 40;
   return rate.toFixed(2);
 }
+
+// =============================================================
+// HOME COVERAGE-BASED PREMIUM CALCULATOR (Coverage A–E)
+// =============================================================
+function calculateHomePremium() {
+  const covA = parseFloat(document.getElementById("coverageA")?.value || 0);
+  const covB = parseFloat(document.getElementById("coverageB")?.value || 0);
+  const covC = parseFloat(document.getElementById("coverageC")?.value || 0);
+  const covD = parseFloat(document.getElementById("coverageD")?.value || 0);
+  const covE = parseFloat(document.getElementById("coverageE")?.value || 0);
+
+  const base = 400; // base rate
+  const total =
+    base +
+    covA * 0.0025 +
+    covB * 0.0018 +
+    covC * 0.0015 +
+    covD * 0.002 +
+    covE * 0.001;
+  const rounded = total.toFixed(2);
+
+  document.getElementById("homeQuoteResult").innerHTML = `
+    <h6>Estimated Home Premium:</h6>
+    <p><strong>$${rounded}</strong> / annual policy</p>
+  `;
+
+  // Store quote
+  const quote = {
+    quoteNumber: "H-" + Date.now().toString().slice(-6),
+    productType: "Home",
+    applicantName:
+      document.getElementById("applicantName")?.value || "Homeowner",
+    estimatedPremium: rounded,
+    quoteDate: new Date().toISOString().split("T")[0],
+    createdAt: Date.now(),
+  };
+  saveFinalQuote(quote);
+}
