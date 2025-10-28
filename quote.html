@@ -23,15 +23,6 @@
   .container{max-width:1100px;margin:94px auto 40px;padding:18px}
   .card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);margin-bottom:18px}
   .center{display:flex;align-items:center;justify-content:center}
-  .selection{
-    display:flex;gap:18px;align-items:center;justify-content:center;padding:26px 6px;
-  }
-  .product-btn{
-    min-width:160px;padding:16px;border-radius:10px;border:2px solid transparent;background:#f8fbff;cursor:pointer;font-weight:700;color:#0b1720;
-    box-shadow: 0 6px 18px rgba(13,46,115,0.04);
-  }
-  .product-btn:hover{transform:translateY(-4px)}
-  .product-btn.active{background:linear-gradient(180deg,#0d6efd,#0b5ed7);color:#fff;border-color:rgba(0,0,0,0.06)}
   .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
   .tab-btn{background:#f3f6fb;border:1px solid #eaedf3;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700;color:#334155}
   .tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
@@ -76,27 +67,15 @@
     </div>
   </div>
   <div class="top-actions">
-    <div id="typeDisplay" class="muted small">Select product to start</div>
+    <div id="typeDisplay" class="muted small">Quote Started</div>
     <button id="backToDashboard" class="btn ghost" title="Back">← Dashboard</button>
   </div>
 </header>
 
 <main class="container">
 
-  <!-- Selection screen card -->
-  <section id="selectCard" class="card center">
-    <div style="width:100%;max-width:760px">
-      <div class="section-title">Select Product Type</div>
-      <div class="muted">Choose Auto or Home to begin a new quote</div>
-      <div class="selection" style="margin-top:18px">
-        <button id="chooseAuto" class="product-btn">Auto Quote</button>
-        <button id="chooseHome" class="product-btn">Home Quote</button>
-      </div>
-    </div>
-  </section>
-
   <!-- Tabs header -->
-  <section id="tabsCard" class="card hidden">
+  <section id="tabsCard" class="card">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
       <div>
         <div class="section-title" id="flowTitle">Quote</div>
@@ -107,7 +86,7 @@
   </section>
 
   <!-- Form content card -->
-  <section id="contentCard" class="card hidden">
+  <section id="contentCard" class="card">
     <div id="formContainer"></div>
 
     <div class="actions">
@@ -136,645 +115,43 @@
 </main>
 
 <script>
-/* ============================
-   App state and tab templates
-   ============================ */
-const AUTO_TABS = [
-  { id: 'policy', label: 'Policy Information' },
-  { id: 'driver', label: 'Driver Information' },
-  { id: 'vehicle', label: 'Vehicle Information' },
-  { id: 'coverage', label: 'Coverage Selection' },
-  { id: 'discounts', label: 'Discounts' },
-  { id: 'underwriting', label: 'Underwriting' },
-  { id: 'review', label: 'Review' },
-  { id: 'billing', label: 'Billing' },
-  { id: 'issue', label: 'Issue' },
-];
+const AUTO_TABS = [/* same as your existing AUTO_TABS */];
+const HOME_TABS = [/* same as your existing HOME_TABS */];
 
-const HOME_TABS = [
-  { id: 'applicant', label: 'Applicant' },
-  { id: 'dwelling', label: 'Dwelling Information' },
-  { id: 'costguide', label: 'Cost Guide Features' },
-  { id: 'underwriting_home', label: 'Underwriting' },
-  { id: 'coverage_home', label: 'Coverage Selection' },
-  { id: 'summary', label: 'Summary' },
-  { id: 'orderreport', label: 'Order Report' },
-  { id: 'billing_home', label: 'Billing' },
-  { id: 'issue_home', label: 'Issue' },
-];
-
-let product = null; // "auto" or "home"
+let product = null;
 let tabs = [];
 let currentIndex = 0;
-let quoteData = {}; // store field values
+let quoteData = {};
 const DRAFT_KEY_PREFIX = 'lava_quote_';
 
-/* ---------- helper dom ---------- */
 const $ = id => document.getElementById(id);
-function el(tag, attrs = {}, txt = ''){ const n = document.createElement(tag); for(const k in attrs) n.setAttribute(k, attrs[k]); if(txt) n.innerHTML = txt; return n; }
 
-/* ---------- selection screen ---------- */
-$('chooseAuto').addEventListener('click', () => startFlow('auto'));
-$('chooseHome').addEventListener('click', () => startFlow('home'));
 $('backToDashboard').addEventListener('click', ()=>{ window.location.href='dashboard.html'; });
 
 function startFlow(which){
   product = which;
   tabs = (product === 'home') ? HOME_TABS : AUTO_TABS;
-  // UI changes
-  $('selectCard').classList.add('hidden');
-  $('tabsCard').classList.remove('hidden');
-  $('contentCard').classList.remove('hidden');
-  $('flowTitle').textContent = (product === 'home') ? 'Home Quote' : 'Auto Quote';
-  $('typeDisplay').textContent = (product === 'home') ? 'Home' : 'Auto';
-  quoteData = loadDraft() || {};
+  quoteData = JSON.parse(localStorage.getItem(DRAFT_KEY_PREFIX + product)) || {};
   if(!quoteData.quoteNumber) quoteData.quoteNumber = String(Date.now()).slice(-8);
-  $('quoteNumber').textContent = `Quote #: ${quoteData.quoteNumber}`;
+
+  document.getElementById('flowTitle').textContent = (product==='home')?'Home Quote':'Auto Quote';
+  document.getElementById('typeDisplay').textContent = (product==='home')?'Home':'Auto';
+  document.getElementById('quoteNumber').textContent = `Quote #: ${quoteData.quoteNumber}`;
   buildTabs();
   renderCurrentTab();
 }
 
-/* ---------- build tabs html ---------- */
-function buildTabs(){
-  const container = $('tabsContainer');
-  container.innerHTML = '';
-  tabs.forEach((t,i) => {
-    const btn = el('button',{type:'button',class:'tab-btn'+(i===0?' active':''), 'data-index':i}, t.label);
-    btn.addEventListener('click', ()=>{ currentIndex = Number(btn.dataset.index); renderCurrentTab(); });
-    container.appendChild(btn);
-  });
-}
+/* ---------- auto-start with routing logic ---------- */
+(function(){
+  // detect query param or default
+  const params = new URLSearchParams(window.location.search);
+  const start = params.get('product') || 'home'; // default to home
+  startFlow(start==='auto'?'auto':'home');
+})();
 
-/* ---------- tab templates (generous fields) ---------- */
-function templateAuto(id){
-  switch(id){
-    case 'policy': return `
-      <div class="section-title">Policy Information</div>
-      <div class="grid">
-        <div><label>Rating State</label><select id="ratingState">
-          <option value="">-- Select --</option><option>CA</option><option>WA</option><option>TX</option><option>FL</option>
-        </select></div>
-        <div><label>Policy Form</label><select id="policyForm"><option>Auto Standard</option><option>Auto Premier</option><option>Auto Basic</option></select></div>
-        <div><label>Agent Number</label><input id="agentNumber" type="text" /></div>
-        <div><label>Producer / Other ID</label><input id="producerId" type="text" /></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Garaging Street Address</label><input id="garagingStreet" type="text" /></div>
-        <div><label>Garaging ZIP Code</label><input id="garagingZip" type="text" /></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Requested Effective Date</label><input id="effectiveDate" type="date" /></div>
-        <div><label>Current Policy Status</label>
-          <select id="currentPolicyStatus"><option>No</option><option>Yes — Renewal</option><option>Yes — Rewrite</option></select>
-        </div>
-      </div>
-      <div class="note" style="margin-top:10px">Primary applicant name is captured under Driver Information.</div>`;
-    case 'driver': return `
-      <div class="section-title">Driver Information</div>
-      <div class="grid">
-        <div><label>First Name</label><input id="driverFirstName" type="text" /></div>
-        <div><label>Last Name</label><input id="driverLastName" type="text" /></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Date of Birth</label><input id="driverDOB" type="date" /></div>
-        <div><label>Gender</label><select id="driverGender"><option>Male</option><option>Female</option><option>Other</option></select></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Marital Status</label><select id="driverMarital"><option>Single</option><option>Married</option><option>Divorced</option><option>Widowed</option></select></div>
-        <div><label>Relationship to Applicant</label><select id="driverRelation"><option>Self</option><option>Spouse</option><option>Child</option><option>Other</option></select></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Driver's License Number</label><input id="dlNumber" type="text" /></div>
-        <div><label>State Issued</label><select id="dlState"><option>CA</option><option>WA</option><option>TX</option><option>FL</option></select></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Years Licensed</label><select id="yearsLicensed"><option>1</option><option>2</option><option>3</option><option>4</option><option>5+</option></select></div>
-        <div><label>Occupation</label><input id="occupation" type="text" /></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Education Level</label><select id="educationLevel"><option>High School</option><option>College</option><option>Bachelor</option><option>Master+</option></select></div>
-        <div><label>Driving History (Accidents/Violations last 3-5 yrs)</label><select id="drivingHistory"><option>No</option><option>Yes</option></select></div>
-      </div>
-      <div style="margin-top:12px"><label>Driving History Details</label><textarea id="drivingDetails" placeholder="Date, at-fault %, type, short note"></textarea></div>`;
-    case 'vehicle': return `
-      <div class="section-title">Vehicle Information</div>
-      <div class="grid-3">
-        <div><label>Year</label><select id="vehYear">${yearOptions()}</select></div>
-        <div><label>Make</label><select id="vehMake"><option>Toyota</option><option>Ford</option><option>Honda</option><option>Chevrolet</option><option>Tesla</option></select></div>
-        <div><label>Model</label><input id="vehModel" type="text" /></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>VIN (optional)</label><input id="vehVin" type="text" /></div>
-        <div><label>Primary Use</label><select id="vehUse"><option>Pleasure</option><option>Commute</option><option>Business</option><option>Work</option></select></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Annual Mileage</label><select id="annualMileage"><option>5,000</option><option>10,000</option><option>15,000</option><option>20,000</option></select></div>
-        <div><label>One-way Commute Miles</label><input id="commuteMiles" type="number" /></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Ownership</label><select id="ownership"><option>Owned</option><option>Financed</option><option>Leased</option></select></div>
-        <div><label>Anti-theft Device</label><select id="antiTheft"><option>No</option><option>Yes</option></select></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Safety Features</label><select id="safetyFeatures"><option>None</option><option>ABS</option><option>Airbags</option><option>Backup Camera</option></select></div>
-        <div><label>Primary Driver</label><select id="primaryDriver"><option>Driver 1</option><option>Driver 2</option></select></div>
-      </div>`;
-    case 'coverage': return `
-      <div class="section-title">Coverage Selection</div>
-      <div class="grid">
-        <div><label>Bodily Injury Liability</label><select id="bodilyInjury"><option>$25,000</option><option>$50,000</option><option>$100,000</option><option>$250,000</option><option>$500,000</option></select></div>
-        <div><label>Property Damage Liability</label><select id="propDamage"><option>$25,000</option><option>$50,000</option><option>$100,000</option></select></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Medical Payments / PIP</label><select id="medPayments"><option>$1,000</option><option>$2,000</option><option>$5,000</option></select></div>
-        <div><label>Uninsured Motorist BI</label><select id="umBi"><option>$25,000</option><option>$50,000</option><option>$100,000</option></select></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Uninsured Motorist PD</label><select id="umPd"><option>$25,000</option><option>$50,000</option></select></div>
-        <div><label>Comprehensive Deductible</label><select id="compDeductible"><option>$250</option><option>$500</option><option>$1,000</option></select></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Collision Deductible</label><select id="collDeductible"><option>$250</option><option>$500</option><option>$1,000</option></select></div>
-        <div><label>Optional Coverages</label><select id="optionalCover"><option>None</option><option>Rental Reimbursement</option><option>Roadside Assistance</option><option>Diminishing Deductible</option></select></div>
-      </div>`;
-    case 'discounts': return `
-      <div class="section-title">Discounts</div>
-      <div class="grid">
-        <div><label>Multi-Car</label><select id="discountMulti"><option>No</option><option>Yes</option></select></div>
-        <div><label>Home & Auto Bundle</label><select id="discountBundle"><option>No</option><option>Yes</option></select></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Safe Driver</label><select id="discountSafe"><option>No</option><option>Yes</option></select></div>
-        <div><label>Defensive Driving Course</label><select id="discountDefensive"><option>No</option><option>Yes</option></select></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Anti-Theft Discount</label><select id="discountAntiTheft"><option>No</option><option>Yes</option></select></div>
-        <div><label>Auto-Pay</label><select id="discountAutopay"><option>No</option><option>Yes</option></select></div>
-      </div>`;
-    case 'underwriting': return `
-      <div class="section-title">Underwriting</div>
-      <div class="grid">
-        <div><label>Any suspended license?</label><select id="uwSuspended"><option>No</option><option>Yes</option></select></div>
-        <div><label>Any DUI / major violations?</label><select id="uwMajor"><option>No</option><option>Yes</option></select></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Used for rideshare?</label><select id="uwRideshare"><option>No</option><option>Yes</option></select></div>
-        <div><label>Any custom modifications?</label><select id="uwMods"><option>No</option><option>Yes</option></select></div>
-      </div>
-      <div style="margin-top:12px"><label>Claims in last 3 years?</label><select id="uwClaims"><option>No</option><option>Yes</option></select></div>
-      <div style="margin-top:12px"><label>Underwriting notes</label><textarea id="uwNotes"></textarea></div>`;
-    case 'review': return `
-      <div class="section-title">Review & Estimate</div>
-      <div class="muted">Check required fields, then click Generate Quote to compute a mock estimate.</div>
-      <div id="autoEstimate" class="quote-result hidden"></div>`;
-    case 'billing': return `
-      <div class="section-title">Billing</div>
-      <div class="grid">
-        <div><label>Payment Plan</label><select id="paymentPlan"><option>Full Pay</option><option>2-Pay</option><option>4-Pay</option><option>Monthly</option></select></div>
-        <div><label>Payment Method</label><select id="paymentMethod"><option>Credit Card</option><option>EFT</option><option>Check</option></select></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Down Payment Amount</label><input id="downPayment" type="number" /></div>
-        <div><label>Billing Address</label><input id="billingAddress" type="text" /></div>
-      </div>
-      <div style="margin-top:12px"><label>Mortgagee / Lienholder (if any)</label><input id="mortgagee" type="text" /></div>`;
-    case 'issue': return `
-      <div class="section-title">Issue</div>
-      <div class="muted">Confirm all details, then Save Quote and Issue Policy when ready.</div>
-      <div style="margin-top:12px" class="split"><button id="issuePolicy" class="btn primary">Issue Policy</button><button id="downloadAuto" class="btn ghost">Download Quote JSON</button></div>`;
-    default: return `<div>Not implemented</div>`;
-  }
-}
+/* ---------- rest of your existing JS code below ---------- */
+/* include buildTabs(), renderCurrentTab(), templateAuto(), templateHome(), navigation, generate mock, issue, save, download etc. */
 
-function templateHome(id){
-  switch(id){
-    case 'applicant': return `
-      <div class="section-title">Applicant</div>
-      <div class="grid">
-        <div><label>First Name</label><input id="homeFirstName" type="text" /></div>
-        <div><label>Last Name</label><input id="homeLastName" type="text" /></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Date of Birth</label><input id="homeDOB" type="date" /></div>
-        <div><label>Marital Status</label><select id="homeMarital"><option>Single</option><option>Married</option></select></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Phone</label><input id="homePhone" type="text" /></div>
-        <div><label>Email</label><input id="homeEmail" type="email" /></div>
-      </div>
-      <div style="margin-top:12px"><label>Prior Insurance?</label><select id="homePriorIns"><option>No</option><option>Yes</option></select></div>`;
-    case 'dwelling': return `
-      <div class="section-title">Dwelling Information</div>
-      <div class="grid">
-        <div><label>Property Address</label><input id="dwellingAddress" type="text" /></div>
-        <div><label>City</label><input id="dwellingCity" type="text" /></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>ZIP Code</label><input id="dwellingZip" type="text" /></div>
-        <div><label>Year Built</label><input id="dwellingYear" type="number" /></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Square Footage</label><input id="dwellingSqft" type="number" /></div>
-        <div><label>Home Type</label><select id="homeType"><option>Single-Family</option><option>Townhome</option><option>Condo</option></select></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Roof Type & Age</label><input id="roofInfo" type="text" placeholder="e.g., Asphalt shingle - 2019" /></div>
-        <div><label>Garage Type</label><select id="garageType"><option>Attached</option><option>Detached</option><option>None</option></select></div>
-      </div>`;
-    case 'costguide': return `
-      <div class="section-title">Cost Guide Features</div>
-      <div class="grid">
-        <div><label>Construction Type</label><select id="constructionType"><option>Frame</option><option>Brick</option><option>Stucco</option></select></div>
-        <div><label>Foundation Type</label><select id="foundationType"><option>Basement</option><option>Slab</option><option>Crawlspace</option></select></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Number of Stories</label><input id="homeStories" type="number" /></div>
-        <div><label>Sqft (living)</label><input id="homeLivingSqft" type="number" /></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Kitchen Quality</label><select id="kitchenQuality"><option>Standard</option><option>Upgraded</option></select></div>
-        <div><label>Pool on property?</label><select id="hasPool"><option>No</option><option>Yes</option></select></div>
-      </div>`;
-    case 'underwriting_home': return `
-      <div class="section-title">Underwriting</div>
-      <div class="grid">
-        <div><label>Pets?</label><select id="homePets"><option>No</option><option>Yes</option></select></div>
-        <div><label>Business on premises?</label><select id="homeBusiness"><option>No</option><option>Yes</option></select></div>
-      </div>
-      <div style="margin-top:12px"><label>Home systems updates (roof/wiring/heat)</label><input id="systemsUpdate" type="text" /></div>`;
-case 'coverage_home': return `
-  <div class="section-title">Coverage Selection</div>
-
-  <label>Coverage A – Dwelling Coverage:</label>
-  <select id="dwellingCov">
-    <option value="250000">$250,000</option>
-    <option value="300000">$300,000</option>
-    <option value="350000" selected>$350,000</option>
-    <option value="400000">$400,000</option>
-    <option value="500000">$500,000</option>
-  </select>
-
-  <label style="margin-top:12px;">Coverage B – Other Structures:</label>
-  <select id="otherStructures">
-    <option value="10000">$10,000</option>
-    <option value="20000">$20,000</option>
-    <option value="30000" selected>$30,000</option>
-    <option value="50000">$50,000</option>
-  </select>
-
-  <label style="margin-top:12px;">Coverage C – Personal Property:</label>
-  <select id="personalProperty">
-    <option value="50000">$50,000</option>
-    <option value="75000">$75,000</option>
-    <option value="100000" selected>$100,000</option>
-    <option value="150000">$150,000</option>
-    <option value="200000">$200,000</option>
-  </select>
-
-  <label style="margin-top:12px;">Coverage D – Loss of Use:</label>
-  <select id="lossOfUse">
-    <option value="10000">$10,000</option>
-    <option value="15000">$15,000</option>
-    <option value="20000" selected>$20,000</option>
-    <option value="30000">$30,000</option>
-  </select>
-
-  <label style="margin-top:12px;">Coverage E – Liability Limit:</label>
-  <select id="homeLiability">
-    <option value="100000">$100,000</option>
-    <option value="300000" selected>$300,000</option>
-    <option value="500000">$500,000</option>
-  </select>
-
-  <div style="margin-top:12px;">
-    <label>Deductible</label>
-    <select id="homeDeductible">
-      <option value="500">$500</option>
-      <option value="1000" selected>$1,000</option>
-      <option value="2500">$2,500</option>
-    </select>
-  </div>
-`;
-    case 'summary': return `
-      <div class="section-title">Summary & Estimate</div>
-      <div class="muted">When required fields are complete, click Generate Quote to compute a mock premium.</div>
-      <div id="homeEstimate" class="quote-result hidden"></div>`;
-    case 'orderreport': return `
-      <div class="section-title">Order Report</div>
-      <div class="muted">Order CLUE, Inspection, or Credit score reports (demo).</div>
-      <div style="margin-top:12px"><button id="orderReportBtn" class="btn ghost">Order CLUE / Score</button></div>`;
-    case 'billing_home': return `
-      <div class="section-title">Billing</div>
-      <div class="grid">
-        <div><label>Payment Plan</label><select id="homePaymentPlan"><option>Annual</option><option>Monthly</option></select></div>
-        <div><label>Payment Method</label><select id="homePaymentMethod"><option>Credit Card</option><option>EFT</option></select></div>
-      </div>
-      <div style="margin-top:12px"><label>Mortgagee / Lienholder</label><input id="mortgagee" type="text" /></div>`;
-    case 'issue_home': return `
-      <div class="section-title">Issue</div>
-      <div class="muted">Review and then Save Quote / Issue Policy.</div>
-      <div style="margin-top:12px" class="split"><button id="issuePolicyHome" class="btn primary">Issue Policy</button><button id="downloadHome" class="btn ghost">Download Quote JSON</button></div>`;
-    default: return `<div>Not implemented</div>`;
-  }
-}
-
-/* ---------- helpers ---------- */
-function yearOptions(){
-  const current = new Date().getFullYear();
-  let opts = '';
-  for(let y=current; y>=1980; y--) opts += `<option>${y}</option>`;
-  return opts;
-}
-
-/* ---------- render current tab ---------- */
-function renderCurrentTab(){
-  // highlight tabs
-  document.querySelectorAll('#tabsContainer .tab-btn').forEach((b,i)=> b.classList.toggle('active', i===currentIndex));
-  const tab = tabs[currentIndex];
-  const container = $('formContainer');
-  container.innerHTML = '<div id="tabInner"></div>';
-  const inner = $('tabInner');
-
-  // insert template
-  inner.innerHTML = (product === 'home') ? templateHome(tab.id) : templateAuto(tab.id);
-
-  // show/hide navigation buttons
-  $('prevBtn').style.display = currentIndex === 0 ? 'none' : 'inline-block';
-  $('nextBtn').style.display = currentIndex === tabs.length - 1 ? 'none' : 'inline-block';
-
-  // control generate/save visibility
-  $('generateBtn').style.display = ((product==='auto' && tab.id==='review') || (product==='home' && tab.id==='summary')) ? 'inline-block' : 'none';
-  $('saveFinalBtn').style.display = ((product==='auto' && tab.id==='issue') || (product==='home' && tab.id==='issue_home')) ? 'inline-block' : 'none';
-
-  // restore draft fields into inputs
-  restoreDraftToFields();
-
-  // attach tab-specific listeners (download/order/issue etc)
-  attachTabHandlers(tab.id);
-}
-
-/* ---------- write all form inputs into quoteData ---------- */
-function writeFieldsToData(){
-  const inputs = document.querySelectorAll('#formContainer input, #formContainer select, #formContainer textarea');
-  inputs.forEach(inp => {
-    if(inp.id){
-      quoteData[inp.id] = inp.type === 'checkbox' ? inp.checked : inp.value;
-    }
-  });
-  quoteData.product = product;
-  if(!quoteData.quoteNumber) quoteData.quoteNumber = String(Date.now()).slice(-8);
-}
-
-/* ---------- restore draft ---------- */
-function saveDraft(){
-  writeFieldsToData();
-  localStorage.setItem(DRAFT_KEY_PREFIX + product, JSON.stringify(quoteData));
-  alert('Draft saved locally.');
-}
-function loadDraft(){
-  try{
-    const raw = localStorage.getItem(DRAFT_KEY_PREFIX + (product||''));
-    return raw ? JSON.parse(raw) : {};
-  }catch(e){ return {}; }
-}
-function restoreDraftToFields(){
-  const draft = loadDraft() || {};
-  Object.keys(draft).forEach(k=>{
-    const node = document.getElementById(k);
-    if(node) node.value = draft[k];
-  });
-  // ensure quoteNumber shown
-  if(draft.quoteNumber) $('quoteNumber').textContent = `Quote #: ${draft.quoteNumber}`;
-}
-
-/* ---------- navigation ---------- */
-$('prevBtn').addEventListener('click', ()=>{ if(currentIndex>0){ currentIndex--; renderCurrentTab(); }});
-$('nextBtn').addEventListener('click', ()=>{
-  // basic validation before moving forward
-  if(!validateCurrentTab()) return;
-  writeFieldsToData();
-  localStorage.setItem(DRAFT_KEY_PREFIX + product, JSON.stringify(quoteData));
-  if(currentIndex < tabs.length -1){ currentIndex++; renderCurrentTab(); }
-});
-
-/* ---------- Save draft / final ---------- */
-$('saveDraftBtn').addEventListener('click', saveDraft);
-$('saveFinalBtn').addEventListener('click', ()=>{
-  writeFieldsToData();
-  const all = JSON.parse(localStorage.getItem('lava_quotes')||'[]');
-  all.unshift({...quoteData, savedAt: Date.now()});
-  localStorage.setItem('lava_quotes', JSON.stringify(all));
-  localStorage.removeItem(DRAFT_KEY_PREFIX + product);
-  alert('Final quote saved locally.');
-  $('summaryContent').innerHTML = `<div><strong>Saved Quote #${quoteData.quoteNumber}</strong></div>`;
-  $('summaryCard').classList.remove('hidden');
-});
-
-/* ---------- Download JSON ---------- */
-$('downloadBtn').addEventListener('click', downloadCurrentQuote);
-function downloadCurrentQuote(){
-  writeFieldsToData();
-  const data = JSON.stringify(quoteData, null, 2);
-  const blob = new Blob([data], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = `quote_${quoteData.quoteNumber||'draft'}.json`; a.click(); a.remove();
-}
-
-/* ---------- attach tab handlers ---------- */
-function attachTabHandlers(tabId){
-  // issue buttons
-  const issueAuto = document.getElementById('issuePolicy');
-  if(issueAuto) issueAuto.onclick = issuePolicy;
-
-  const issueHome = document.getElementById('issuePolicyHome');
-  if(issueHome) issueHome.onclick = issuePolicy;
-
-  const downloadAuto = document.getElementById('downloadAuto');
-  if(downloadAuto) downloadAuto.onclick = downloadCurrentQuote;
-  const downloadHome = document.getElementById('downloadHome');
-  if(downloadHome) downloadHome.onclick = downloadCurrentQuote;
-
-  const orderBtn = document.getElementById('orderReportBtn');
-  if(orderBtn) orderBtn.onclick = ()=> alert('Order report requested (demo).');
-
-  // default effective date if present
-  const eff = document.getElementById('effectiveDate');
-  if(eff && !eff.value){
-    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
-    eff.value = tomorrow.toISOString().split('T')[0];
-  }
-}
-
-/* ---------- simple validation per tab ---------- */
-function validateCurrentTab(){
-  const tab = tabs[currentIndex];
-  // minimal checks only for required/important fields
-  if(product === 'auto'){
-    if(tab.id === 'policy'){
-      const eff = $('effectiveDate'), zip = $('garagingZip');
-      if(!eff || !eff.value){ alert('Requested Effective Date is required.'); return false; }
-      if(!zip || !zip.value){ alert('Garaging ZIP Code is required.'); return false; }
-    }
-    if(tab.id === 'driver'){
-      const fn = $('driverFirstName'), ln = $('driverLastName');
-      if(!fn || !fn.value || !ln || !ln.value){ alert('Primary driver first and last name are required.'); return false; }
-    }
-    if(tab.id === 'vehicle'){
-      const yr = $('vehYear'), mk = $('vehMake');
-      if(!yr || !yr.value || !mk || !mk.value){ alert('Vehicle year and make are required.'); return false; }
-    }
-  } else {
-    if(tab.id === 'applicant'){
-      const fn = $('homeFirstName'), ln = $('homeLastName');
-      if(!fn || !fn.value || !ln || !ln.value){ alert('Applicant name is required.'); return false; }
-    }
-    if(tab.id === 'dwelling'){
-      const addr = $('dwellingAddress');
-      if(!addr || !addr.value){ alert('Property address is required.'); return false; }
-    }
-  }
-  return true;
-}
-
-/* ---------- generate (mock) rating ---------- */
-$('generateBtn').addEventListener('click', ()=>{
-  writeFieldsToData();
-  if(product === 'auto') runAutoMock();
-  else runHomeMock();
-});
-
-function runAutoMock(){
-  // get essentials
-  const dob = $('driverDOB')?.value || '';
-  const vehYear = parseInt($('vehYear')?.value) || new Date().getFullYear();
-  const liab = $('bodilyInjury')?.value || '$100,000';
-  const age = calcAge(dob) || 35;
-
-  // base & adjustments (simple)
-  let base = 700;
-  const vehicleAdj = Math.max(0, (new Date().getFullYear() - vehYear)) * 6;
-  const driverAdj = age < 25 ? 200 : (age < 30 ? 120 : (age > 65 ? 140 : 0));
-  const liabAdj = (liab.includes('250')) ? 380 : (liab.includes('100') ? 120 : 40);
-
-  // discounts
-  const multi = $('discountMulti')?.value === 'Yes' ? -100 : 0;
-  const homeowner = $('discountBundle')?.value === 'Yes' ? -75 : 0;
-  const optional = ($('optionalCover')?.value === 'Rental Reimbursement') ? 20 : ($('optionalCover')?.value === 'Roadside Assistance' ? 15 : 0);
-
-  let total = base + vehicleAdj + driverAdj + liabAdj + optional + multi + homeowner;
-  if(total < 250) total = 250;
-
-  // simple text summary (A)
-  const text = `Base $${base} + Vehicle Adj $${vehicleAdj} + Driver Adj $${driverAdj} + Liability Adj $${liabAdj} + Options $${optional} + Discounts $${(multi+homeowner)} = Estimated 6-month premium $${Math.round(total)}.`;
-  const box = $('autoEstimate') || createEstimateBox();
-  box.innerHTML = `<div><strong>Estimate</strong></div><div class="small" style="margin-top:8px">${text}</div>`;
-  box.classList.remove('hidden');
-
-  // store
-  quoteData.estimatedPremium6 = Math.round(total);
-  quoteData.estimateSummary = text;
-  $('summaryCard').classList.remove('hidden');
-  populateSummary();
-}
-
-function runHomeMock(){
-  const dwelling = parseFloat($('dwellingCov')?.value) || 350000;
-  const yearBuilt = parseInt($('dwellingYear')?.value) || 2000;
-  const construction = $('constructionType')?.value || 'Frame';
-
-  let base = 800;
-  const ageAdj = (new Date().getFullYear() - yearBuilt) * 2;
-  const dwellingAdj = Math.round((dwelling/100000) * 60);
-  const constructionAdj = (construction === 'Brick') ? -75 : 0;
-  let total = base + ageAdj + dwellingAdj + constructionAdj;
-  if(total < 400) total = 400;
-
-  const text = `Base $${base} + Dwelling Adj $${dwellingAdj} + Age Adj $${ageAdj} + Construction Adj $${constructionAdj} = Estimated annual premium $${Math.round(total)}.`;
-  const box = $('homeEstimate') || createEstimateBox();
-  box.innerHTML = `<div><strong>Estimate</strong></div><div class="small" style="margin-top:8px">${text}</div>`;
-  box.classList.remove('hidden');
-
-  quoteData.estimatedHomeAnnual = Math.round(total);
-  quoteData.estimateSummary = text;
-  $('summaryCard').classList.remove('hidden');
-  populateSummary();
-}
-
-function calcAge(dob){
-  if(!dob) return null;
-  const b = new Date(dob); const diff = Date.now() - b.getTime(); return Math.floor(diff / 31557600000);
-}
-
-function createEstimateBox(){
-  const elBox = elWithHTML('div','autoEstimate','<div></div>');
-  el('tabInner').appendChild(elBox);
-  return elBox;
-}
-function elWithHTML(tag,id,html){
-  const n = document.createElement(tag); if(id) n.id = id; n.innerHTML = html; n.className='quote-result'; return n;
-}
-
-/* ---------- summary populate ---------- */
-function populateSummary(){
-  const lines = [];
-  lines.push(`<div><strong>Quote #: </strong> ${quoteData.quoteNumber || '—'}</div>`);
-  lines.push(`<div><strong>Product: </strong> ${product.toUpperCase()}</div>`);
-  if(product === 'auto'){
-    lines.push(`<div><strong>Driver: </strong> ${(quoteData.driverFirstName||'')} ${(quoteData.driverLastName||'')}</div>`);
-    lines.push(`<div><strong>Vehicle: </strong> ${(quoteData.vehYear||'')} ${(quoteData.vehMake||'')} ${(quoteData.vehModel||'')}</div>`);
-    lines.push(`<div><strong>Estimate: </strong> ${quoteData.estimateSummary || '—'}</div>`);
-  } else {
-    lines.push(`<div><strong>Applicant: </strong> ${(quoteData.homeFirstName||'')} ${(quoteData.homeLastName||'')}</div>`);
-    lines.push(`<div><strong>Property: </strong> ${(quoteData.dwellingAddress||'')}, ${(quoteData.dwellingCity||'')}</div>`);
-    lines.push(`<div><strong>Estimate: </strong> ${quoteData.estimateSummary || '—'}</div>`);
-  }
-  $('summaryContent').innerHTML = lines.join('');
-}
-
-/* ---------- issue policy ---------- */
-function issuePolicy(){
-  writeFieldsToData();
-  const all = JSON.parse(localStorage.getItem('lava_quotes')||'[]');
-  all.unshift({...quoteData, status:'ISSUED', issuedAt: Date.now()});
-  localStorage.setItem('lava_quotes', JSON.stringify(all));
-  localStorage.removeItem(DRAFT_KEY_PREFIX + product);
-  alert('Policy issued & saved locally. Returning to dashboard.');
-  window.location.href = 'dashboard.html';
-}
-
-/* ---------- download current quote (tab buttons) ---------- */
-document.addEventListener('click', (ev)=>{
-  if(ev.target && (ev.target.id === 'downloadAuto' || ev.target.id === 'downloadHome')){
-    writeFieldsToData();
-    const data = JSON.stringify(quoteData, null, 2);
-    const blob = new Blob([data], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); 
-    a.href = url; 
-    a.download = `quote_${quoteData.quoteNumber || 'draft'}.json`; 
-    a.click(); 
-    a.remove();
-  }
-});
-
-<!-- ✅ Load your shared JavaScript logic before inline init -->
-<script src="script.js"></script>
-
-<script>
-/* ---------- init ---------- */
-function init(){
-  // show selection card by default
-  $('selectCard').classList.remove('hidden');
-  $('tabsCard').classList.add('hidden');
-  $('contentCard').classList.add('hidden');
-  $('summaryCard').classList.add('hidden');
-  $('generateBtn').style.display = 'none';
-  $('saveFinalBtn').style.display = 'none';
-
-  // if draft exists for previous flows, we still start selection first
-}
-init();
 </script>
-
 </body>
 </html>
