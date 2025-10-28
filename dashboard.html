@@ -167,8 +167,10 @@
   </div>
 </div>
 
+<!-- ALERT -->
 <div class="alert" id="alertBox"></div>
 
+<!-- ALL JS -->
 <script>
 const QUOTES_KEY = "quotes";
 
@@ -181,23 +183,27 @@ function showAlert(type, message) {
   setTimeout(()=>box.style.display="none",3000);
 }
 
-// QUOTES
+// START QUOTE
 function startQuote() {
   const product = document.getElementById("quoteProductSelect").value.toLowerCase();
   if(product==="auto"||product==="home"){
     window.location.href=`quote.html?type=${product}`;
-  } else showAlert("error","This quote type is not yet supported.");
+  } else {
+    showAlert("error","This quote type is not yet supported.");
+  }
 }
 
+// LOGOUT
 function logout() {
   showAlert("success","You have been logged out.");
-  // Reset dashboard and show login again
   document.getElementById("dashboardContainer").style.display="none";
   document.getElementById("loginContainer").style.display="flex";
 }
 
 // CUSTOMER SEARCH
-function searchCustomer() { showAlert("success","Customer search is not implemented yet."); }
+function searchCustomer() { 
+  showAlert("success","Customer search is not implemented yet."); 
+}
 
 // LOAD RECENT QUOTES
 function loadRecentQuotes(){
@@ -211,11 +217,13 @@ function loadRecentQuotes(){
   quotes.sort((a,b)=>b.createdAt - a.createdAt);
   quotes.forEach(q=>{
     const row = document.createElement("tr");
-    row.innerHTML=`<td>${q.quoteNumber||'—'}</td>
-                   <td>${q.applicantName||'—'}</td>
-                   <td>${q.productType}</td>
-                   <td>$${q.estimatedPremium}</td>
-                   <td>${new Date(q.createdAt).toLocaleDateString()}</td>`;
+    row.innerHTML=`
+      <td>${q.quoteNumber||'—'}</td>
+      <td>${q.applicantName||'—'}</td>
+      <td>${q.productType}</td>
+      <td>$${q.estimatedPremium}</td>
+      <td>${new Date(q.createdAt).toLocaleDateString()}</td>
+    `;
     tbody.appendChild(row);
   });
 }
@@ -228,8 +236,6 @@ document.getElementById("loginForm").addEventListener("submit", function(e){
   const password = document.getElementById("password").value;
 
   if(first && last && password){
-    // In real-world: verify password here
-    // Save agent info in sessionStorage
     sessionStorage.setItem("agentFirstName", first);
     sessionStorage.setItem("agentLastName", last);
 
@@ -239,6 +245,7 @@ document.getElementById("loginForm").addEventListener("submit", function(e){
     const fullName = first + " " + last;
     document.getElementById("welcome-agent-msg").textContent=`Hi ${fullName}!`;
     document.getElementById("agent-display").textContent=`User ID: ${fullName}`;
+
     loadRecentQuotes();
   } else {
     showAlert("error","Please fill all login fields.");
@@ -252,12 +259,15 @@ document.addEventListener("DOMContentLoaded", ()=>{
   if(first && last){
     document.getElementById("loginContainer").style.display="none";
     document.getElementById("dashboardContainer").style.display="block";
+
     const fullName = first + " " + last;
     document.getElementById("welcome-agent-msg").textContent=`Hi ${fullName}!`;
     document.getElementById("agent-display").textContent=`User ID: ${fullName}`;
+
     loadRecentQuotes();
   }
 });
 </script>
+
 </body>
 </html>
