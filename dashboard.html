@@ -1,213 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>LAVA Safeco | Dashboard</title>
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; font-family:"Poppins", Arial, sans-serif; }
-  body { background-color:#f4f7f6; padding-top:70px; }
-
-  /* NAVBAR */
-  nav { background:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.1); position:fixed; top:0; left:0; right:0; height:60px; display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index:100;}
-  .navbar-brand { display:flex; align-items:center; gap:10px; font-weight:700; color:#0d6efd; text-decoration:none;}
-  .navbar-brand img { height:40px; border-radius:6px; }
-  .nav-links { display:flex; gap:20px;}
-  .nav-links a { text-decoration:none; color:#333; font-weight:500; transition:color 0.2s;}
-  .nav-links a:hover { color:#0d6efd; }
-  .nav-right { display:flex; align-items:center; gap:15px;}
-  .btn { padding:8px 14px; border:none; border-radius:6px; font-weight:600; cursor:pointer; transition: background 0.2s, color 0.2s;}
-  .btn-primary { background:#0d6efd; color:#fff;}
-  .btn-primary:hover { background:#0b5ed7;}
-  .btn-outline { background:transparent; color:#0d6efd; border:2px solid #0d6efd;}
-  .btn-outline:hover { background:#0d6efd; color:#fff;}
-
-  /* LAYOUT */
-  .container { display:flex; gap:20px; padding:20px;}
-  aside { flex:0 0 260px; display:flex; flex-direction:column; gap:20px;}
-  main { flex:1; display:flex; flex-direction:column; gap:20px; }
-
-  /* CARDS */
-  .card { background:#fff; border-radius:10px; box-shadow:0 3px 10px rgba(0,0,0,0.1); padding:16px;}
-  .card h3 { font-size:16px; color:#0d6efd; margin-bottom:8px;}
-  .card p { font-size:13px; color:#555; margin-bottom:8px;}
-  .form-input, .form-select { width:100%; padding:8px; border:1px solid #ccc; border-radius:6px; margin-bottom:10px; font-size:14px;}
-
-  /* MAIN CONTENT SECTIONS */
-  .welcome-section { display:flex; align-items:center; gap:15px; }
-  .welcome-section img { height:60px; border-radius:6px; }
-  .welcome-section h2 { color:#0d6efd; font-weight:600; }
-  .cards-row { display:flex; gap:20px; flex-wrap:wrap; }
-  .cards-row .card { flex:1; min-width:200px; }
-
-  /* TABLE */
-  .recent-quotes table { width:100%; border-collapse:collapse; font-size:14px;}
-  th, td { padding:10px; border-bottom:1px solid #ddd; text-align:left;}
-  th { background-color:#f0f2f5; font-weight:600; }
-  tr:hover { background-color:#f9fbff;}
-  .text-muted { color:#888; font-size:13px; text-align:center; }
-
-  /* ALERT */
-  .alert { position:fixed; top:20px; right:20px; background:#d4edda; color:#155724; border:1px solid #c3e6cb; padding:10px 16px; border-radius:8px; display:none; box-shadow:0 3px 10px rgba(0,0,0,0.15);}
-  .alert.error { background:#f8d7da; color:#721c24; border:1px solid #f5c6cb;}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LAVA Safeco Dashboard</title>
+  <link href="style.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
 <body>
-
-<!-- DASHBOARD -->
-<div id="dashboardContainer">
-  <!-- NAVBAR -->
-  <nav>
-    <a href="#" class="navbar-brand"><img src="images/lava-safeco-logo.png" /> LAVA Safeco</a>
-    <div class="nav-links">
-      <a href="#">Products</a>
-      <a href="#">Programs</a>
-      <a href="#">Claims</a>
-      <a href="#">My Agency</a>
+  <!-- HEADER -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">L</div>
+      <div>
+        <h1>LAVA Safeco</h1>
+        <div class="muted small">Quoting Portal</div>
+      </div>
     </div>
-    <div class="nav-right">
-      <button class="btn btn-primary" onclick="startQuote()">Start Quote</button>
-      <span id="agent-display" style="font-size:13px;color:#777;">User ID: Agent</span>
-      <a href="#" style="color:#d33;font-weight:600;text-decoration:none;" onclick="showAlert('success','You have been logged out.')">Logout</a>
+  </header>
+
+  <!-- DASHBOARD MAIN -->
+  <main class="container py-4">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h5 class="mb-3">Start New Quote</h5>
+        <div class="row g-3 align-items-center">
+          <div class="col-md-6">
+            <select id="quoteProductSelect" class="form-select">
+              <option value="auto">Auto Insurance</option>
+              <option value="home">Home Insurance</option>
+            </select>
+          </div>
+          <div class="col-md-6 text-md-start text-center">
+            <button id="startQuoteBtn" class="btn btn-primary">Start Quote</button>
+          </div>
+        </div>
+      </div>
     </div>
-  </nav>
 
-  <div class="container">
-    <!-- SIDEBAR -->
-    <aside>
-      <div class="card">
-        <h3>Customer Lookup</h3>
-        <p>Search by name, policy, email, or phone</p>
-        <input type="text" class="form-input" id="customerSearch" placeholder="Search customer..." />
-        <button class="btn btn-primary w-100" onclick="searchCustomer()">Search</button>
-      </div>
-      <div class="card">
-        <h3>Quote</h3>
-        <select class="form-select" id="quoteStateSelect">
-          <option>North Carolina</option>
-          <option>California</option>
-          <option>Texas</option>
-        </select>
-        <select class="form-select" id="quoteProductSelect">
-          <option value="Auto">Auto</option>
-          <option value="Home">Home</option>
-        </select>
-        <button class="btn btn-outline w-100" onclick="startQuote()">Start Quote</button>
-      </div>
-    </aside>
-
-    <!-- MAIN CONTENT -->
-    <main>
-      <div class="welcome-section">
-        <img src="images/lava-safeco-logo.png" />
-        <h2 id="welcome-agent-msg">Hi Agent!</h2>
-      </div>
-
-      <!-- Cards Row -->
-      <div class="cards-row">
-        <div class="card">
-          <h3>Renewals</h3>
-          <p id="renewals">No renewals right now.</p>
-        </div>
-        <div class="card">
-          <h3>My Favorites</h3>
-          <ul style="font-size:13px; padding-left:15px;">
-            <li>Client list</li>
-            <li>View policy summary</li>
-            <li>Change or endorse</li>
-            <li>Manage billing & payments</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h3>My Production</h3>
-          <p id="production">Auto Issues YTD: 0 <br> Home Issues YTD: 0</p>
-        </div>
-        <div class="card">
-          <h3>My Insights</h3>
-          <p>85% of customers say it’s important to review policy coverages.</p>
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="mb-3">Recent Quotes</h5>
+        <div class="table-responsive">
+          <table class="table table-striped" id="recentQuotesTable">
+            <thead>
+              <tr>
+                <th>Applicant</th>
+                <th>Product</th>
+                <th>Premium</th>
+                <th>Quote Date</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="5" class="text-center text-muted py-3">Loading...</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
+    </div>
+  </main>
 
-      <!-- Recent Quotes Table -->
-      <div class="recent-quotes">
-        <h3>Recent Quotes</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Quote #</th>
-              <th>Client Name</th>
-              <th>Type</th>
-              <th>Premium</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody id="recentQuotesBody">
-            <tr><td colspan="5" class="text-muted">No recent quotes available.</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </main>
-  </div>
-</div>
-
-<!-- ALERT -->
-<div class="alert" id="alertBox"></div>
-
-<script>
-const QUOTES_KEY = "quotes";
-
-// ALERT
-function showAlert(type, message) {
-  const box = document.getElementById("alertBox");
-  box.textContent = message;
-  box.className = "alert" + (type==="error"?" error":"");
-  box.style.display="block";
-  setTimeout(()=>box.style.display="none",3000);
-}
-
-// START QUOTE
-function startQuote() {
-  const product = document.getElementById("quoteProductSelect").value.toLowerCase();
-  if(product==="auto"||product==="home"){
-    window.location.href=`quote.html?type=${product}`;
-  } else {
-    showAlert("error","This quote type is not yet supported.");
-  }
-}
-
-// CUSTOMER SEARCH
-function searchCustomer() { 
-  showAlert("success","Customer search is not implemented yet."); 
-}
-
-// LOAD RECENT QUOTES
-function loadRecentQuotes(){
-  const quotes = JSON.parse(localStorage.getItem(QUOTES_KEY)) || [];
-  const tbody = document.getElementById("recentQuotesBody");
-  tbody.innerHTML = "";
-  if(quotes.length===0){
-    tbody.innerHTML=`<tr><td colspan="5" class="text-muted">No recent quotes available.</td></tr>`;
-    return;
-  }
-  quotes.sort((a,b)=>b.createdAt - a.createdAt);
-  quotes.forEach(q=>{
-    const row = document.createElement("tr");
-    row.innerHTML=`
-      <td>${q.quoteNumber||'—'}</td>
-      <td>${q.applicantName||'—'}</td>
-      <td>${q.productType}</td>
-      <td>$${q.estimatedPremium}</td>
-      <td>${new Date(q.createdAt).toLocaleDateString()}</td>
-    `;
-    tbody.appendChild(row);
-  });
-}
-
-// LOAD RECENT QUOTES ON PAGE LOAD
-document.addEventListener("DOMContentLoaded", ()=>{
-  loadRecentQuotes();
-});
-</script>
-
+  <script src="script.js"></script>
 </body>
 </html>
