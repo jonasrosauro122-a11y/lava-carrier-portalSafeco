@@ -80,6 +80,13 @@
   </div>
 </header>
   
+<!-- ✅ Back to Dashboard Button -->
+<div style="text-align:right;margin:1rem;">
+  <button id="backBtn" class="btn btn-outline-secondary btn-sm">
+    ← Back to Dashboard
+  </button>
+</div>
+
 <main class="container">
 
   <!-- Selection screen card -->
@@ -94,43 +101,48 @@
     </div>
   </section>
 
-  <!-- Tabs header -->
-  <section id="tabsCard" class="card hidden">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-      <div>
-        <div class="section-title" id="flowTitle">Quote</div>
-        <div class="muted small" id="quoteNumber">Quote #: —</div>
+  <!-- ✅ Auto Quote Section -->
+  <div id="autoQuoteSection" class="hidden">
+    <section id="tabsCard" class="card hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div>
+          <div class="section-title" id="flowTitle">Auto Quote</div>
+          <div class="muted small" id="quoteNumber">Quote #: —</div>
+        </div>
+        <div class="tabs" id="tabsContainer" aria-label="Quote tabs"></div>
       </div>
-      <div class="tabs" id="tabsContainer" aria-label="Quote tabs"></div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Form content card -->
-  <section id="contentCard" class="card hidden">
-    <div id="formContainer"></div>
+    <section id="contentCard" class="card hidden">
+      <div id="formContainer"></div>
 
-    <div class="actions">
-      <div class="left">
-        <button id="prevBtn" class="btn ghost">← Back</button>
-        <button id="nextBtn" class="btn primary">Continue →</button>
-        <button id="saveDraftBtn" class="btn ghost">Save Draft</button>
+      <div class="actions">
+        <div class="left">
+          <button id="prevBtn" class="btn ghost">← Back</button>
+          <button id="nextBtn" class="btn primary">Continue →</button>
+          <button id="saveDraftBtn" class="btn ghost">Save Draft</button>
+        </div>
+        <div>
+          <button id="generateBtn" class="btn primary">Generate Quote</button>
+          <button id="saveFinalBtn" class="btn warn">Save Quote</button>
+        </div>
       </div>
-      <div>
-        <button id="generateBtn" class="btn primary">Generate Quote</button>
-        <button id="saveFinalBtn" class="btn warn">Save Quote</button>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Summary card -->
-  <section id="summaryCard" class="card hidden">
-    <div class="section-title">Quote Summary & Actions</div>
-    <div id="summaryContent" class="muted">No quote generated yet.</div>
-    <div style="margin-top:12px;display:flex;gap:8px">
-      <button id="issueBtn" class="btn primary">Issue Policy</button>
-      <button id="downloadBtn" class="btn ghost">Download JSON</button>
-    </div>
-  </section>
+    <section id="summaryCard" class="card hidden">
+      <div class="section-title">Quote Summary & Actions</div>
+      <div id="summaryContent" class="muted">No quote generated yet.</div>
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button id="issueBtn" class="btn primary">Issue Policy</button>
+        <button id="downloadBtn" class="btn ghost">Download JSON</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- ✅ Home Quote Section -->
+  <div id="homeQuoteSection" class="hidden">
+    <!-- You can reuse the same cards or build separate ones for home if needed -->
+  </div>
 
 </main>
 
@@ -786,4 +798,5 @@ $('chooseHome').addEventListener('click', () => {
 
 </body>
 </html>
+
 
