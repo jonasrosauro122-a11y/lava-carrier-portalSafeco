@@ -1,790 +1,410 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>LAVA Safeco — Quote</title>
-<style>
-  :root{
-    --bg:#f6f8fb;
-    --card:#ffffff;
-    --accent:#0d6efd;
-    --muted:#6b7280;
-    --success:#16a34a;
-    --danger:#dc2626;
-    --shadow: 0 6px 18px rgba(15,23,42,0.06);
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  }
-  html,body{height:100%;margin:0;background:var(--bg);color:#111827}
-  .topbar{
-    position:fixed;left:0;right:0;top:0;height:64px;background:#fff;border-bottom:1px solid #e6e9ef;display:flex;align-items:center;padding:0 20px;z-index:40;box-shadow: 0 2px 6px rgba(2,6,23,0.04);
-  }
-  .brand{display:flex;align-items:center;gap:12px}
-  .brand .logo{width:44px;height:44px;border-radius:8px;background:#0d6efd;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
-  .brand h1{font-size:18px;margin:0;color:var(--accent)}
-  .top-actions{margin-left:auto;display:flex;gap:12px;align-items:center}
-  .container{max-width:1100px;margin:94px auto;padding:18px}
-  .card{background:var(--card);border-radius:12px;padding:18px;box-shadow:var(--shadow);margin-bottom:18px}
-  .tabs{display:flex;gap:8px;flex-wrap:wrap}
-  .tab-btn{background:#f3f6fb;border:1px solid #eaedf3;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:600;color:#334155}
-  .tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-  .flex-row{display:flex;gap:12px;align-items:center}
-  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-  label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:600}
-  input[type="text"], input[type="date"], input[type="number"], input[type="email"], select, textarea {
-    width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ef;background:#fbfdff;font-size:14px;
-  }
-  textarea{min-height:80px;resize:vertical}
-  .section-title{font-weight:700;color:var(--accent);margin:6px 0 12px}
-  .actions{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-top:14px}
-  .actions .left{display:flex;gap:8px}
-  button.btn{padding:8px 12px;border-radius:8px;border:0;cursor:pointer;font-weight:700}
-  button.primary{background:var(--accent);color:#fff}
-  button.ghost{background:transparent;border:1px solid #e6e9ef;color:#111827}
-  button.warn{background:#f97316;color:#fff}
-  .note{font-size:13px;color:var(--muted)}
-  .quote-result{border:1px dashed #e6eefc;background:#fbfdff;padding:12px;border-radius:8px;margin-top:12px}
-  .muted{color:var(--muted);font-size:13px}
-  .small{font-size:13px;color:#374151}
-  .field-row{margin-bottom:12px}
-  .split{display:flex;gap:12px}
-  .split > *{flex:1}
-  .checkbox-row{display:flex;gap:12px;align-items:center}
-  .success{color:var(--success)}
-  .danger{color:var(--danger)}
-  @media (max-width:900px){
-    .grid{grid-template-columns:1fr}
-    .grid-3{grid-template-columns:1fr}
-    .topbar{padding:0 12px}
-    .container{padding:12px}
-  }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LAVA Safeco — Quote (Auto & Home)</title>
+
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --accent:#0d6efd;
+      --accent-dark:#0b5ed7;
+      --muted:#6b7280;
+      --shadow: 0 8px 24px rgba(11, 29, 66, 0.08);
+      --radius:12px;
+      --maxw:1100px;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+    html,body{height:100%;margin:0;background:var(--bg);color:#0f1724}
+    /* Topbar */
+    .topbar{
+      position:fixed;left:0;right:0;top:0;height:64px;background:#fff;border-bottom:1px solid #eef2f7;
+      display:flex;align-items:center;padding:0 20px;z-index:120;
+      box-shadow: 0 2px 6px rgba(2,6,23,0.03);
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:44px;height:44px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+    .brand h1{font-size:16px;margin:0;color:var(--accent);letter-spacing:.2px}
+    .top-actions{margin-left:auto;display:flex;gap:10px;align-items:center}
+    .btn { font-weight:700; border:0; cursor:pointer; padding:8px 12px; border-radius:8px; }
+    .btn-ghost { background:transparent; border:1px solid #eef2f7; color:#374151 }
+    .btn-primary { background:var(--accent); color:#fff }
+    .btn-accent-outline { background:transparent; border:2px solid var(--accent); color:var(--accent) }
+
+    /* Layout */
+    .page { max-width: var(--maxw); margin:92px auto 60px; padding:20px; }
+    .card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);margin-bottom:18px}
+    .center { text-align:center }
+
+    /* Product selection */
+    .choose-card { display:flex; gap:18px; justify-content:center; align-items:stretch; padding:28px; }
+    .choice{
+      flex:1; border-radius:10px; padding:18px; background:#fff; border:1px solid #e9f0ff;
+      display:flex; flex-direction:column; gap:12px; align-items:flex-start;
+    }
+    .choice h3{margin:0;color:var(--accent)}
+    .choice p{margin:0;color:var(--muted); font-size:14px}
+
+    /* Tabs area */
+    .tabs { display:flex; gap:8px; flex-wrap:wrap; margin-left:6px; margin-top:6px }
+    .tab-btn { padding:8px 12px; border-radius:8px; background:#f2f6ff; border:1px solid #e9f0ff; color:#0f1724; font-weight:700; cursor:pointer }
+    .tab-btn.active { background:var(--accent); color:#fff; border-color:var(--accent) }
+
+    /* Form area */
+    .form-area { margin-top:12px }
+    .section-title { font-weight:800; color:var(--accent); margin:6px 0 12px; font-size:16px }
+    .placeholder { border-radius:8px; background:#fbfdff; border:1px dashed #e6eefc; padding:14px; color:var(--muted) }
+    .placeholder small { display:block; margin-top:8px; color:#475569 }
+
+    .nav-actions { display:flex; justify-content:space-between; align-items:center; margin-top:16px; gap:12px }
+    .nav-left { display:flex; gap:8px }
+    .muted { color:var(--muted); font-size:13px }
+    .quote-result { border-radius:8px; border:1px dashed #e6eefc; padding:12px; background:#fbfdff; margin-top:12px }
+    .summary-card { display:none; margin-top:12px }
+    .small{font-size:13px}
+
+    /* Responsive */
+    @media (max-width:900px){
+      .choose-card { flex-direction:column }
+      .tabs { overflow:auto; -webkit-overflow-scrolling:touch }
+      .topbar { padding:0 12px }
+      .page { padding:12px;margin-top:84px }
+    }
+  </style>
 </head>
 <body>
 
-<header class="topbar">
-  <div class="brand">
-    <div class="logo">L</div>
-    <div>
-      <h1>LAVA Safeco</h1>
-      <div class="muted">Create Quote</div>
-    </div>
-  </div>
-
-  <div class="top-actions">
-    <div id="typeDisplay" class="muted">Loading…</div>
-    <button id="backBtn" class="btn ghost" title="Back to dashboard">← Dashboard</button>
-  </div>
-</header>
-
-<main class="container">
-  <div class="card" id="tabsCard">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">L</div>
       <div>
-        <div class="section-title" id="flowTitle">Quote</div>
-        <div class="muted small" id="quoteNumber">Quote #: —</div>
-      </div>
-
-      <div class="tabs" id="tabsContainer" aria-label="Quote tabs"></div>
-    </div>
-  </div>
-
-  <!-- content card -->
-  <div class="card" id="contentCard">
-    <div id="formContainer"></div>
-
-    <div class="actions">
-      <div class="left">
-        <button id="prevBtn" class="btn ghost">← Back</button>
-        <button id="nextBtn" class="btn primary">Continue →</button>
-        <button id="saveDraftBtn" class="btn ghost">Save Draft</button>
-      </div>
-
-      <div>
-        <button id="generateBtn" class="btn primary">Generate Quote</button>
-        <button id="saveFinalBtn" class="btn warn">Save Quote</button>
+        <h1>LAVA Safeco</h1>
+        <div class="muted small">Quote Builder (Auto & Home)</div>
       </div>
     </div>
-  </div>
 
-  <div class="card" id="summaryCard" style="display:none">
-    <div class="section-title">Quote Summary & Actions</div>
-    <div id="summaryContent" class="muted">No quote generated yet.</div>
-    <div style="margin-top:12px;display:flex;gap:8px">
-      <button id="issueBtn" class="btn primary">Issue Policy</button>
-      <button id="downloadBtn" class="btn ghost">Download JSON</button>
+    <div class="top-actions">
+      <button id="backToDash" class="btn btn-ghost">← Dashboard</button>
     </div>
-  </div>
-</main>
+  </header>
 
-<script>
-/* ---------- App-wide constants ---------- */
-const QUOTES_KEY = 'quotes';
-const DRAFT_KEY = 'quoteDraft';
-const AUTO_TABS = [
-  { id: 'policy', label: 'Policy Information' },
-  { id: 'applicant', label: 'Driver Information' },
-  { id: 'vehicle', label: 'Vehicle Information' },
-  { id: 'coverage', label: 'Coverage Selection' },
-  { id: 'discounts', label: 'Discounts' },
-  { id: 'underwriting', label: 'Underwriting' },
-  { id: 'review', label: 'Review' },
-  { id: 'billing', label: 'Billing' },
-  { id: 'issue', label: 'Issue' },
-];
+  <main class="page">
 
-const HOME_TABS = [
-  { id: 'applicant', label: 'Applicant' },
-  { id: 'dwelling', label: 'Dwelling Information' },
-  { id: 'costguide', label: 'Cost Guide Features' },
-  { id: 'underwriting', label: 'Underwriting' },
-  { id: 'coverage', label: 'Coverage Selection' },
-  { id: 'summary', label: 'Summary' },
-  { id: 'orderreport', label: 'Order Report' },
-  { id: 'billing', label: 'Billing' },
-  { id: 'issue', label: 'Issue' },
-];
-
-/* ---------- State ---------- */
-let productType = 'auto'; // 'auto' or 'home'
-let tabs = [];
-let currentIndex = 0;
-let quoteData = {}; // collects inputs across tabs
-let draftKey = '';
-
-/* ---------- Helpers for localStorage ---------- */
-function saveDraft(d){ localStorage.setItem(`${DRAFT_KEY}_${productType}`, JSON.stringify(d)); }
-function loadDraft(){ try{ return JSON.parse(localStorage.getItem(`${DRAFT_KEY}_${productType}`)) || {}; }catch(e){ return {}; } }
-function clearDraft(){ localStorage.removeItem(`${DRAFT_KEY}_${productType}`); }
-function saveFinalQuote(obj){
-  const arr = JSON.parse(localStorage.getItem(QUOTES_KEY) || '[]');
-  arr.unshift(obj);
-  localStorage.setItem(QUOTES_KEY, JSON.stringify(arr));
-}
-
-/* ---------- Utility DOM helpers ---------- */
-const el = id => document.getElementById(id);
-function create(label, attrs = {}){ const n = document.createElement(label); for(const k in attrs) n.setAttribute(k, attrs[k]); return n; }
-
-/* ---------- Read URL param ---------- */
-function detectProductType(){
-  const p = new URLSearchParams(window.location.search).get('type');
-  productType = (p && p.toLowerCase()==='home') ? 'home' : 'auto';
-  draftKey = `${DRAFT_KEY}_${productType}`;
-  el('typeDisplay').textContent = productType.toUpperCase() + ' quote';
-  el('flowTitle').textContent = productType.toUpperCase() + ' Quote';
-  el('quoteNumber').textContent = `Quote #: ${generateQuoteNumber()}`;
-}
-
-/* ---------- Quote number generator (simple) ---------- */
-function generateQuoteNumber(){
-  if(!quoteData.quoteNumber) quoteData.quoteNumber = String(Date.now()).slice(-8);
-  return quoteData.quoteNumber;
-}
-
-/* ---------- Build tabs UI ---------- */
-function buildTabs(){
-  const container = el('tabsContainer'); container.innerHTML = '';
-  tabs.forEach((t,i) => {
-    const btn = create('button'); btn.className = 'tab-btn' + (i===0?' active':''); btn.textContent = t.label;
-    btn.dataset.index = i;
-    btn.addEventListener('click', () => { currentIndex = parseInt(btn.dataset.index); renderCurrentTab(); });
-    container.appendChild(btn);
-  });
-}
-
-/* ---------- Define tab contents for both flows ---------- */
-function tabTemplateAuto(id){
-  switch(id){
-    case 'policy': return `
-      <div class="section-title">Policy & Contact</div>
-      <div class="grid">
-        <div class="field-row"><label>Rating State</label><input id="ratingState" type="text" /></div>
-        <div class="field-row"><label>Policy Form</label><input id="policyForm" type="text" /></div>
-        <div class="field-row"><label>Agent Number</label><input id="agentNumber" type="text" /></div>
-        <div class="field-row"><label>Producer/Other ID</label><input id="producerId" type="text" /></div>
+    <!-- Product selection (initial) -->
+    <section class="card" id="selectProductCard">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div>
+          <div class="section-title">Select Product Type</div>
+          <div class="muted">Choose which quote you want to create. This selection will reveal the full form for the product.</div>
+        </div>
+        <div style="min-width:220px" class="center muted small">You can change later via the top-left back button.</div>
       </div>
-      <div class="grid" style="margin-top:10px">
-        <div class="field-row"><label>Garaging Street Address</label><input id="garagingStreet" type="text" /></div>
-        <div class="field-row"><label>Garaging ZIP Code</label><input id="garagingZip" type="text" /></div>
-      </div>
-      <div class="grid" style="margin-top:10px">
-        <div class="field-row"><label>Requested Effective Date</label><input id="effectiveDate" type="date" /></div>
-        <div class="field-row"><label>Current Policy Status</label>
-          <select id="currentPolicyStatus"><option value="No">No</option><option value="Yes">Yes</option></select>
+
+      <div class="choose-card" style="margin-top:18px">
+        <div class="choice" id="chooseAuto">
+          <h3>Auto Quote</h3>
+          <p>Policy Info, Drivers, Vehicles, Coverages, Discounts, Underwriting, Review, Billing, Issue.</p>
+          <small class="muted">Click Start to fill an Auto quote.</small>
+          <div style="margin-top:auto;width:100%"><button class="btn btn-primary" data-type="auto">Start Auto Quote</button></div>
+        </div>
+
+        <div class="choice" id="chooseHome">
+          <h3>Home Quote</h3>
+          <p>Applicant, Dwelling Info, Cost Guide, Underwriting, Coverage Selection, Summary, Order Reports, Billing, Issue.</p>
+          <small class="muted">Click Start to fill a Home quote.</small>
+          <div style="margin-top:auto;width:100%"><button class="btn btn-accent-outline" data-type="home">Start Home Quote</button></div>
         </div>
       </div>
-      <div style="margin-top:10px" class="note">Primary contact (First/Last) captured in Driver Information.</div>`;
-    case 'applicant': return `
-      <div class="section-title">Primary Driver / Applicant</div>
-      <div class="grid">
-        <div class="field-row"><label>First Name</label><input id="driverFirstName" type="text" /></div>
-        <div class="field-row"><label>Last Name</label><input id="driverLastName" type="text" /></div>
-      </div>
-      <div class="grid" style="margin-top:10px">
-        <div class="field-row"><label>Date of Birth</label><input id="driverDOB" type="date" /></div>
-        <div class="field-row"><label>Gender</label>
-          <select id="driverGender"><option>Male</option><option>Female</option><option>Other</option></select>
+    </section>
+
+    <!-- Main quote UI (hidden until product selected) -->
+    <section class="card" id="quoteCard" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div>
+          <div class="section-title" id="flowTitle">— Quote</div>
+          <div class="muted small" id="quoteNumber">Quote #: —</div>
+        </div>
+
+        <div id="topTabs" style="display:flex;flex-direction:column;align-items:flex-end">
+          <div class="tabs" id="tabsContainer" role="tablist" aria-label="Quote tabs"></div>
+          <div class="muted small" style="margin-top:8px" id="productNote">Product note</div>
         </div>
       </div>
-      <div class="grid" style="margin-top:10px">
-        <div class="field-row"><label>Marital Status</label><select id="driverMarital"><option>Single</option><option>Married</option><option>Divorced</option></select></div>
-        <div class="field-row"><label>Relationship to Applicant</label><select id="driverRelation"><option>Self</option><option>Spouse</option><option>Child</option><option>Other</option></select></div>
+
+      <div class="form-area" id="formArea">
+        <!-- dynamic tab content injected here -->
       </div>
-      <div class="grid" style="margin-top:10px">
-        <div class="field-row"><label>Driver License State</label><input id="dlState" type="text" placeholder="e.g., CA" /></div>
-        <div class="field-row"><label>Driver License Number</label><input id="dlNumber" type="text" /></div>
-      </div>
-      <div class="grid" style="margin-top:10px">
-        <div class="field-row"><label>Occupation</label><input id="occupation" type="text" /></div>
-        <div class="field-row"><label>Education Level</label><select id="education"><option>High School</option><option>College</option><option>Bachelor</option><option>Master+</option></select></div>
-      </div>
-      <div style="margin-top:10px" class="section-title">Driving History (last 5 years)</div>
-      <div class="grid">
-        <div class="field-row"><label>Accidents / Violations?</label><select id="hadAccidents"><option>No</option><option>Yes</option></select></div>
-        <div class="field-row"><label>Gaps in Coverage?</label><select id="hadGaps"><option>No</option><option>Yes</option></select></div>
-      </div>
-      <div style="margin-top:10px">
-        <label>Driving History Details (date, type, at-fault %, notes)</label>
-        <textarea id="drivingDetails" placeholder="e.g. 2023-04-01 — Accident — 100% at fault — Rear-end collision"></textarea>
-      </div>`;
-    case 'vehicle': return `
-      <div class="section-title">Vehicle Details</div>
-      <div class="grid-3">
-        <div class="field-row"><label>Year</label><input id="vehYear" type="number" min="1980" max="2030" /></div>
-        <div class="field-row"><label>Make</label><input id="vehMake" type="text" /></div>
-        <div class="field-row"><label>Model</label><input id="vehModel" type="text" /></div>
-      </div>
-      <div class="grid" style="margin-top:10px">
-        <div class="field-row"><label>VIN (optional)</label><input id="vehVin" type="text" /></div>
-        <div class="field-row"><label>Primary Use</label>
-          <select id="vehUse"><option>Commute</option><option>Pleasure</option><option>Business</option></select>
+
+      <div class="nav-actions">
+        <div class="nav-left">
+          <button id="prevBtn" class="btn btn-ghost">← Back</button>
+          <button id="nextBtn" class="btn btn-primary">Continue →</button>
+          <button id="saveDraft" class="btn btn-ghost">Save Draft</button>
+        </div>
+
+        <div>
+          <button id="generateBtn" class="btn btn-primary">Generate Quote</button>
+          <button id="saveFinal" class="btn btn-accent-outline">Save Quote</button>
         </div>
       </div>
-      <div class="grid" style="margin-top:10px">
-        <div class="field-row"><label>Annual Mileage</label><input id="vehMileage" type="number" /></div>
-        <div class="field-row"><label>One-way Commute Miles</label><input id="commuteMiles" type="number" /></div>
-      </div>
-      <div class="grid" style="margin-top:10px">
-        <div class="field-row"><label>Ownership Status</label><select id="ownershipStatus"><option>Own</option><option>Lease</option><option>Financed</option></select></div>
-        <div class="field-row"><label>Anti-theft Device?</label><select id="antiTheft"><option>No</option><option>Yes</option></select></div>
-      </div>
-      <div class="grid" style="margin-top:10px">
-        <div class="field-row"><label>Safety Features (ABS, Airbags...)</label><select id="safetyFeatures"><option>No</option><option>Yes</option></select></div>
-        <div class="field-row"><label>Vehicle Value (approx)</label><input id="vehicleValue" type="number" /></div>
-      </div>`;
-    case 'coverage': return `
-      <div class="section-title">Coverage Selection</div>
-      <div class="grid">
-        <div class="field-row"><label>Liability Limits (BI/PD)</label><select id="liabilityLimit"><option>50/100/50</option><option selected>100/300/100</option><option>250/500/250</option></select></div>
-        <div class="field-row"><label>Uninsured/Underinsured Motorist</label><select id="umLimit"><option>Reject</option><option>25/50</option><option selected>50/100</option></select></div>
-      </div>
-      <div class="grid" style="margin-top:10px">
-        <div class="field-row"><label>Medical Payments / PIP</label><select id="medPay"><option>Reject</option><option>$1,000</option><option>$5,000</option></select></div>
-        <div class="field-row"><label>Collision Deductible</label><select id="collDed"><option>$250</option><option selected>$500</option><option>$1,000</option></select></div>
-      </div>
-      <div class="grid" style="margin-top:10px">
-        <div class="field-row"><label>Comprehensive Deductible</label><select id="compDed"><option>$250</option><option selected>$500</option><option>$1,000</option></select></div>
-        <div class="field-row"><label>Optional Coverages</label>
-          <select id="optionalCov"><option>None</option><option>Rental Reimbursement</option><option>Roadside Assistance</option><option>Diminishing Deductible</option></select>
+
+      <div class="summary-card card" id="summaryCard">
+        <div class="section-title">Quote Summary & Actions</div>
+        <div id="summaryContent" class="muted small">No quote generated yet.</div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button id="issuePolicy" class="btn btn-primary">Issue Policy</button>
+          <button id="downloadJson" class="btn btn-ghost">Download JSON</button>
         </div>
-      </div>`;
-    case 'discounts': return `
-      <div class="section-title">Discounts & Eligibility</div>
-      <div class="grid">
-        <div class="field-row"><label>Homeowner?</label><select id="isHomeowner"><option>No</option><option>Yes</option></select></div>
-        <div class="field-row"><label>Bundle (Quote Home)</label><select id="wantsBundle"><option>No</option><option>Yes</option></select></div>
       </div>
-      <div class="grid" style="margin-top:10px">
-        <div class="field-row"><label>Multi-car?</label><select id="isMultiCar"><option>No</option><option>Yes</option></select></div>
-        <div class="field-row"><label>RightTrack Enrollment?</label><select id="rightTrack"><option>No</option><option>Yes</option></select></div>
-      </div>
-      <div style="margin-top:10px" class="field-row"><label>Prior Insurance (years with prior carrier)</label><input id="priorInsuranceYears" type="number" /></div>`;
-    case 'underwriting': return `
-      <div class="section-title">Underwriting Questions</div>
-      <div class="grid">
-        <div class="field-row"><label>Any major violations in last 5 years?</label><select id="majorViolations"><option>No</option><option>Yes</option></select></div>
-        <div class="field-row"><label>Any at-fault accidents?</label><select id="atFaultAccidents"><option>No</option><option>Yes</option></select></div>
-      </div>
-      <div style="margin-top:10px">
-        <label>Underwriting Notes</label>
-        <textarea id="underwritingNotes" placeholder="Notes for underwriter..."></textarea>
-      </div>`;
-    case 'review': return `
-      <div class="section-title">Review & Estimate</div>
-      <div class="muted">Click "Generate Quote" to compute an estimated premium with breakdown.</div>
-      <div id="estimateBox" class="quote-result" style="display:none"></div>`;
-    case 'billing': return `
-      <div class="section-title">Billing & Payment</div>
-      <div class="grid">
-        <div class="field-row"><label>Payment Plan</label><select id="paymentPlan"><option>Annual</option><option>Semi-Annual</option><option>Monthly</option></select></div>
-        <div class="field-row"><label>Payment Method</label><select id="paymentMethod"><option>Credit Card</option><option>ACH</option><option>Invoice</option></select></div>
-      </div>
-      <div style="margin-top:10px" class="field-row"><label>Down Payment</label><input id="downPayment" type="number" /></div>`;
-    case 'issue': return `
-      <div class="section-title">Issue</div>
-      <div class="muted">When ready, save final quote and click Issue Policy to bind.</div>
-      <div style="margin-top:12px" class="split"><button id="issuePolicyBtn" class="btn primary">Issue Policy</button><button id="downloadJsonAuto" class="btn ghost">Download Quote (JSON)</button></div>`;
-    default: return `<div>Not implemented</div>`;
-  }
-}
+    </section>
 
-function tabTemplateHome(id){
-  switch(id){
-    case 'applicant': return `
-      <div class="section-title">Applicant / Policy Info</div>
-      <div class="grid">
-        <div class="field-row"><label>First Name</label><input id="homeFirstName" type="text" /></div>
-        <div class="field-row"><label>Last Name</label><input id="homeLastName" type="text" /></div>
-      </div>
-      <div class="grid" style="margin-top:10px">
-        <div class="field-row"><label>Date of Birth</label><input id="homeDOB" type="date" /></div>
-        <div class="field-row"><label>Email</label><input id="homeEmail" type="email" /></div>
-      </div>
-      <div style="margin-top:10px" class="field-row"><label>Phone</label><input id="homePhone" type="text" /></div>`;
-    case 'dwelling': return `
-      <div class="section-title">Dwelling / Structure Details</div>
-      <div class="grid">
-        <div class="field-row"><label>Property Address</label><input id="dwellingAddress" type="text" /></div>
-        <div class="field-row"><label>City</label><input id="dwellingCity" type="text" /></div>
-      </div>
-      <div class="grid" style="margin-top:10px">
-        <div class="field-row"><label>ZIP Code</label><input id="dwellingZip" type="text" /></div>
-        <div class="field-row"><label>Year Built</label><input id="dwellingYear" type="number" /></div>
-      </div>
-      <div class="grid" style="margin-top:10px">
-        <div class="field-row"><label>Square Footage</label><input id="dwellingSqft" type="number" /></div>
-        <div class="field-row"><label>Home Type</label><select id="homeType"><option>Single-Family</option><option>Townhome</option><option>Condo</option></select></div>
-      </div>
-      <div style="margin-top:10px" class="grid">
-        <div class="field-row"><label>Roof Type & Year</label><input id="roofInfo" type="text" placeholder="Asphalt shingle - 2019" /></div>
-        <div class="field-row"><label>Garage Type</label><select id="garageType"><option>Attached</option><option>Detached</option><option>None</option></select></div>
-      </div>`;
-    case 'costguide': return `
-      <div class="section-title">Cost Guide Features</div>
-      <div class="grid">
-        <div class="field-row"><label>Construction Type</label><select id="constructionType"><option>Frame</option><option>Brick</option><option>Stucco</option></select></div>
-        <div class="field-row"><label>Foundation Type</label><select id="foundationType"><option>Basement</option><option>Slab</option><option>Crawlspace</option></select></div>
-      </div>
-      <div class="grid" style="margin-top:10px">
-        <div class="field-row"><label>Number of Stories</label><input id="homeStories" type="number" /></div>
-        <div class="field-row"><label>Square Footage (living)</label><input id="homeLivingSqft" type="number" /></div>
-      </div>
-      <div style="margin-top:10px" class="field-row"><label>Home Systems Updates (Electrical/Plumbing/HVAC year)</label><input id="systemsUpdate" type="text" /></div>`;
-    case 'underwriting': return `
-      <div class="section-title">Underwriting</div>
-      <div class="grid">
-        <div class="field-row"><label>Any property claims (last 5 years)?</label><select id="homeClaims"><option>No</option><option>Yes</option></select></div>
-        <div class="field-row"><label>Dog ownership (breed)</label><input id="homeDogBreed" type="text" placeholder="Optional" /></div>
-      </div>
-      <div style="margin-top:10px"><label>Underwriting Notes</label><textarea id="homeUnderNotes"></textarea></div>`;
-    case 'coverage': return `
-      <div class="section-title">Coverage Selection</div>
-      <div class="grid">
-        <div class="field-row"><label>Dwelling Coverage (A)</label><input id="dwellingCov" type="number" /></div>
-        <div class="field-row"><label>Other Structures (B)</label><input id="otherStructures" type="number" /></div>
-      </div>
-      <div class="grid" style="margin-top:10px">
-        <div class="field-row"><label>Personal Property (C)</label><input id="personalProperty" type="number" /></div>
-        <div class="field-row"><label>Loss of Use (D)</label><input id="lossOfUse" type="text" /></div>
-      </div>
-      <div style="margin-top:10px" class="grid">
-        <div class="field-row"><label>Liability Limit (E)</label><select id="homeLiability"><option>$100,000</option><option>$300,000</option><option>$500,000</option></select></div>
-        <div class="field-row"><label>Deductible</label><select id="homeDeductible"><option>$500</option><option>$1,000</option><option>$2,500</option></select></div>
-      </div>`;
-    case 'summary': return `
-      <div class="section-title">Summary & Estimate</div>
-      <div class="muted">Complete required fields and click "Generate Quote" to compute an estimate.</div>
-      <div id="homeEstimate" class="quote-result" style="display:none"></div>`;
-    case 'orderreport': return `
-      <div class="section-title">Order Reports</div>
-      <div class="muted">Order CLUE, inspection, or scoring data (demo button).</div>
-      <div style="margin-top:10px"><button id="orderReportBtn" class="btn ghost">Order CLUE / Score</button></div>`;
-    case 'billing': return `
-      <div class="section-title">Billing</div>
-      <div class="grid">
-        <div class="field-row"><label>Payment Plan</label><select id="homePaymentPlan"><option>Annual</option><option>Monthly</option></select></div>
-        <div class="field-row"><label>Payment Method</label><select id="homePaymentMethod"><option>Credit Card</option><option>ACH</option></select></div>
-      </div>
-      <div style="margin-top:10px" class="field-row"><label>Auto-pay (EFT)?</label><select id="homeEft"><option>No</option><option>Yes</option></select></div>`;
-    case 'issue': return `
-      <div class="section-title">Issue</div>
-      <div class="muted">Review, save final quote, then Issue Policy to bind coverage.</div>
-      <div style="margin-top:12px" class="split"><button id="issuePolicyHome" class="btn primary">Issue Policy</button><button id="downloadJsonHome" class="btn ghost">Download Quote (JSON)</button></div>`;
-    default: return `<div>Not implemented</div>`;
-  }
-}
+  </main>
 
-/* ---------- Render current tab content ---------- */
-function renderCurrentTab(){
-  // highlight tab
-  document.querySelectorAll('#tabsContainer .tab-btn').forEach((btn, idx) => {
-    btn.classList.toggle('active', idx === currentIndex);
-  });
+  <script>
+    /**************************
+     * Minimal JS to power the UI
+     * - pure HTML/CSS (no libs)
+     * - placeholder tab content per user's request
+     **************************/
 
-  const tab = tabs[currentIndex];
-  el('formContainer').innerHTML = '<div id="tabInner"></div>';
-  const container = el('tabInner');
+    // Tab definitions (placeholder text)
+    const AUTO_TABS = [
+      { id: 'policy', label: 'Policy Information', placeholder: 'Collect rating state, policy form, agent number, garaging address, ZIP, effective date, current policy status.' },
+      { id: 'driver', label: 'Driver Information', placeholder: 'Collect driver name, DOB, gender, marital status, DL#, state issued, occupation, education, driving history, relationship.' },
+      { id: 'vehicle', label: 'Vehicle Information', placeholder: 'Collect VIN, year, make, model, vehicle use, annual mileage, ownership status, anti-theft, safety features.' },
+      { id: 'coverage', label: 'Coverage Selection', placeholder: 'Select liability limits, UM/UIM, medical/PIP, comp/coll deductibles, optional coverages, rental/towing options.' },
+      { id: 'discounts', label: 'Discounts', placeholder: 'Multi-car, homeowner, bundling, safe-driver, RightTrack, defensive driving, anti-theft, autopay, paperless.' },
+      { id: 'underwriting', label: 'Underwriting', placeholder: 'Questions: suspended licenses, DUI/major violations, rideshare use, modifications, claims history.' },
+      { id: 'review', label: 'Review', placeholder: 'Summary of all captured fields, required-field checks, show premium estimate (placeholder), Edit / Save Draft / Submit / Issue.' },
+      { id: 'billing', label: 'Billing', placeholder: 'Payment plan, method, down payment, billing address, mortgagee / lienholder info.' },
+      { id: 'issue', label: 'Issue', placeholder: 'Final checklist and Issue Policy / Bind coverage.' },
+    ];
 
-  // fill content
-  if(productType === 'auto'){
-    container.innerHTML = tabTemplateAuto(tab.id);
-  } else {
-    container.innerHTML = tabTemplateHome(tab.id);
-  }
+    const HOME_TABS = [
+      { id: 'applicant', label: 'Applicant', placeholder: 'Insured name, DOB, marital status, phone, email, prior insurance (Yes/No).' },
+      { id: 'dwelling', label: 'Dwelling Information', placeholder: 'Property address, year built, sqft, roof type & age, construction type, garage, stories.' },
+      { id: 'costguide', label: 'Cost Guide Features', placeholder: 'Replacement-cost related details: kitchen quality, flooring, fireplace, pool, deck, garage type.' },
+      { id: 'underwriting', label: 'Underwriting', placeholder: 'Pets, pool, business on premises, prior claims, system updates (roof/wiring/HVAC).' },
+      { id: 'coverage', label: 'Coverage Selection', placeholder: 'Dwelling A, Other Structures B, Personal Property C, Loss of Use D, Liability E, Deductible.' },
+      { id: 'summary', label: 'Summary', placeholder: 'Review coverages, discounts, premium estimate (placeholder). Edit / Save Draft / Submit.' },
+      { id: 'orderreport', label: 'Order Report', placeholder: 'Order CLUE, credit & inspection reports; attach results.' },
+      { id: 'billing', label: 'Billing', placeholder: 'Payment plan, method, mortgagee, autopay options.' },
+      { id: 'issue', label: 'Issue', placeholder: 'Final bind checklist and Issue Policy.' },
+    ];
 
-  // show/hide controls
-  el('prevBtn').style.display = currentIndex === 0 ? 'none' : 'inline-block';
-  el('nextBtn').style.display = currentIndex === tabs.length - 1 ? 'none' : 'inline-block';
+    // App state
+    let product = null; // 'auto' | 'home'
+    let tabs = [];
+    let currentIndex = 0;
+    let quoteData = {}; // simple key/value storage for draft
+    const DRAFT_PREFIX = 'lava_quote_'; // localStorage key prefix
 
-  // toggle generate/save button availability
-  el('generateBtn').style.display = (productType === 'auto' && tab.id === 'review') || (productType === 'home' && tab.id === 'summary') ? 'inline-block' : 'none';
-  el('saveFinalBtn').style.display = tab.id === 'issue' ? 'inline-block' : 'none';
+    // Elements
+    const selectCard = document.getElementById('selectProductCard');
+    const quoteCard = document.getElementById('quoteCard');
+    const tabsContainer = document.getElementById('tabsContainer');
+    const formArea = document.getElementById('formArea');
+    const flowTitle = document.getElementById('flowTitle');
+    const quoteNumberEl = document.getElementById('quoteNumber');
+    const productNote = document.getElementById('productNote');
+    const summaryCard = document.getElementById('summaryCard');
+    const summaryContent = document.getElementById('summaryContent');
 
-  // attach special listeners which are inside the tab content
-  attachTabEventHandlers(tab.id);
-  restoreDraftToFields();
-}
-
-/* ---------- Attach events specific to a tab when rendered ---------- */
-function attachTabEventHandlers(tabId){
-  // If review tab - show estimate placeholder
-  if(tabId === 'review') {
-    el('estimateBox').style.display = 'none';
-  }
-  if(tabId === 'summary') {
-    el('homeEstimate') && (el('homeEstimate').style.display = 'none');
-  }
-
-  // dynamic buttons
-  const issueAutoBtn = el('issuePolicyBtn');
-  if(issueAutoBtn) issueAutoBtn.addEventListener('click', issuePolicy);
-
-  const dlAuto = el('downloadJsonAuto');
-  if(dlAuto) dlAuto.addEventListener('click', downloadCurrentQuote);
-
-  const orderBtn = el('orderReportBtn');
-  if(orderBtn) orderBtn.addEventListener('click', () => alert('Report ordered (demo).'));
-
-  const issueHomeBtn = el('issuePolicyHome');
-  if(issueHomeBtn) issueHomeBtn.addEventListener('click', issuePolicy);
-
-  const dlHome = el('downloadJsonHome');
-  if(dlHome) dlHome.addEventListener('click', downloadCurrentQuote);
-
-  // Some fields set default values if missing
-  const eff = el('effectiveDate'); if(eff && !eff.value) eff.value = new Date(Date.now()+86400000).toISOString().split('T')[0];
-
-  // Attach input change to persist draft quickly
-  document.querySelectorAll('#tabInner input, #tabInner select, #tabInner textarea').forEach(inp=>{
-    inp.addEventListener('input', () => {
-      writeFieldsToQuoteData(); saveDraft(quoteData); // autosave draft per tab change
+    // Start buttons on selection card
+    document.querySelectorAll('#selectProductCard button[data-type]').forEach(btn=>{
+      btn.addEventListener('click', ()=> beginQuote(btn.dataset.type));
     });
-  });
-}
 
-/* ---------- Write all known fields in DOM to quoteData object ---------- */
-function writeFieldsToQuoteData(){
-  // Gather all inputs by scanning current DOM and put into nested object
-  const inputs = document.querySelectorAll('input, select, textarea');
-  inputs.forEach(i => {
-    if(i.id){
-      quoteData[i.id] = i.type==='checkbox' ? i.checked : i.value;
+    // Back to dashboard (demo: just reload to start selection)
+    document.getElementById('backToDash').addEventListener('click', ()=> {
+      // in a real app, this would go to dashboard. For demo, reload and show selection.
+      location.href = 'dashboard.html'; // keep behavior; user can change
+    });
+
+    // Navigation buttons
+    document.getElementById('prevBtn').addEventListener('click', ()=>{
+      if(currentIndex>0) { currentIndex--; renderTab(); }
+    });
+    document.getElementById('nextBtn').addEventListener('click', ()=>{
+      if(currentIndex < tabs.length - 1) { currentIndex++; renderTab(); }
+    });
+    document.getElementById('saveDraft').addEventListener('click', ()=> {
+      saveDraft();
+      alert('Draft saved locally (browser localStorage).');
+    });
+    document.getElementById('generateBtn').addEventListener('click', ()=> {
+      // placeholder generate action: show summary and a mock premium
+      generateMockEstimate();
+    });
+    document.getElementById('saveFinal').addEventListener('click', ()=> {
+      saveFinalQuote();
+    });
+
+    document.getElementById('issuePolicy').addEventListener('click', ()=> {
+      alert('Issue Policy clicked — in a real system this would bind coverage.');
+    });
+
+    document.getElementById('downloadJson').addEventListener('click', ()=> {
+      downloadJSON();
+    });
+
+    // Start the quote flow after selection
+    function beginQuote(type) {
+      product = (type === 'home') ? 'home' : 'auto';
+      tabs = (product === 'home') ? HOME_TABS : AUTO_TABS;
+      currentIndex = 0;
+      quoteData = loadDraft() || {};
+      // UI
+      selectCard.style.display = 'none';
+      quoteCard.style.display = 'block';
+      flowTitle.textContent = (product === 'home' ? 'Home' : 'Auto') + ' Quote';
+      quoteNumberEl.textContent = 'Quote #: ' + (quoteData.quoteNumber || generateQuoteNumber());
+      productNote.textContent = product === 'home' ? 'Home flow: Applicant → Dwelling → Cost Guide → ...' : 'Auto flow: Policy → Driver → Vehicle → ...';
+      buildTabs();
+      renderTab();
+      window.scrollTo({top:0,behavior:'smooth'});
     }
-  });
-  // also add metadata
-  quoteData.productType = productType;
-  if(!quoteData.quoteNumber) quoteData.quoteNumber = generateQuoteNumber();
-  return quoteData;
-}
 
-/* ---------- Restore draft values into visible fields (when tab rendered) ---------- */
-function restoreDraftToFields(){
-  const draft = loadDraft();
-  if(!draft) return;
-  Object.keys(draft).forEach(k=>{
-    const node = el(k);
-    if(node){
-      try{ node.value = draft[k]; }catch(e){}
+    // Create a simple quote number
+    function generateQuoteNumber(){
+      if(!quoteData.quoteNumber) quoteData.quoteNumber = Date.now().toString().slice(-8);
+      return quoteData.quoteNumber;
     }
-  });
-}
 
-/* ---------- Validate required minimal fields for navigation ---------- */
-function validateTabBeforeAdvance(){
-  // basic validation per tab
-  const tab = tabs[currentIndex];
-  if(productType === 'auto'){
-    if(tab.id === 'policy'){
-      const eff = el('effectiveDate'); const zip = el('garagingZip');
-      if(!eff || !eff.value){ alert('Please enter Effective Date.'); return false; }
-      if(!zip || !zip.value){ alert('Please enter Garaging ZIP Code.'); return false; }
+    // Build tab buttons
+    function buildTabs(){
+      tabsContainer.innerHTML = '';
+      tabs.forEach((t, idx)=>{
+        const b = document.createElement('button');
+        b.className = 'tab-btn' + (idx===0 ? ' active' : '');
+        b.textContent = t.label;
+        b.type = 'button';
+        b.dataset.index = idx;
+        b.addEventListener('click', ()=> { currentIndex = idx; renderTab(); });
+        tabsContainer.appendChild(b);
+      });
     }
-    if(tab.id === 'applicant'){
-      const fn = el('driverFirstName'), ln = el('driverLastName');
-      if(!fn || !fn.value || !ln || !ln.value){ alert('Please enter primary driver first and last name.'); return false; }
+
+    // Render current tab content (placeholder)
+    function renderTab(){
+      // highlight tab buttons
+      Array.from(tabsContainer.children).forEach((btn, i)=> btn.classList.toggle('active', i === currentIndex));
+      const t = tabs[currentIndex];
+      // inject placeholder content for this tab
+      formArea.innerHTML = `
+        <div class="section-title">${t.label}</div>
+        <div class="placeholder">
+          ${t.placeholder}
+          <small> → Replace this placeholder with real form fields (inputs/selects) when ready.</small>
+        </div>
+      `;
+
+      // show/hide generate/save buttons depending on tab
+      const generateBtn = document.getElementById('generateBtn');
+      const saveFinal = document.getElementById('saveFinal');
+      if(product === 'auto') {
+        generateBtn.style.display = (t.id === 'review') ? 'inline-block' : 'none';
+      } else {
+        generateBtn.style.display = (t.id === 'summary') ? 'inline-block' : 'none';
+      }
+      // Save final only on issue tab
+      saveFinal.style.display = (t.id === 'issue') ? 'inline-block' : 'none';
+
+      // prev/next visibility
+      document.getElementById('prevBtn').style.display = currentIndex === 0 ? 'none' : 'inline-block';
+      document.getElementById('nextBtn').style.display = currentIndex === tabs.length - 1 ? 'none' : 'inline-block';
+
+      // hide summary panel until generate
+      summaryCard.style.display = 'none';
     }
-    if(tab.id === 'vehicle'){
-      const yr = el('vehYear'), make = el('vehMake'); if(!yr || !yr.value || !make || !make.value){ alert('Please enter vehicle year & make.'); return false; }
+
+    // Minimal localStorage helpers
+    function draftKey(){ return DRAFT_PREFIX + (product || 'none'); }
+    function saveDraft(){
+      // Currently placeholder-only: store quote number and timestamp
+      quoteData.quoteNumber = quoteData.quoteNumber || generateQuoteNumber();
+      quoteData.lastSaved = new Date().toISOString();
+      localStorage.setItem(draftKey(), JSON.stringify(quoteData));
     }
-  } else {
-    if(tab.id === 'applicant'){
-      const fn = el('homeFirstName'), ln = el('homeLastName'); if(!fn || !fn.value || !ln || !ln.value){ alert('Please enter applicant name.'); return false; }
+    function loadDraft(){
+      try {
+        const raw = localStorage.getItem(draftKey());
+        return raw ? JSON.parse(raw) : {};
+      } catch(e){ return {}; }
     }
-    if(tab.id === 'dwelling'){
-      const addr = el('dwellingAddress'); if(!addr || !addr.value){ alert('Please enter property address.'); return false; }
+    function saveFinalQuote(){
+      quoteData.quoteNumber = quoteData.quoteNumber || generateQuoteNumber();
+      quoteData.product = product;
+      quoteData.savedAt = new Date().toISOString();
+      // Save into quotes array
+      const arrRaw = localStorage.getItem('lava_quotes') || '[]';
+      const arr = JSON.parse(arrRaw);
+      arr.unshift(quoteData);
+      localStorage.setItem('lava_quotes', JSON.stringify(arr));
+      // clear draft
+      localStorage.removeItem(draftKey());
+      alert('Final quote saved locally. Quote #: ' + quoteData.quoteNumber);
+      // show summary card with simple info
+      summaryContent.innerHTML = `<div><strong>Quote #${quoteData.quoteNumber}</strong> — Product: ${product.toUpperCase()} — Saved: ${quoteData.savedAt}</div>`;
+      summaryCard.style.display = 'block';
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
-  }
-  return true;
-}
 
-/* ---------- Navigation handlers ---------- */
-el('prevBtn').addEventListener('click', ()=>{
-  if(currentIndex>0){ currentIndex--; renderCurrentTab(); }
-});
-el('nextBtn').addEventListener('click', ()=>{
-  if(!validateTabBeforeAdvance()) return;
-  // save current fields to quoteData
-  writeFieldsToQuoteData();
-  saveDraft(quoteData);
-  if(currentIndex < tabs.length -1){ currentIndex++; renderCurrentTab(); }
-});
+    // Generate a mock estimate (placeholder)
+    function generateMockEstimate(){
+      // Create a fake premium value
+      const base = (product === 'auto') ? 650 : 1200;
+      // random-ish to vary per session
+      const variability = Math.floor(Math.random()*300);
+      const estimate = base + variability;
+      // Show in placeholder UI
+      const box = document.createElement('div');
+      box.className = 'quote-result';
+      box.innerHTML = `
+        <div><strong>Mock Estimate</strong></div>
+        <div class="small">Estimated ${product === 'auto' ? '6-month' : 'annual'} premium (placeholder): <strong>$${estimate.toFixed(2)}</strong></div>
+        <div class="muted small" style="margin-top:8px">This is a mock estimate for UI/testing. Replace with your rating engine to produce real premiums.</div>
+      `;
+      // Inject into form area (below placeholder)
+      formArea.appendChild(box);
 
-/* ---------- Save Draft button ---------- */
-el('saveDraftBtn').addEventListener('click', ()=>{
-  writeFieldsToQuoteData(); saveDraft(quoteData); alert('Draft saved locally.');
-});
+      // Populate quoteData with sample estimate and show summary card
+      quoteData.estimated = estimate;
+      quoteData.estimateAt = new Date().toISOString();
+      summaryContent.innerHTML = `
+        <div><strong>Quote #${quoteData.quoteNumber || generateQuoteNumber()}</strong></div>
+        <div>Product: ${product.toUpperCase()}</div>
+        <div>Estimated: $${estimate.toFixed(2)}</div>
+        <div class="muted small" style="margin-top:6px">Saved in draft — use Save Quote to persist as final.</div>
+      `;
+      summaryCard.style.display = 'block';
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
 
-/* ---------- Generate button: runs mock rating depending on product ---------- */
-el('generateBtn').addEventListener('click', ()=>{
-  writeFieldsToQuoteData();
-  if(productType === 'auto') runAutoRating();
-  else runHomeRating();
-});
+    // Download JSON of current quoteData
+    function downloadJSON(){
+      const data = JSON.stringify(quoteData || { note: 'empty' }, null, 2);
+      const blob = new Blob([data], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'quote_' + (quoteData.quoteNumber || 'draft') + '.json';
+      document.body.appendChild(a); a.click(); a.remove();
+    }
 
-/* ---------- Save final quote ---------- */
-el('saveFinalBtn').addEventListener('click', ()=>{
-  writeFieldsToQuoteData();
-  // Basic validation
-  if(!quoteData.quoteNumber) quoteData.quoteNumber = generateQuoteNumber();
-  const created = { ...quoteData, createdAt: Date.now() };
-  saveFinalQuote(created);
-  clearDraft();
-  el('summaryContent').innerHTML = `<div><strong>Saved Quote #${created.quoteNumber}</strong><div class="muted">Saved locally. You can now issue.</div></div>`;
-  el('summaryCard').style.display = 'block';
-  alert('Final quote saved.');
-});
+    // Also allow user to start over via URL param: ?start=select will show selection screen
+    // But by default we show selection screen
+    (function init(){
+      // Intentionally start at selection view — per your last instruction
+      selectCard.style.display = 'block';
+      quoteCard.style.display = 'none';
+    })();
 
-/* ---------- Issue policy ---------- */
-function issuePolicy(){
-  // quick demo: mark as issued and redirect to dashboard
-  writeFieldsToQuoteData();
-  const finalQ = { ...quoteData, status:'ISSUED', createdAt: Date.now() };
-  saveFinalQuote(finalQ);
-  clearDraft();
-  alert('Policy issued — saved locally and returning to dashboard.');
-  // redirect back to dashboard (assuming you have dashboard.html)
-  window.location.href = 'dashboard.html';
-}
+    // Expose functions for debugging (optional)
+    window._debug = { beginQuote, buildTabs, renderTab, saveDraft, loadDraft, generateMockEstimate, saveFinalQuote };
 
-/* ---------- Download JSON (current quote) ---------- */
-function downloadCurrentQuote(){
-  writeFieldsToQuoteData();
-  const data = JSON.stringify(quoteData, null, 2);
-  const blob = new Blob([data], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download = `quote_${quoteData.quoteNumber || 'draft'}.json`; document.body.appendChild(a); a.click(); a.remove();
-}
-
-/* ---------- Mock rating engines ---------- */
-function runAutoRating(){
-  // read the most relevant inputs (with fallbacks)
-  const age = calcAgeFromDOB( el('driverDOB') ? el('driverDOB').value : null );
-  const vehYear = parseInt( el('vehYear')?.value ) || 2018;
-  const mileage = parseInt( el('vehMileage')?.value ) || 12000;
-  const liability = el('liabilityLimit')?.value || '100/300/100';
-  const homeowner = el('isHomeowner')?.value === 'Yes';
-  const multi = el('isMultiCar')?.value === 'Yes';
-  // base rate
-  let base = 650;
-  // driver factor
-  if(age && age < 25) base += 200;
-  else if(age && age < 30) base += 100;
-  else if(age && age > 65) base += 120;
-  // vehicle year factor
-  base += Math.max(0, (2025 - vehYear)) * 6;
-  // mileage
-  if(mileage > 15000) base += 120;
-  // liability increases
-  if(liability.includes('250')) base += 380;
-  else if(liability.includes('100/300')) base += 120;
-  // discounts
-  if(homeowner) base -= 75;
-  if(multi) base -= 100;
-  // driving history penalty
-  if( el('hadAccidents') && el('hadAccidents').value === 'Yes') base += 300;
-  if( el('majorViolations') && el('majorViolations').value === 'Yes') base += 250;
-
-  // optional coverage add-on
-  const opt = el('optionalCov')?.value || 'None';
-  if(opt === 'Rental Reimbursement') base += 20;
-  if(opt === 'Roadside Assistance') base += 15;
-  if(opt === 'Diminishing Deductible') base += 60;
-
-  const sixMonth = Math.max(250, Math.round(base));
-  const annual = Math.round(sixMonth * 2 * 0.95); // slight discount for annual pay
-
-  // prepare breakdown
-  const breakdown = {
-    baseRate: Math.round(base),
-    driverAdj: Math.round((age? (age<25?200: age<30?100: age>65?120:0):0)),
-    vehicleAdj: Math.round(Math.max(0, (2025-vehYear))*6),
-    mileageAdj: mileage>15000?120:0,
-    liabilityAdj: liability.includes('250')?380:(liability.includes('100/300')?120:0),
-    discounts: (homeowner?-75:0) + (multi?-100:0),
-    coverages: (opt==='Diminishing Deductible'?60: opt==='Rental Reimbursement'?20: opt==='Roadside Assistance'?15:0),
-  };
-
-  // display
-  const box = el('estimateBox');
-  box.style.display = 'block';
-  box.innerHTML = `
-    <div><strong>Estimate</strong></div>
-    <div class="small">6-month premium: <strong>$${sixMonth.toFixed(2)}</strong></div>
-    <div class="muted small" style="margin-top:8px"><strong>Breakdown</strong></div>
-    <div class="muted small">Base: $${breakdown.baseRate}</div>
-    <div class="muted small">Driver Adj: $${breakdown.driverAdj}</div>
-    <div class="muted small">Vehicle Adj: $${breakdown.vehicleAdj}</div>
-    <div class="muted small">Mileage Adj: $${breakdown.mileageAdj}</div>
-    <div class="muted small">Liability Adj: $${breakdown.liabilityAdj}</div>
-    <div class="muted small">Coverages: $${breakdown.coverages}</div>
-    <div class="muted small">Discounts: $${breakdown.discounts}</div>
-    <div style="margin-top:8px"><strong>Estimated 6-month: $${sixMonth.toFixed(2)}</strong> — Annual approx: $${annual.toFixed(2)}</div>
-  `;
-
-  // save in quoteData
-  quoteData.estimatedPremium = sixMonth.toFixed(2);
-  quoteData.estimatedAnnual = annual.toFixed(2);
-  quoteData.estimateBreakdown = breakdown;
-  el('summaryCard').style.display = 'block';
-  summaryPopulate();
-}
-
-function runHomeRating(){
-  const yearBuilt = parseInt(el('dwellingYear')?.value) || 2000;
-  const sqft = parseInt(el('dwellingSqft')?.value) || parseInt(el('homeLivingSqft')?.value) || 1500;
-  const credit = parseInt(el('creditScore')?.value) || 700;
-  const stories = parseInt(el('homeStories')?.value) || 1;
-  const claims = el('homeClaims')?.value === 'Yes';
-  let base = 850;
-  base += (2025 - yearBuilt) * 2;
-  base += (sqft/1000)*60;
-  if(credit > 750) base -= 75;
-  if(stories > 1) base += 40;
-  if(claims) base += 300;
-  const annual = Math.max(400, Math.round(base));
-  const breakdown = {
-    baseRate: Math.round(850),
-    ageAdj: Math.round((2025-yearBuilt)*2),
-    sqftAdj: Math.round((sqft/1000)*60),
-    creditAdj: credit>750?-75:0,
-    storiesAdj: stories>1?40:0,
-    claimsAdj: claims?300:0
-  };
-  el('homeEstimate').style.display = 'block';
-  el('homeEstimate').innerHTML = `
-    <div><strong>Estimated Home Premium</strong></div>
-    <div class="small">Annual premium: <strong>$${annual.toFixed(2)}</strong></div>
-    <div class="muted small" style="margin-top:8px"><strong>Breakdown</strong></div>
-    <div class="muted small">Base: $${breakdown.baseRate}</div>
-    <div class="muted small">Age Adj: $${breakdown.ageAdj}</div>
-    <div class="muted small">Sqft Adj: $${breakdown.sqftAdj}</div>
-    <div class="muted small">Credit Adj: $${breakdown.creditAdj}</div>
-    <div class="muted small">Stories Adj: $${breakdown.storiesAdj}</div>
-    <div class="muted small">Claims Adj: $${breakdown.claimsAdj}</div>
-    <div style="margin-top:8px"><strong>Estimated Annual: $${annual.toFixed(2)}</strong></div>
-  `;
-  // save to data
-  quoteData.estimatedHomeAnnual = annual;
-  quoteData.estimateBreakdownHome = breakdown;
-  el('summaryCard').style.display = 'block';
-  summaryPopulate();
-}
-
-function calcAgeFromDOB(dob){
-  if(!dob) return null;
-  try{
-    const b = new Date(dob); const diff = Date.now()-b.getTime(); const age = Math.floor(diff/31557600000); return age;
-  }catch(e){ return null; }
-}
-
-/* ---------- Summary population ---------- */
-function summaryPopulate(){
-  const s = [];
-  s.push(`<div><strong>Quote #: </strong> ${quoteData.quoteNumber || '—'}</div>`);
-  s.push(`<div><strong>Product: </strong>${productType.toUpperCase()}</div>`);
-  if(productType==='auto'){
-    s.push(`<div><strong>Primary Driver: </strong> ${quoteData.driverFirstName || ''} ${quoteData.driverLastName || ''}</div>`);
-    s.push(`<div><strong>Vehicle: </strong> ${quoteData.vehYear || ''} ${quoteData.vehMake || ''} ${quoteData.vehModel || ''}</div>`);
-    s.push(`<div><strong>Estimated 6-month premium: </strong> $${quoteData.estimatedPremium || '—'}</div>`);
-  } else {
-    s.push(`<div><strong>Applicant: </strong> ${quoteData.homeFirstName || ''} ${quoteData.homeLastName || ''}</div>`);
-    s.push(`<div><strong>Address: </strong> ${quoteData.dwellingAddress || ''}, ${quoteData.dwellingCity || ''}</div>`);
-    s.push(`<div><strong>Estimated annual premium: </strong> $${quoteData.estimatedHomeAnnual || '—'}</div>`);
-  }
-  el('summaryContent').innerHTML = s.join('');
-  el('summaryCard').style.display = 'block';
-}
-
-/* ---------- Restore draft on load ---------- */
-function hydrateFromDraft(){
-  const d = loadDraft();
-  if(d && typeof d === 'object'){
-    quoteData = Object.assign({}, d);
-  }
-}
-
-/* ---------- Download final quotes JSON helper ---------- */
-el('downloadBtn').addEventListener('click', ()=>{
-  const q = quoteData || {}; const blob = new Blob([JSON.stringify(q, null, 2)], {type:'application/json'}); const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = `quote_${quoteData.quoteNumber || 'draft'}.json`; a.click(); a.remove();
-});
-
-/* ---------- Back to dashboard ---------- */
-el('backBtn').addEventListener('click', ()=> location.href='dashboard.html');
-
-/* ---------- Initialize app ---------- */
-function init(){
-  detectProductType();
-  tabs = (productType === 'home') ? HOME_TABS : AUTO_TABS;
-  buildTabs();
-  hydrateFromDraft(); // load any draft into quoteData
-  renderCurrentTab();
-  // prepare header buttons visibility
-  el('generateBtn').style.display = 'none';
-  el('saveFinalBtn').style.display = 'none';
-  // if draft exists, silently load into fields of first tab
-  setTimeout(()=> restoreDraftToFields(), 120);
-}
-
-/* ---------- Utility: download quote when clicking JSON inside tab ---------- */
-function downloadCurrentQuote(){
-  const data = JSON.stringify(quoteData || {}, null, 2);
-  const blob = new Blob([data], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = `quote_${quoteData.quoteNumber||'draft'}.json`; a.click(); a.remove();
-}
-
-/* ---------- Link global download for tab buttons if present ---------- */
-document.addEventListener('click', (ev)=>{
-  if(ev.target && ev.target.id === 'downloadJsonAuto') downloadCurrentQuote();
-  if(ev.target && ev.target.id === 'downloadJsonHome') downloadCurrentQuote();
-});
-
-/* ---------- Start ---------- */
-init();
-</script>
-
+  </script>
 </body>
 </html>
