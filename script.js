@@ -210,34 +210,35 @@ function calcHomePremium(yearBuilt, sqft, creditScore, stories) {
 // HOME COVERAGE-BASED PREMIUM CALCULATOR (Coverage A–E)
 // =============================================================
 function calculateHomePremium() {
-  const covA = parseFloat(document.getElementById("coverageA")?.value || 0);
-  const covB = parseFloat(document.getElementById("coverageB")?.value || 0);
-  const covC = parseFloat(document.getElementById("coverageC")?.value || 0);
-  const covD = parseFloat(document.getElementById("coverageD")?.value || 0);
-  const covE = parseFloat(document.getElementById("coverageE")?.value || 0);
+  const a = Number(document.getElementById('coverageA')?.value || 0);
+  const b = Number(document.getElementById('coverageB')?.value || 0);
+  const c = Number(document.getElementById('coverageC')?.value || 0);
+  const d = Number(document.getElementById('coverageD')?.value || 0);
+  const e = Number(document.getElementById('coverageE')?.value || 0);
+  const name = document.getElementById('applicantName')?.value.trim() || 'Applicant';
 
-  const base = 400; // base rate
-  const total =
-    base +
-    covA * 0.0025 +
-    covB * 0.0018 +
-    covC * 0.0015 +
-    covD * 0.002 +
-    covE * 0.001;
-  const rounded = total.toFixed(2);
+  if (!a || !b || !c || !d || !e) {
+    alert('Please fill all coverage amounts first.');
+    return;
+  }
 
-  document.getElementById("homeQuoteResult").innerHTML = `
-    <h6>Estimated Home Premium:</h6>
-    <p><strong>$${rounded}</strong> / annual policy</p>
+  // Simple sample formula for mock premium calculation
+  const base = (a + b + c + d + e) / 1000;
+  const premium = Math.round(base * 0.9 + 450); // add small base factor
+
+  const result = document.getElementById('homeQuoteResult');
+  result.classList.remove('hidden');
+  result.innerHTML = `
+    <strong>${name}</strong>, your estimated annual home premium is:<br>
+    <span style="font-size:20px;font-weight:800;color:#0d6efd;">$${premium.toLocaleString()}</span>
   `;
 
-  // Store quote
+  // Save the quote
   const quote = {
     quoteNumber: "H-" + Date.now().toString().slice(-6),
     productType: "Home",
-    applicantName:
-      document.getElementById("applicantName")?.value || "Homeowner",
-    estimatedPremium: rounded,
+    applicantName: name,
+    estimatedPremium: premium,
     quoteDate: new Date().toISOString().split("T")[0],
     createdAt: Date.now(),
   };
