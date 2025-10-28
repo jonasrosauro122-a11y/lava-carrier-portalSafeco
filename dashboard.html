@@ -165,13 +165,15 @@ function showAlert(type, message) {
   setTimeout(()=>box.style.display="none",3000);
 }
 
-// START QUOTE
+// START QUOTE FUNCTION — FIXED
 function startQuote() {
   const product = document.getElementById("quoteProductSelect").value.toLowerCase();
-  if(product==="auto"||product==="home"){
-    window.location.href=`quote.html?type=${product}`;
+  if (product === "auto") {
+    window.location.href = "auto.html";
+  } else if (product === "home") {
+    window.location.href = "home.html";
   } else {
-    showAlert("error","This quote type is not yet supported.");
+    showAlert("error", "This quote type is not yet supported.");
   }
 }
 
@@ -204,9 +206,7 @@ function loadRecentQuotes(){
 }
 
 // LOAD RECENT QUOTES ON PAGE LOAD
-document.addEventListener("DOMContentLoaded", ()=>{
-  loadRecentQuotes();
-});
+document.addEventListener("DOMContentLoaded", ()=> loadRecentQuotes());
 </script>
 
 </body>
