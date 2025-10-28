@@ -151,7 +151,7 @@
     flex-direction:column;
     gap:15px;
   }
-  .form-input, .form-select {
+  .form-input {
     width:100%; padding:8px;
     border:1px solid #ccc;
     border-radius:6px;
@@ -180,7 +180,6 @@
 
 <!-- DASHBOARD -->
 <div id="dashboardContainer" style="display:none;">
-  <!-- NAVBAR -->
   <nav>
     <a href="#" class="navbar-brand"><img src="images/lava-safeco-logo.png" /> LAVA Safeco</a>
     <div class="nav-right">
@@ -191,7 +190,6 @@
   </nav>
 
   <div class="dashboard-wrapper">
-    <!-- SIDEBAR -->
     <aside>
       <a href="#"><i class="lucide-search"></i> Lookup</a>
       <a href="#"><i class="lucide-settings"></i> Tools</a>
@@ -200,7 +198,6 @@
       <a href="#"><i class="lucide-bell"></i> Alerts</a>
     </aside>
 
-    <!-- MAIN CONTENT -->
     <main>
       <div class="welcome">
         <img src="images/lava-safeco-logo.png" />
@@ -258,17 +255,13 @@
 const QUOTES_KEY = "quotes";
 
 function seedDummyQuotes() {
+  if (localStorage.getItem(QUOTES_KEY)) return; // Prevent reseeding
   const dummyQuotes = [
     { quoteNumber: "Q-10231", applicantName: "Michael Rivera", productType: "Auto", estimatedPremium: 1243.25, createdAt: Date.now() - 86400000 * 1 },
     { quoteNumber: "Q-10232", applicantName: "Jessica Tan", productType: "Home", estimatedPremium: 982.60, createdAt: Date.now() - 86400000 * 2 },
     { quoteNumber: "Q-10233", applicantName: "Daniel Cruz", productType: "Auto", estimatedPremium: 1375.90, createdAt: Date.now() - 86400000 * 3 },
     { quoteNumber: "Q-10234", applicantName: "Amanda Li", productType: "Home", estimatedPremium: 1150.40, createdAt: Date.now() - 86400000 * 4 },
-    { quoteNumber: "Q-10235", applicantName: "Sofia Reyes", productType: "Auto", estimatedPremium: 1209.00, createdAt: Date.now() - 86400000 * 5 },
-    { quoteNumber: "Q-10236", applicantName: "George Smith", productType: "Home", estimatedPremium: 990.75, createdAt: Date.now() - 86400000 * 6 },
-    { quoteNumber: "Q-10237", applicantName: "Emily Santos", productType: "Auto", estimatedPremium: 1320.55, createdAt: Date.now() - 86400000 * 7 },
-    { quoteNumber: "Q-10238", applicantName: "Carlos Mendoza", productType: "Home", estimatedPremium: 1085.30, createdAt: Date.now() - 86400000 * 8 },
-    { quoteNumber: "Q-10239", applicantName: "Hannah Lopez", productType: "Auto", estimatedPremium: 1279.80, createdAt: Date.now() - 86400000 * 9 },
-    { quoteNumber: "Q-10240", applicantName: "John Perez", productType: "Home", estimatedPremium: 1015.10, createdAt: Date.now() - 86400000 * 10 }
+    { quoteNumber: "Q-10235", applicantName: "Sofia Reyes", productType: "Auto", estimatedPremium: 1209.00, createdAt: Date.now() - 86400000 * 5 }
   ];
   localStorage.setItem(QUOTES_KEY, JSON.stringify(dummyQuotes));
 }
@@ -281,7 +274,6 @@ function showAlert(type, message) {
   setTimeout(() => (box.style.display = "none"), 3000);
 }
 
-// NEW Start Quote: Direct routes to Auto or Home
 function startQuote() {
   const choice = confirm("Click OK for Auto Quote or Cancel for Home Quote.");
   if (choice) {
@@ -292,19 +284,21 @@ function startQuote() {
 }
 
 function logout() {
+  sessionStorage.clear();
   showAlert("success", "You have been logged out.");
   document.getElementById("dashboardContainer").style.display = "none";
   document.getElementById("loginContainer").style.display = "flex";
 }
 
 function loadRecentQuotes() {
-  let quotes = JSON.parse(localStorage.getItem(QUOTES_KEY));
-  if (!quotes || quotes.length === 0) {
-    seedDummyQuotes();
-    quotes = JSON.parse(localStorage.getItem(QUOTES_KEY));
-  }
+  seedDummyQuotes();
+  const quotes = JSON.parse(localStorage.getItem(QUOTES_KEY)) || [];
   const tbody = document.getElementById("recentQuotesBody");
   tbody.innerHTML = "";
+  if (quotes.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="text-muted">No recent quotes available.</td></tr>`;
+    return;
+  }
   quotes.sort((a, b) => b.createdAt - a.createdAt);
   quotes.forEach((q) => {
     const row = document.createElement("tr");
@@ -329,9 +323,10 @@ document.getElementById("loginForm").addEventListener("submit", function (e) {
     sessionStorage.setItem("agentLastName", last);
     document.getElementById("loginContainer").style.display = "none";
     document.getElementById("dashboardContainer").style.display = "block";
-    const fullName = first + " " + last;
+    const fullName = `${first} ${last}`;
     document.getElementById("welcome-agent-msg").textContent = `Hi ${fullName}!`;
     document.getElementById("agent-display").textContent = `User ID: ${fullName}`;
+    showAlert("success", `Welcome ${fullName}!`);
     loadRecentQuotes();
   } else {
     showAlert("error", "Please fill all login fields.");
@@ -344,7 +339,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (first && last) {
     document.getElementById("loginContainer").style.display = "none";
     document.getElementById("dashboardContainer").style.display = "block";
-    const fullName = first + " " + last;
+    const fullName = `${first} ${last}`;
     document.getElementById("welcome-agent-msg").textContent = `Hi ${fullName}!`;
     document.getElementById("agent-display").textContent = `User ID: ${fullName}`;
   }
@@ -353,4 +348,3 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 </body>
 </html>
-
