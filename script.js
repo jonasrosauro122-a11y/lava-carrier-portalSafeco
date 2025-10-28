@@ -112,60 +112,50 @@ function initDashboardPage() {
 // =============================================================
 function initQuotePage() {
   const params = new URLSearchParams(window.location.search);
-  const type = params.get("type")?.toLowerCase() || "auto";
+  const type = params.get("type")?.toLowerCase() || null;
+
+  // If URL includes ?type=auto or ?type=home → start flow directly
+  if (type === "auto" || type === "home") {
+    startFlow(type);
+  }
+
+  // Buttons for manual selection (if visible)
+  const btnAuto = document.getElementById("chooseAuto");
+  const btnHome = document.getElementById("chooseHome");
+
+  if (btnAuto)
+    btnAuto.addEventListener("click", () => startFlow("auto"));
+  if (btnHome)
+    btnHome.addEventListener("click", () => startFlow("home"));
+}
+
+// =============================================================
+// START FLOW (main fix for auto-launch on ?type)
+// =============================================================
+function startFlow(type) {
+  const selectCard = document.getElementById("selectCard");
+  const autoSection = document.getElementById("autoQuoteSection");
+  const homeSection = document.getElementById("homeQuoteSection");
+
+  if (selectCard) selectCard.classList.add("hidden");
+  if (type === "auto" && autoSection) {
+    autoSection.classList.remove("hidden");
+    homeSection?.classList.add("hidden");
+  } else if (type === "home" && homeSection) {
+    homeSection.classList.remove("hidden");
+    autoSection?.classList.add("hidden");
+  }
 
   // Restore saved draft if exists
   const draft = loadDraft(type);
   restoreDraftData(draft);
 
-  // Auto-save on input
+  // Auto-save inputs
   document.querySelectorAll("input, select").forEach((el) => {
     el.addEventListener("input", () => autoSaveDraft(type));
   });
 
-  // Hook into quote generation
-  window.generateAutoQuote = () => {
-    const age = parseInt(document.getElementById("driverAge").value) || 30;
-    const year = parseInt(document.getElementById("vehicleYear").value) || 2020;
-    const mileage = parseInt(document.getElementById("annualMileage").value) || 12000;
-    const homeowner = document.getElementById("homeowner")?.value === "Yes";
-    const multiCar = document.getElementById("multiCar")?.value === "Yes";
-    const premium = calcAutoPremium(age, year, mileage, homeowner, multiCar);
-
-    document.getElementById("autoQuoteResult").innerHTML = `
-      <h6>Estimated Auto Premium:</h6>
-      <p><strong>$${premium}</strong> / 6-month policy</p>`;
-
-    const quote = {
-      productType: "Auto",
-      applicantName: "Driver",
-      estimatedPremium: premium,
-      quoteDate: new Date().toISOString().split("T")[0],
-      createdAt: Date.now(),
-    };
-    saveFinalQuote(quote);
-  };
-
-  window.generateHomeQuote = () => {
-    const yearBuilt = parseInt(document.getElementById("yearBuilt").value) || 2000;
-    const sqft = parseInt(document.getElementById("sqft").value) || 1500;
-    const creditScore = parseInt(document.getElementById("creditScore").value) || 700;
-    const stories = parseInt(document.getElementById("stories").value) || 1;
-    const premium = calcHomePremium(yearBuilt, sqft, creditScore, stories);
-
-    document.getElementById("homeQuoteResult").innerHTML = `
-      <h6>Estimated Home Premium:</h6>
-      <p><strong>$${premium}</strong> / annual policy</p>`;
-
-    const quote = {
-      productType: "Home",
-      applicantName: "Homeowner",
-      estimatedPremium: premium,
-      quoteDate: new Date().toISOString().split("T")[0],
-      createdAt: Date.now(),
-    };
-    saveFinalQuote(quote);
-  };
+  console.log(`✅ Started ${type.toUpperCase()} flow`);
 }
 
 // =============================================================
@@ -224,7 +214,7 @@ function calculateHomePremium() {
 
   // Simple sample formula for mock premium calculation
   const base = (a + b + c + d + e) / 1000;
-  const premium = Math.round(base * 0.9 + 450); // add small base factor
+  const premium = Math.round(base * 0.9 + 450);
 
   const result = document.getElementById('homeQuoteResult');
   result.classList.remove('hidden');
