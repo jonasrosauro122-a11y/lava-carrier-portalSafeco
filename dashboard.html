@@ -165,9 +165,10 @@ function showAlert(type, message) {
   setTimeout(()=>box.style.display="none",3000);
 }
 
-// START QUOTE FUNCTION — FIXED
+// START QUOTE
 function startQuote() {
   const product = document.getElementById("quoteProductSelect").value.toLowerCase();
+  
   if (product === "auto") {
     window.location.href = "auto.html";
   } else if (product === "home") {
