@@ -774,6 +774,15 @@ function init(){
   // if draft exists for previous flows, we still start selection first
 }
 init();
+
+// ✅ Add this redirect code here
+$('chooseAuto').addEventListener('click', () => {
+  window.location.href = 'autoquote.html';
+});
+
+$('chooseHome').addEventListener('click', () => {
+  window.location.href = 'homequote.html';
+});
 </script>
 
 </body>
