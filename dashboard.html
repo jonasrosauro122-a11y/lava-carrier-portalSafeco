@@ -281,11 +281,14 @@ function showAlert(type, message) {
   setTimeout(() => (box.style.display = "none"), 3000);
 }
 
+// NEW Start Quote: Direct routes to Auto or Home
 function startQuote() {
-  const product = prompt("Select Quote Type: Auto or Home").toLowerCase();
-  if (product === "auto" || product === "home") {
-    window.location.href = `quote.html?type=${product}`;
-  } else showAlert("error", "This quote type is not yet supported.");
+  const choice = confirm("Click OK for Auto Quote or Cancel for Home Quote.");
+  if (choice) {
+    window.location.href = "https://zesty-blini-7bc3a7.netlify.app/quote.html?type=auto";
+  } else {
+    window.location.href = "https://zesty-blini-7bc3a7.netlify.app/quote.html?type=home";
+  }
 }
 
 function logout() {
@@ -350,3 +353,4 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 </body>
 </html>
+
