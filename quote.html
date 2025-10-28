@@ -402,20 +402,59 @@ function templateHome(id){
         <div><label>Business on premises?</label><select id="homeBusiness"><option>No</option><option>Yes</option></select></div>
       </div>
       <div style="margin-top:12px"><label>Home systems updates (roof/wiring/heat)</label><input id="systemsUpdate" type="text" /></div>`;
-    case 'coverage_home': return `
-      <div class="section-title">Coverage Selection</div>
-      <div class="grid">
-        <div><label>Dwelling Coverage (A)</label><input id="dwellingCov" type="number" placeholder="e.g., 350000" /></div>
-        <div><label>Other Structures (B)</label><input id="otherStructures" type="number" /></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Personal Property (C)</label><input id="personalProperty" type="number" /></div>
-        <div><label>Loss of Use (D)</label><input id="lossOfUse" type="text" /></div>
-      </div>
-      <div style="margin-top:12px" class="grid">
-        <div><label>Liability (E)</label><select id="homeLiability"><option>$100,000</option><option>$300,000</option><option>$500,000</option></select></div>
-        <div><label>Deductible</label><select id="homeDeductible"><option>$500</option><option>$1,000</option><option>$2,500</option></select></div>
-      </div>`;
+case 'coverage_home': return `
+  <div class="section-title">Coverage Selection</div>
+
+  <label>Coverage A – Dwelling Coverage:</label>
+  <select id="dwellingCov">
+    <option value="250000">$250,000</option>
+    <option value="300000">$300,000</option>
+    <option value="350000" selected>$350,000</option>
+    <option value="400000">$400,000</option>
+    <option value="500000">$500,000</option>
+  </select>
+
+  <label style="margin-top:12px;">Coverage B – Other Structures:</label>
+  <select id="otherStructures">
+    <option value="10000">$10,000</option>
+    <option value="20000">$20,000</option>
+    <option value="30000" selected>$30,000</option>
+    <option value="50000">$50,000</option>
+  </select>
+
+  <label style="margin-top:12px;">Coverage C – Personal Property:</label>
+  <select id="personalProperty">
+    <option value="50000">$50,000</option>
+    <option value="75000">$75,000</option>
+    <option value="100000" selected>$100,000</option>
+    <option value="150000">$150,000</option>
+    <option value="200000">$200,000</option>
+  </select>
+
+  <label style="margin-top:12px;">Coverage D – Loss of Use:</label>
+  <select id="lossOfUse">
+    <option value="10000">$10,000</option>
+    <option value="15000">$15,000</option>
+    <option value="20000" selected>$20,000</option>
+    <option value="30000">$30,000</option>
+  </select>
+
+  <label style="margin-top:12px;">Coverage E – Liability Limit:</label>
+  <select id="homeLiability">
+    <option value="100000">$100,000</option>
+    <option value="300000" selected>$300,000</option>
+    <option value="500000">$500,000</option>
+  </select>
+
+  <div style="margin-top:12px;">
+    <label>Deductible</label>
+    <select id="homeDeductible">
+      <option value="500">$500</option>
+      <option value="1000" selected>$1,000</option>
+      <option value="2500">$2,500</option>
+    </select>
+  </div>
+`;
     case 'summary': return `
       <div class="section-title">Summary & Estimate</div>
       <div class="muted">When required fields are complete, click Generate Quote to compute a mock premium.</div>
@@ -731,3 +770,4 @@ init();
 </script>
 </body>
 </html>
+
