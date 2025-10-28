@@ -1,13 +1,18 @@
 // =============================================================
-// UNIVERSAL SCRIPT for dashboard.html and quote.html (FINAL FIXED VERSION)
+// UNIVERSAL SCRIPT for dashboard.html and quote.html
 // =============================================================
 
-// --- CONSTANTS ---
 const DRAFT_KEY = "quoteDraft";
 const QUOTES_KEY = "quotes";
 
+document.addEventListener("DOMContentLoaded", () => {
+  const path = window.location.pathname;
+  if (path.includes("dashboard.html")) initDashboardPage();
+  if (path.includes("quote.html")) initQuotePage();
+});
+
 // =============================================================
-// TOAST UTILITY
+// TOAST
 // =============================================================
 function showToast(message, type = "success") {
   let container = document.querySelector(".toast-container");
@@ -19,9 +24,7 @@ function showToast(message, type = "success") {
 
   const toast = document.createElement("div");
   toast.className = `toast align-items-center text-bg-${type} border-0 show shadow mb-2`;
-  toast.setAttribute("role", "alert");
-  toast.innerHTML = `
-    <div class="d-flex">
+  toast.innerHTML = `<div class="d-flex">
       <div class="toast-body fw-semibold">${message}</div>
       <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
     </div>`;
@@ -31,43 +34,7 @@ function showToast(message, type = "success") {
 }
 
 // =============================================================
-// LOCAL STORAGE HELPERS
-// =============================================================
-function getDraftKey(type) {
-  return `${DRAFT_KEY}_${type}`;
-}
-
-function saveDraft(data, type) {
-  localStorage.setItem(getDraftKey(type), JSON.stringify(data));
-}
-
-function loadDraft(type) {
-  const raw = localStorage.getItem(getDraftKey(type));
-  return raw ? JSON.parse(raw) : {};
-}
-
-function clearDraft(type) {
-  localStorage.removeItem(getDraftKey(type));
-}
-
-function saveFinalQuote(quote) {
-  const arr = JSON.parse(localStorage.getItem(QUOTES_KEY)) || [];
-  arr.unshift(quote);
-  localStorage.setItem(QUOTES_KEY, JSON.stringify(arr));
-  showToast("Quote saved successfully!", "success");
-}
-
-// =============================================================
-// PAGE DETECTION
-// =============================================================
-document.addEventListener("DOMContentLoaded", () => {
-  const path = window.location.pathname;
-  if (path.includes("dashboard.html")) initDashboardPage();
-  if (path.includes("quote.html")) initQuotePage();
-});
-
-// =============================================================
-// DASHBOARD PAGE
+// DASHBOARD
 // =============================================================
 function initDashboardPage() {
   const quotes = JSON.parse(localStorage.getItem(QUOTES_KEY)) || [];
@@ -105,35 +72,25 @@ function initDashboardPage() {
 }
 
 // =============================================================
-// QUOTE PAGE (FULLY FIXED)
+// QUOTE PAGE HANDLER
 // =============================================================
 function initQuotePage() {
   const params = new URLSearchParams(window.location.search);
-  const type = params.get("type")?.toLowerCase() || null;
+  const type = params.get("type")?.toLowerCase() || "";
 
   const btnAuto = document.getElementById("chooseAuto");
   const btnHome = document.getElementById("chooseHome");
-  const backBtn = document.getElementById("backBtn");
+  const backBtns = document.querySelectorAll("#backBtn");
 
-  // ✅ Auto-start quote flow if URL includes ?type=auto or ?type=home
-  if (type === "auto" || type === "home") {
-    startFlow(type);
-  }
+  if (type === "auto" || type === "home") startFlow(type);
 
-  // ✅ Manual selection (if visible)
   if (btnAuto) btnAuto.addEventListener("click", () => startFlow("auto"));
   if (btnHome) btnHome.addEventListener("click", () => startFlow("home"));
-
-  // ✅ Back button logic
-  if (backBtn) {
-    backBtn.addEventListener("click", () => {
-      window.location.href = "dashboard.html";
-    });
-  }
+  backBtns.forEach((btn) => btn.addEventListener("click", () => (window.location.href = "dashboard.html")));
 }
 
 // =============================================================
-// START FLOW FUNCTION (Auto + Home Switching)
+// FLOW CONTROLLER
 // =============================================================
 function startFlow(type) {
   const selectCard = document.getElementById("selectCard");
@@ -141,7 +98,6 @@ function startFlow(type) {
   const homeSection = document.getElementById("homeQuoteSection");
 
   if (selectCard) selectCard.classList.add("hidden");
-
   if (type === "auto" && autoSection) {
     autoSection.classList.remove("hidden");
     homeSection?.classList.add("hidden");
@@ -150,11 +106,8 @@ function startFlow(type) {
     autoSection?.classList.add("hidden");
   }
 
-  // ✅ Restore saved draft if exists
   const draft = loadDraft(type);
   restoreDraftData(draft);
-
-  // ✅ Auto-save on any input
   document.querySelectorAll("input, select").forEach((el) => {
     el.addEventListener("input", () => autoSaveDraft(type));
   });
@@ -163,8 +116,24 @@ function startFlow(type) {
 }
 
 // =============================================================
-// QUOTE DRAFT LOGIC
+// STORAGE HELPERS
 // =============================================================
+function getDraftKey(type) {
+  return `${DRAFT_KEY}_${type}`;
+}
+function saveDraft(data, type) {
+  localStorage.setItem(getDraftKey(type), JSON.stringify(data));
+}
+function loadDraft(type) {
+  const raw = localStorage.getItem(getDraftKey(type));
+  return raw ? JSON.parse(raw) : {};
+}
+function restoreDraftData(draft) {
+  Object.keys(draft).forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.value = draft[id];
+  });
+}
 function autoSaveDraft(type) {
   const inputs = document.querySelectorAll("input, select");
   const data = {};
@@ -173,62 +142,51 @@ function autoSaveDraft(type) {
   });
   saveDraft(data, type);
 }
-
-function restoreDraftData(draft) {
-  Object.keys(draft).forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) el.value = draft[id];
-  });
+function saveFinalQuote(quote) {
+  const arr = JSON.parse(localStorage.getItem(QUOTES_KEY)) || [];
+  arr.unshift(quote);
+  localStorage.setItem(QUOTES_KEY, JSON.stringify(arr));
+  showToast("Quote saved successfully!", "success");
 }
 
 // =============================================================
-// SIMPLE QUOTE CALCULATORS
+// CALCULATORS
 // =============================================================
-function calcAutoPremium(age, year, mileage, homeowner, multiCar) {
-  let rate = 700 + (2025 - year) * 5;
-  if (age < 25) rate += 150;
-  if (mileage > 15000) rate += 100;
-  if (homeowner) rate -= 75;
-  if (multiCar) rate -= 100;
-  return rate.toFixed(2);
-}
+function generateAutoQuote() {
+  const age = parseInt(document.getElementById("driverAge").value) || 30;
+  const year = parseInt(document.getElementById("vehicleYear").value) || 2020;
+  const mileage = parseInt(document.getElementById("annualMileage").value) || 12000;
+  const homeowner = document.getElementById("homeowner")?.value === "Yes";
+  const multiCar = document.getElementById("multiCar")?.value === "Yes";
+  const premium = calcAutoPremium(age, year, mileage, homeowner, multiCar);
 
-function calcHomePremium(yearBuilt, sqft, creditScore, stories) {
-  let rate = 800 + (2025 - yearBuilt) * 2 + (sqft / 1000) * 50;
-  if (creditScore > 750) rate -= 75;
-  if (stories > 1) rate += 40;
-  return rate.toFixed(2);
-}
+  document.getElementById("autoQuoteResult").innerHTML = `
+    <h6>Estimated Auto Premium:</h6>
+    <p><strong>$${premium}</strong> / 6-month policy</p>`;
 
-// =============================================================
-// HOME COVERAGE-BASED PREMIUM CALCULATOR (Coverage A–E)
-// =============================================================
-function calculateHomePremium() {
-  const a = Number(document.getElementById("coverageA")?.value || 0);
-  const b = Number(document.getElementById("coverageB")?.value || 0);
-  const c = Number(document.getElementById("coverageC")?.value || 0);
-  const d = Number(document.getElementById("coverageD")?.value || 0);
-  const e = Number(document.getElementById("coverageE")?.value || 0);
-  const name = document.getElementById("applicantName")?.value.trim() || "Applicant";
-
-  if (!a || !b || !c || !d || !e) {
-    alert("Please fill all coverage amounts first.");
-    return;
-  }
-
-  const base = (a + b + c + d + e) / 1000;
-  const premium = Math.round(base * 0.9 + 450);
-
-  const result = document.getElementById("homeQuoteResult");
-  result.classList.remove("hidden");
-  result.innerHTML = `
-    <strong>${name}</strong>, your estimated annual home premium is:<br>
-    <span style="font-size:20px;font-weight:800;color:#0d6efd;">$${premium.toLocaleString()}</span>
-  `;
-
-  // ✅ Save the quote to dashboard
   const quote = {
-    quoteNumber: "H-" + Date.now().toString().slice(-6),
+    productType: "Auto",
+    applicantName: "Driver",
+    estimatedPremium: premium,
+    quoteDate: new Date().toISOString().split("T")[0],
+    createdAt: Date.now(),
+  };
+  saveFinalQuote(quote);
+}
+
+function generateHomeQuote() {
+  const name = document.getElementById("applicantName")?.value || "Applicant";
+  const yearBuilt = parseInt(document.getElementById("yearBuilt").value) || 2000;
+  const sqft = parseInt(document.getElementById("sqft").value) || 1500;
+  const creditScore = parseInt(document.getElementById("creditScore").value) || 700;
+  const stories = parseInt(document.getElementById("stories").value) || 1;
+  const premium = calcHomePremium(yearBuilt, sqft, creditScore, stories);
+
+  document.getElementById("homeQuoteResult").innerHTML = `
+    <h6>Estimated Home Premium:</h6>
+    <p><strong>$${premium}</strong> / annual policy</p>`;
+
+  const quote = {
     productType: "Home",
     applicantName: name,
     estimatedPremium: premium,
@@ -237,3 +195,5 @@ function calculateHomePremium() {
   };
   saveFinalQuote(quote);
 }
+
+function calcAutoPremium(age, year, mileage, homeowne
