@@ -1,22 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Auto Quote | LAVA Safeco</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LAVA Safeco | Dashboard</title>
 <style>
-  body { font-family: Arial, sans-serif; background:#f4f7f6; text-align:center; padding:80px; }
-  h1 { color:#0d6efd; }
-  a { color:#fff; background:#0d6efd; padding:10px 20px; border-radius:6px; text-decoration:none; display:inline-block; margin-top:20px; }
-  a:hover { background:#0b5ed7; }
-</style>
-</head>
-<body>
-  <h1>Auto Quote Page</h1>
-  <p>Welcome! You selected Auto. This page is under construction.</p>
-  <a href="dashboard.html">← Back to Dashboard</a>
-</body>
-</html>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:"Poppins", Arial, sans-serif; }
+  body { background-color:#f4f7f6; padding-top:70px; }
 
   /* NAVBAR */
   nav { background:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.1); position:fixed; top:0; left:0; right:0; height:60px; display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index:100;}
@@ -60,12 +50,29 @@
   /* ALERT */
   .alert { position:fixed; top:20px; right:20px; background:#d4edda; color:#155724; border:1px solid #c3e6cb; padding:10px 16px; border-radius:8px; display:none; box-shadow:0 3px 10px rgba(0,0,0,0.15);}
   .alert.error { background:#f8d7da; color:#721c24; border:1px solid #f5c6cb;}
+
+  /* LOGIN FORM */
+  #loginContainer { display:flex; justify-content:center; align-items:center; height:100vh; background:#f4f7f6; }
+  #loginForm { background:#fff; padding:30px; border-radius:10px; box-shadow:0 3px 10px rgba(0,0,0,0.1); width:300px; display:flex; flex-direction:column; gap:15px; }
+
+  @media(max-width:900px){.container{flex-direction:column;} aside{flex:1 1 auto;}}
 </style>
 </head>
 <body>
 
+<!-- LOGIN FORM -->
+<div id="loginContainer">
+  <form id="loginForm">
+    <h2 style="color:#0d6efd;text-align:center;">Agent Login</h2>
+    <input type="text" id="firstName" placeholder="First Name" class="form-input" required>
+    <input type="text" id="lastName" placeholder="Last Name" class="form-input" required>
+    <input type="password" id="password" placeholder="Password" class="form-input" required>
+    <button type="submit" class="btn btn-primary">Login</button>
+  </form>
+</div>
+
 <!-- DASHBOARD -->
-<div id="dashboardContainer">
+<div id="dashboardContainer" style="display:none;">
   <!-- NAVBAR -->
   <nav>
     <a href="#" class="navbar-brand"><img src="images/lava-safeco-logo.png" /> LAVA Safeco</a>
@@ -77,8 +84,8 @@
     </div>
     <div class="nav-right">
       <button class="btn btn-primary" onclick="startQuote()">Start Quote</button>
-      <span id="agent-display" style="font-size:13px;color:#777;">User ID: Agent</span>
-      <a href="#" style="color:#d33;font-weight:600;text-decoration:none;" onclick="showAlert('success','You have been logged out.')">Logout</a>
+      <span id="agent-display" style="font-size:13px;color:#777;"></span>
+      <a href="#" style="color:#d33;font-weight:600;text-decoration:none;" onclick="logout()">Logout</a>
     </div>
   </nav>
 
@@ -110,7 +117,7 @@
     <main>
       <div class="welcome-section">
         <img src="images/lava-safeco-logo.png" />
-        <h2 id="welcome-agent-msg">Hi Agent!</h2>
+        <h2 id="welcome-agent-msg"></h2>
       </div>
 
       <!-- Cards Row -->
@@ -160,7 +167,6 @@
   </div>
 </div>
 
-<!-- ALERT -->
 <div class="alert" id="alertBox"></div>
 
 <script>
@@ -175,23 +181,23 @@ function showAlert(type, message) {
   setTimeout(()=>box.style.display="none",3000);
 }
 
-// START QUOTE
+// QUOTES
 function startQuote() {
   const product = document.getElementById("quoteProductSelect").value.toLowerCase();
-  
-  if (product === "auto") {
-    window.location.href = "auto.html";
-  } else if (product === "home") {
-    window.location.href = "home.html";
-  } else {
-    showAlert("error", "This quote type is not yet supported.");
-  }
+  if(product==="auto"||product==="home"){
+    window.location.href=`quote.html?type=${product}`;
+  } else showAlert("error","This quote type is not yet supported.");
+}
+
+function logout() {
+  showAlert("success","You have been logged out.");
+  // Reset dashboard and show login again
+  document.getElementById("dashboardContainer").style.display="none";
+  document.getElementById("loginContainer").style.display="flex";
 }
 
 // CUSTOMER SEARCH
-function searchCustomer() { 
-  showAlert("success","Customer search is not implemented yet."); 
-}
+function searchCustomer() { showAlert("success","Customer search is not implemented yet."); }
 
 // LOAD RECENT QUOTES
 function loadRecentQuotes(){
@@ -205,21 +211,53 @@ function loadRecentQuotes(){
   quotes.sort((a,b)=>b.createdAt - a.createdAt);
   quotes.forEach(q=>{
     const row = document.createElement("tr");
-    row.innerHTML=`
-      <td>${q.quoteNumber||'—'}</td>
-      <td>${q.applicantName||'—'}</td>
-      <td>${q.productType}</td>
-      <td>$${q.estimatedPremium}</td>
-      <td>${new Date(q.createdAt).toLocaleDateString()}</td>
-    `;
+    row.innerHTML=`<td>${q.quoteNumber||'—'}</td>
+                   <td>${q.applicantName||'—'}</td>
+                   <td>${q.productType}</td>
+                   <td>$${q.estimatedPremium}</td>
+                   <td>${new Date(q.createdAt).toLocaleDateString()}</td>`;
     tbody.appendChild(row);
   });
 }
 
-// LOAD RECENT QUOTES ON PAGE LOAD
-document.addEventListener("DOMContentLoaded", ()=> loadRecentQuotes());
-</script>
+// LOGIN LOGIC
+document.getElementById("loginForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  const first = document.getElementById("firstName").value.trim();
+  const last = document.getElementById("lastName").value.trim();
+  const password = document.getElementById("password").value;
 
+  if(first && last && password){
+    // In real-world: verify password here
+    // Save agent info in sessionStorage
+    sessionStorage.setItem("agentFirstName", first);
+    sessionStorage.setItem("agentLastName", last);
+
+    document.getElementById("loginContainer").style.display="none";
+    document.getElementById("dashboardContainer").style.display="block";
+
+    const fullName = first + " " + last;
+    document.getElementById("welcome-agent-msg").textContent=`Hi ${fullName}!`;
+    document.getElementById("agent-display").textContent=`User ID: ${fullName}`;
+    loadRecentQuotes();
+  } else {
+    showAlert("error","Please fill all login fields.");
+  }
+});
+
+// AUTO GREETING IF SESSION EXISTS
+document.addEventListener("DOMContentLoaded", ()=>{
+  const first = sessionStorage.getItem("agentFirstName");
+  const last = sessionStorage.getItem("agentLastName");
+  if(first && last){
+    document.getElementById("loginContainer").style.display="none";
+    document.getElementById("dashboardContainer").style.display="block";
+    const fullName = first + " " + last;
+    document.getElementById("welcome-agent-msg").textContent=`Hi ${fullName}!`;
+    document.getElementById("agent-display").textContent=`User ID: ${fullName}`;
+    loadRecentQuotes();
+  }
+});
+</script>
 </body>
 </html>
-
