@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>LAVA Safeco | Dashboard</title>
+<title>LAVA Carrier | Dashboard</title>
 <link href="https://unpkg.com/lucide-static@latest/font/lucide.css" rel="stylesheet" />
 <style>
   * {margin:0; padding:0; box-sizing:border-box; font-family:"Poppins", Arial, sans-serif;}
@@ -182,7 +182,7 @@
 <div id="dashboardContainer" style="display:none;">
   <!-- NAVBAR -->
   <nav>
-    <a href="#" class="navbar-brand"><img src="images/lava-carrier-logo.png" /> LAVA Safeco</a>
+    <a href="#" class="navbar-brand"><img src="images/lava-carrier-logo.png" /> LAVA Carrier</a>
     <div class="nav-right">
       <button class="btn btn-outline" onclick="startQuote()">Start Quote</button>
       <span id="agent-display" style="font-size:13px;"></span>
@@ -265,11 +265,9 @@ function showAlert(type, message) {
   setTimeout(()=>box.style.display="none",3000);
 }
 
+// ✅ Redirect directly to the Quote Option Page
 function startQuote() {
-  const product = prompt("Select Quote Type: Auto or Home").toLowerCase();
-  if(product==="auto"||product==="home"){
-    window.location.href=`quote.html?type=${product}`;
-  } else showAlert("error","This quote type is not yet supported.");
+  window.location.href = "quote.html";
 }
 
 function logout() {
@@ -332,4 +330,3 @@ document.addEventListener("DOMContentLoaded", ()=>{
 </script>
 </body>
 </html>
-
